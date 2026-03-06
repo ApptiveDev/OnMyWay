@@ -1,5 +1,6 @@
 package _team.onmyway.security;
 
+import _team.onmyway.handler.CustomFailureHandler;
 import _team.onmyway.handler.CustomSuccessHandler;
 import _team.onmyway.service.CustomOAuthUserService;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +15,10 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
+    
     private final CustomOAuthUserService customOAuthUserService;
     private final CustomSuccessHandler successHandler;
+    private final CustomFailureHandler failureHandler;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,6 +35,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuthUserService)) // 사용자 정보 이용(회원가입 등)
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
+                        .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳
                 );
 
         return http.build();

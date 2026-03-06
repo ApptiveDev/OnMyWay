@@ -16,6 +16,7 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         System.out.println("onAuthenticationSuccess");
         // 회원 DB 등록, 즉 회원가입 완료 후 진행
+        System.out.println(authentication);
         // authentication에서 user 정보를 가지고 올 수 있습니다.
     }
 }
