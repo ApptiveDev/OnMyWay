@@ -13,7 +13,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.Map;
 
 @Service
@@ -29,7 +28,10 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         // Provider name
         String provider = userRequest.getClientRegistration().getClientName();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
-        if (provider.equals("kakao")) kakao(provider, oAuth2User.getAttributes()); // getAttributes : User 정보를 어떤 걸 가지고 왔는지 표시
+
+        if ("kakao".equals(provider)) {
+            kakao(provider, oAuth2User.getAttributes()); // getAttributes : User 정보를 어떤 걸 가지고 왔는지 표시
+        }
         return oAuth2User;
     }
 
@@ -43,31 +45,40 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         String email = null;
         Boolean emailValid = (Boolean)account.get("is_email_valid");
         Boolean emailVerified = (Boolean)account.get("is_email_verified");
-        if (emailVerified && emailValid) email = (String)account.get("email");
+        if (Boolean.TRUE.equals(emailVerified) && Boolean.TRUE.equals(emailValid)) {
+            email = (String)account.get("email");
+        }
 
         String imageURL = null;
         Boolean imageNeedsAgreement = (Boolean)account.get("profile_image_needs_agreement");
         Boolean defaultImage = (Boolean)profile.get("is_default_image");
-        if (!imageNeedsAgreement && !defaultImage) imageURL = (String)profile.get("profile_image_url");
+        if (!Boolean.TRUE.equals(imageNeedsAgreement) && !Boolean.TRUE.equals(defaultImage)) {
+            imageURL = (String) profile.get("profile_image_url");
+        }
 
-        if (oauthAccountsRepository.findByProviderAndProviderUserId(provider, providerId) == null) {
-            Users newUser = new Users().builder()
+        // DB 조회: OAuthAccounts 존재 여부 확인
+        OAuthAccounts accounts = oauthAccountsRepository.findByProviderAndProviderUserId(provider, providerId);
+
+        if (accounts == null) {
+            // 신규 사용자 생성
+            Users newUser = Users.builder()
                     .nickname(nickname)
                     .email(email)
                     .profileImageUrl(imageURL)
-                    .role("ROLE_USER")
-                    .createdAt(LocalDateTime.now())
-                    .isActive(true)
+                    .role(Users.Role.USER) // Enum 적용
+                    // isActive: Builder.Default(true) 적용
+                    // createdAt / updatedAt: @CreationTimestamp / @UpdateTimestamp 자동 관리
                     .build();
 
             usersRepository.save(newUser);
-            oauthAccountsRepository.save(new OAuthAccounts(newUser, provider, providerId));
-        } else {
-            OAuthAccounts accounts = oauthAccountsRepository.findByProviderAndProviderUserId(provider, providerId);
-            Users getUser = accounts.getUser();
 
-            getUser.updateUser(nickname, email, imageURL);
-            usersRepository.save(getUser);
+            // OAuth 계정 연결 생성
+            oauthAccountsRepository.save(new OAuthAccounts(newUser, OAuthAccounts.Provider.KAKAO, providerId));
+        } else {
+            // 기존 사용자 정보 업데이트
+            Users existingUser = accounts.getUser();
+            existingUser.updateProfile(nickname, email, imageURL);
+            usersRepository.save(existingUser);
         }
     }
 }
