@@ -40,9 +40,10 @@ public class Users {
     private LocalDateTime updatedAt;
 
     @Column(name = "is_active")
-    private Boolean isActive;
+    @Builder.Default
+    private Boolean isActive = true;
 
-    public void updateUser(String nickname, String email, String profileImageUrl) {
+    public void updateProfile(String nickname, String email, String profileImageUrl) {
         this.nickname = nickname;
         this.email = email;
         this.profileImageUrl = profileImageUrl;
