@@ -30,13 +30,13 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
         if ("kakao".equals(provider)) {
-            kakao(provider, oAuth2User.getAttributes()); // getAttributes : User 정보를 어떤 걸 가지고 왔는지 표시
+            kakao(oAuth2User.getAttributes()); // getAttributes : User 정보를 어떤 걸 가지고 왔는지 표시
         }
         return oAuth2User;
     }
 
     @Transactional
-    public void kakao(String provider, Map<String, Object> userInfos) {
+    public void kakao(Map<String, Object> userInfos) {
         String providerId = String.valueOf(userInfos.get("id"));
         Map<String, Object> account = (Map<String, Object>)userInfos.get("kakao_account");
         Map<String, Object> profile = (Map<String, Object>)account.get("profile");
@@ -57,7 +57,7 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         }
 
         // DB 조회: OAuthAccounts 존재 여부 확인
-        OAuthAccounts accounts = oauthAccountsRepository.findByProviderAndProviderUserId(provider, providerId);
+        OAuthAccounts accounts = oauthAccountsRepository.findByProviderAndProviderUserId(OAuthAccounts.Provider.KAKAO, providerId);
 
         if (accounts == null) {
             // 신규 사용자 생성
