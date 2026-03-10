@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @NoArgsConstructor
-@Table(schema = "onmyway")
 @Getter
 public class OAuthAccounts {
     @Id

@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -19,12 +20,19 @@ public class SecurityConfig {
     private final CustomOAuthUserService customOAuthUserService;
     private final CustomSuccessHandler successHandler;
     private final CustomFailureHandler failureHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+                                .requestMatchers(
+                                        "/oauth2/authorization/**",
+                                        "/login/oauth2/code/**",
+                                        "/api/token/refresh",
+                                        "/api/test/public",
+                                        "/api/test/protected"
+                                ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -37,6 +45,9 @@ public class SecurityConfig {
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
                         .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳
                 );
+
+        // JWT Filter 등록
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

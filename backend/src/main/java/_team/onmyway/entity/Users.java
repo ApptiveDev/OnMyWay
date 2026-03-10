@@ -11,7 +11,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(schema = "onmyway")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -43,12 +42,19 @@ public class Users {
     @Builder.Default
     private Boolean isActive = true;
 
+    @Column(name = "refresh_token")
+    private String refreshToken;
+
     public void updateProfile(String nickname, String email, String profileImageUrl) {
         this.nickname = nickname;
         this.email = email;
         this.profileImageUrl = profileImageUrl;
         this.isActive = true;
         // updatedAt은 @UpdateTimestamp가 자동 갱신
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 
     public void deactivate() {
