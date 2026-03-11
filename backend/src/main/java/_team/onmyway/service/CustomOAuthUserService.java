@@ -4,6 +4,7 @@ import _team.onmyway.entity.OAuthAccounts;
 import _team.onmyway.entity.Users;
 import _team.onmyway.repository.OAuthAccountsRepository;
 import _team.onmyway.repository.UsersRepository;
+import _team.onmyway.security.CustomOAuth2User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -29,29 +30,32 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         String provider = userRequest.getClientRegistration().getClientName();
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
-        if ("kakao".equals(provider)) {
-            kakao(oAuth2User.getAttributes()); // getAttributes : User 정보를 어떤 걸 가지고 왔는지 표시
+        Users user = null;
+
+        if ("kakao".equalsIgnoreCase(provider)) {
+            user = kakao(oAuth2User.getAttributes());
         }
-        return oAuth2User;
+
+        return new CustomOAuth2User(oAuth2User, user);
     }
 
     @Transactional
-    public void kakao(Map<String, Object> userInfos) {
+    public Users kakao(Map<String, Object> userInfos) {
         String providerId = String.valueOf(userInfos.get("id"));
-        Map<String, Object> account = (Map<String, Object>)userInfos.get("kakao_account");
-        Map<String, Object> profile = (Map<String, Object>)account.get("profile");
+        Map<String, Object> account = (Map<String, Object>) userInfos.get("kakao_account");
+        Map<String, Object> profile = (Map<String, Object>) account.get("profile");
         String nickname = (String) profile.get("nickname");
 
         String email = null;
-        Boolean emailValid = (Boolean)account.get("is_email_valid");
-        Boolean emailVerified = (Boolean)account.get("is_email_verified");
+        Boolean emailValid = (Boolean) account.get("is_email_valid");
+        Boolean emailVerified = (Boolean) account.get("is_email_verified");
         if (Boolean.TRUE.equals(emailVerified) && Boolean.TRUE.equals(emailValid)) {
-            email = (String)account.get("email");
+            email = (String) account.get("email");
         }
 
         String imageURL = null;
-        Boolean imageNeedsAgreement = (Boolean)account.get("profile_image_needs_agreement");
-        Boolean defaultImage = (Boolean)profile.get("is_default_image");
+        Boolean imageNeedsAgreement = (Boolean) account.get("profile_image_needs_agreement");
+        Boolean defaultImage = (Boolean) profile.get("is_default_image");
         if (!Boolean.TRUE.equals(imageNeedsAgreement) && !Boolean.TRUE.equals(defaultImage)) {
             imageURL = (String) profile.get("profile_image_url");
         }
@@ -59,9 +63,10 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         // DB 조회: OAuthAccounts 존재 여부 확인
         OAuthAccounts accounts = oauthAccountsRepository.findByProviderAndProviderUserId(OAuthAccounts.Provider.KAKAO, providerId);
 
+        Users user;
         if (accounts == null) {
             // 신규 사용자 생성
-            Users newUser = Users.builder()
+            user = Users.builder()
                     .nickname(nickname)
                     .email(email)
                     .profileImageUrl(imageURL)
@@ -69,16 +74,16 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
                     // isActive: Builder.Default(true) 적용
                     // createdAt / updatedAt: @CreationTimestamp / @UpdateTimestamp 자동 관리
                     .build();
-
-            usersRepository.save(newUser);
-
+            usersRepository.save(user);
             // OAuth 계정 연결 생성
-            oauthAccountsRepository.save(new OAuthAccounts(newUser, OAuthAccounts.Provider.KAKAO, providerId));
+            oauthAccountsRepository.save(new OAuthAccounts(user, OAuthAccounts.Provider.KAKAO, providerId));
         } else {
             // 기존 사용자 정보 업데이트
-            Users existingUser = accounts.getUser();
-            existingUser.updateProfile(nickname, email, imageURL);
-            usersRepository.save(existingUser);
+            user = accounts.getUser();
+            user.updateProfile(nickname, email, imageURL);
+            usersRepository.save(user);
         }
+
+        return user;
     }
 }

@@ -30,9 +30,12 @@ public class SecurityConfig {
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/token/refresh",
-                                        "/api/test/public",
-                                        "/api/test/protected"
+                                        "/api/test/public"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+
+                                .requestMatchers("/api/test/protected")
+                                .hasRole("USER") // JWT 필요
+
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
