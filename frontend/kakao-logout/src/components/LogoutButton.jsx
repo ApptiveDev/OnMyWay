@@ -1,5 +1,3 @@
-
-
 function LogoutButton() {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
