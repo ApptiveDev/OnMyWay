@@ -1,7 +1,8 @@
-package _team.onmyway.security;
+package _team.onmyway.config;
 
-import _team.onmyway.handler.CustomFailureHandler;
-import _team.onmyway.handler.CustomSuccessHandler;
+import _team.onmyway.security.OAuthFailureHandler;
+import _team.onmyway.security.OAuthSuccessHandler;
+import _team.onmyway.security.JwtAuthenticationFilter;
 import _team.onmyway.service.CustomOAuthUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,8 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     
     private final CustomOAuthUserService customOAuthUserService;
-    private final CustomSuccessHandler successHandler;
-    private final CustomFailureHandler failureHandler;
+    private final OAuthSuccessHandler successHandler;
+    private final OAuthFailureHandler failureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
@@ -29,12 +30,10 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
-                                        "/api/token/refresh",
-                                        "/api/test/public"
+                                        "/api/auth/**",
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
-
-                                .requestMatchers("/api/test/protected")
-                                .hasRole("USER") // JWT 필요
 
                                 .anyRequest().authenticated()
                 )

@@ -49,21 +49,31 @@ public class JwtService {
                 .compact();
     }
 
+    private Claims parseClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            parseClaims(token);
             return true;
+        } catch (ExpiredJwtException e) {
+            return false;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
     public String getSubject(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+        return parseClaims(token).getSubject();
     }
 
     public String getRole(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().get("role", String.class);
+        return parseClaims(token).get("role", String.class);
     }
 
     public long getAccessTokenExpirationMs() {
