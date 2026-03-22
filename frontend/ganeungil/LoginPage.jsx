@@ -1,5 +1,5 @@
-import kakaoLoginImg from "./assets/kakaologin-button.png";
-import "./App.css";
+import kakaoLoginImg from "./button/kakaologin-button.png";
+
 
 
 function LoginPage() {
