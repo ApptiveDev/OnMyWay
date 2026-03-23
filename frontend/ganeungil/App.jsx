@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Onboard_new from "./components/Onboard_new";
+import Onboard20 from "./components/Onboard_2.0";
+import ExplorePage from "./components/ExplorePage";
 import LoginPage from "./LoginPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import api from "./api/api";
@@ -22,6 +24,8 @@ function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Onboard_new />} />
+        <Route path="/find-route" element={<Onboard20 />} />
+        <Route path="/explore" element={<ExplorePage />} />
         <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>

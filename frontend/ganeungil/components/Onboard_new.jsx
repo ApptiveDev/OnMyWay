@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import FindRouteButton, { HeaderFindRouteButton } from "../button/FindRouteButton";
+import ExploreButton, { HeaderExploreButton } from "../button/ExploreButton";
 
 // Figma assets (유효기간 7일)
 const imgHero = "https://www.figma.com/api/mcp/asset/af01c495-7328-404c-9bdf-3da68515235d";
@@ -28,12 +30,8 @@ export default function OnboardNew() {
           </a>
 
           <nav className="flex items-center gap-5">
-            <a href="#" className="px-4 py-1.5 rounded-full text-[#8b7e6a] text-sm hover:text-[#2c2417] transition-colors">
-              길찾기
-            </a>
-            <a href="#" className="text-[#8b7e6a] text-sm hover:text-[#2c2417] transition-colors">
-              둘러보기
-            </a>
+            <HeaderFindRouteButton />
+            <HeaderExploreButton />
           </nav>
 
           <div className="flex items-center gap-2">
@@ -73,14 +71,8 @@ export default function OnboardNew() {
           </p>
 
           <div className="flex gap-3 w-[384px]">
-            <button className="flex-1 h-[54px] rounded-full bg-[#e8c36a] text-[#2c2417] font-medium text-base flex items-center justify-center gap-2 hover:bg-[#d4a94f] transition-colors">
-              <img src={iconFind} alt="" className="w-[17px] h-[17px]" />
-              길찾기
-            </button>
-            <button className="flex-1 h-[54px] rounded-full bg-[rgba(255,255,255,0.1)] border border-[rgba(255,255,255,0.2)] text-white font-medium text-base flex items-center justify-center gap-2 hover:bg-[rgba(255,255,255,0.2)] transition-colors">
-              <img src={iconExplore} alt="" className="w-[17px] h-[17px]" />
-              둘러보기
-            </button>
+            <FindRouteButton />
+            <ExploreButton />
           </div>
         </div>
       </section>
