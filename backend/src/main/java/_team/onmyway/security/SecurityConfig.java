@@ -24,7 +24,7 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**").permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+                                .requestMatchers("/oauth2/authorization/**", "/login/oauth2/code/**", "/places/search", "/places").permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
