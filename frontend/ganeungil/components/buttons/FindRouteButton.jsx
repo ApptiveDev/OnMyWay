@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const iconFind = "https://www.figma.com/api/mcp/asset/5360215b-dbc1-41f2-b010-bd2c8428cdd5";
+import iconFind from "@/assets/icon-find.svg";
 
 export default function FindRouteButton() {
   const navigate = useNavigate();

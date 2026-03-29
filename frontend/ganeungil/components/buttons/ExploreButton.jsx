@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-const iconExplore = "https://www.figma.com/api/mcp/asset/5269354d-25c3-42ac-abe8-83089109b4b0";
+import iconExplore from "@/assets/icon-explore.svg";
 
 export default function ExploreButton() {
   const navigate = useNavigate();

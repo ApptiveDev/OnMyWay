@@ -1,18 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import FindRouteButton, { HeaderFindRouteButton } from "../button/FindRouteButton";
-import ExploreButton, { HeaderExploreButton } from "../button/ExploreButton";
+import FindRouteButton from "../../components/buttons/FindRouteButton";
+import ExploreButton from "../../components/buttons/ExploreButton";
 
-// Figma assets (유효기간 7일)
-const imgHero = "https://www.figma.com/api/mcp/asset/af01c495-7328-404c-9bdf-3da68515235d";
-const imgStory1 = "https://www.figma.com/api/mcp/asset/726ecc9c-4bd8-434a-abc4-7b1f3597f0c7";
-const imgStory2 = "https://www.figma.com/api/mcp/asset/de46aa8b-26ba-4ab2-9422-6378e043abf8";
-const iconRoute = "https://www.figma.com/api/mcp/asset/ff30a068-3884-463c-aced-e15ed060d9eb";
-const iconLeisure = "https://www.figma.com/api/mcp/asset/f50e5b80-f479-45e7-8cc5-8efbe5ca2ad6";
-const iconDiscover = "https://www.figma.com/api/mcp/asset/5269354d-25c3-42ac-abe8-83089109b4b0";
-const iconFind = "https://www.figma.com/api/mcp/asset/5360215b-dbc1-41f2-b010-bd2c8428cdd5";
-const iconExplore = "https://www.figma.com/api/mcp/asset/e4b42c32-b847-4302-b1dd-8df1f5fd5577";
-const iconLogin = "https://www.figma.com/api/mcp/asset/2baf1869-625a-4b24-922e-bf16ec63c3c5";
-const iconMenu = "https://www.figma.com/api/mcp/asset/57afa410-cdf2-4912-95fe-c33130828e9b";
+// 에셋
+import imgHero     from "@/assets/img-hero.jpg";
+import imgStory1   from "@/assets/img-story1.jpg";
+import imgStory2   from "@/assets/img-story2.jpg";
+import iconRoute   from "@/assets/icon-route.svg";
+import iconLeisure from "@/assets/icon-leisure.svg";
+import iconDiscover from "@/assets/icon-discover.svg";
 
 export default function OnboardNew() {
   const navigate = useNavigate();
@@ -22,33 +18,6 @@ export default function OnboardNew() {
       className="min-h-screen bg-[#faf6f0] text-[#2c2417]"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
-      {/* ── 네비게이션 바 ── */}
-      <header className="sticky top-0 z-50 bg-[rgba(250,246,240,0.8)] backdrop-blur-sm border-b border-[rgba(44,36,23,0.06)]">
-        <div className="max-w-[1101px] mx-auto px-10 h-14 flex items-center justify-between">
-          <a href="#" className="text-[#c8873a] font-semibold text-[19.2px] tracking-[1.92px]">
-            가는길
-          </a>
-
-          <nav className="flex items-center gap-5">
-            <HeaderFindRouteButton />
-            <HeaderExploreButton />
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[#8b7e6a] text-[13.6px] hover:text-[#2c2417] transition-colors"
-            >
-              <img src={iconLogin} alt="" className="w-[15px] h-[15px]" />
-              로그인
-            </button>
-            <button className="w-10 h-10 rounded-full bg-[rgba(240,232,218,0.5)] flex items-center justify-center hover:bg-[rgba(240,232,218,0.8)] transition-colors">
-              <img src={iconMenu} alt="메뉴" className="w-[18px] h-[18px]" />
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* ── 히어로 섹션 ── */}
       <section className="relative h-[656px] overflow-hidden">
         <img
