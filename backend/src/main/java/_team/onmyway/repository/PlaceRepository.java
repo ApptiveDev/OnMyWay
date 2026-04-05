@@ -10,7 +10,7 @@ import java.util.List;
 public interface PlaceRepository extends JpaRepository<Place, Long> {
 
     @Query(value = """
-        SELECT * FROM places p
+        SELECT * FROM place p
         WHERE p.lat BETWEEN :latMin AND :latMax
         AND p.lng BETWEEN :lngMin AND :lngMax
         AND p.service_category_id = :#{#category.id}

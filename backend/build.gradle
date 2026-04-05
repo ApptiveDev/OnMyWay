@@ -55,6 +55,9 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
+	// OpenCSV
+	implementation 'com.opencsv:opencsv:5.7.1'
+
 	// Servlet API
 	//compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
