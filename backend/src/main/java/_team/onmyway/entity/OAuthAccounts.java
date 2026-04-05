@@ -31,4 +31,8 @@ public class OAuthAccounts {
     public enum Provider {
         KAKAO
     }
+
+    public Users getUser() {
+        return user;
+    }
 }
