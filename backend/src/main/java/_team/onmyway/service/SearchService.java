@@ -2,13 +2,14 @@ package _team.onmyway.service;
 
 import _team.onmyway.dto.PointDTO;
 import _team.onmyway.exception.NoPlacesException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +62,9 @@ public class SearchService {
                 else allPlaces.addAll(nearbyPlaces.subList(0, 2));
 
                 return allPlaces;
-            } catch (NoPlacesException e) {
-                throw e;
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
             }
         });
         return document;
