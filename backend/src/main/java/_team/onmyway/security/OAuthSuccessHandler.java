@@ -47,5 +47,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         response.addHeader("Set-Cookie", cookie.toString());
 
         response.sendRedirect("http://localhost:8080/swagger-ui/index.html");
+        // 맞춰야 할 부분 1(로그인 후 리다이렉트는 어디로)
     }
 }

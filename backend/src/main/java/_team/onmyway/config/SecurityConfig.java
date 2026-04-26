@@ -37,9 +37,9 @@ public class SecurityConfig {
                                         "/api/auth/**",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
-                                        "/places/**"
+                                        "/places/**",
+                                        "/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
-
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())

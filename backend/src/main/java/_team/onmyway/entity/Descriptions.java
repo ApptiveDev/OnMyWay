@@ -12,5 +12,5 @@ public class Descriptions {
     @JoinColumn(name="place_id", nullable = false)
     private Place place;
 
-    private String description;
+    private String description; // 한 줄 소개
 }

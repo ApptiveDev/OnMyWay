@@ -25,4 +25,6 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
             ServiceCategory category,
             int limit
     );
+
+    public List<Place> findByAddressAndName(String address, String name);
 }
