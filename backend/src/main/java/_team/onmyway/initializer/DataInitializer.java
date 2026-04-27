@@ -45,7 +45,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        // if (placeRepository.count() > 0) return; 운영 시에만 켜두기
+        if (placeRepository.count() > 0) return; // 운영 시에만 켜두기
         processOneRest();
         processOneCup();
         processOneGame();
