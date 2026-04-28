@@ -1,6 +1,7 @@
 package _team.onmyway.service;
 
 import _team.onmyway.dto.PositionDTO;
+import _team.onmyway.dto.RouteResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +31,11 @@ public class RouteService {
     @Value("${tmap.api.key}")
     private String tmapAPIKey;
 
-    public Mono<JsonNode> rightRoute(List<PositionDTO> positions) {
+    public Mono<RouteResponseDTO> rightRoute(List<PositionDTO> positions) {
         return resultRoute(positions);
     }
 
-    public Mono<JsonNode> slowRoute(List<PositionDTO> positions) {
+    public Mono<RouteResponseDTO> slowRoute(List<PositionDTO> positions) {
         PositionDTO start = positions.get(0);
         System.out.println(start.getLon()+" "+start.getLat());
         PositionDTO end = positions.get(positions.size()-1);
@@ -44,7 +45,7 @@ public class RouteService {
         return resultRoute(List.of(start, end, route));
     }
 
-    private Mono<JsonNode> resultRoute(List<PositionDTO> positions) {
+    private Mono<RouteResponseDTO> resultRoute(List<PositionDTO> positions) {
         PositionDTO stopOver = null;
         if (positions.size()>2) {
             stopOver = positions.get(positions.size()-1);
@@ -92,7 +93,7 @@ public class RouteService {
                 .bodyToMono(String.class)
                 .map(rawString -> {
                     try {
-                        return objectMapper.readTree(rawString);
+                        return objectMapper.readValue(rawString, RouteResponseDTO.class);
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }

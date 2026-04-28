@@ -40,5 +40,19 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
             int limit
     );
 
+    @Query(value = """
+        SELECT * FROM place p
+        WHERE p.service_category_id IN :categoryIds
+          AND p.lat BETWEEN :minLat AND :maxLat
+          AND p.lng BETWEEN :minLng AND :maxLng
+        """, nativeQuery = true)
+    List<Place> findByBoundingBox(
+            List<Long> categoryIds,
+            double minLat,
+            double maxLat,
+            double minLng,
+            double maxLng
+    );
+
     public List<Place> findByAddressAndName(String address, String name);
 }
