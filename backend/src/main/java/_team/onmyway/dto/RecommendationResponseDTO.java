@@ -4,6 +4,7 @@ import _team.onmyway.entity.Place;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -13,10 +14,10 @@ public class RecommendationResponseDTO {
 
     private List<PlaceInfo> places;
 
-    public static RecommendationResponseDTO from(List<Place> places, double userLat, double userLng) {
+    public static RecommendationResponseDTO from(List<PlaceRecommendationDTO> recommendations, Double userlat, Double userlon) {
         return new RecommendationResponseDTO(
-                places.stream()
-                        .map(p -> PlaceInfo.from(p, userLat, userLng))
+                recommendations.stream()
+                        .map(p -> PlaceInfo.from(p, userlat, userlon))
                         .collect(Collectors.toList())
         );
     }
@@ -29,8 +30,11 @@ public class RecommendationResponseDTO {
         private double lng;
         private String category;
         private int walkingMinutes;
+        private LocalTime open;
+        private LocalTime close;
+        private boolean isOpen;
 
-        public static PlaceInfo from(Place p, double userLat, double userLng) {
+        public static PlaceInfo from(PlaceRecommendationDTO p, double userLat, double userLng) {
 
             double distance = calculateDistance(userLat, userLng, p.getLat(), p.getLng());
             int minutes = (int) (distance / 80); // 80m = 1분
@@ -39,8 +43,11 @@ public class RecommendationResponseDTO {
                     p.getName(),
                     p.getLat(),
                     p.getLng(),
-                    p.getServiceCategory().getName(),
-                    minutes
+                    p.getCategory(),
+                    minutes,
+                    p.getOpenTime(),
+                    p.getCloseTime(),
+                    p.isOpen()
             );
         }
 
