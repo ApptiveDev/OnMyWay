@@ -15,12 +15,13 @@ import iconHeart  from "@/assets/icon-heart.svg";
 import imgPlace   from "@/assets/img-place.jpg";
 
 const CATEGORIES = [
-  { label: "전체", icon: iconAll },
+  { label: "전체",  icon: iconAll   },
   { label: "한 잔", icon: iconDrink },
-  { label: "한 입", icon: iconFood },
-  { label: "한 숨", icon: iconRest },
-  { label: "한 손", icon: iconShop },
-  { label: "한 눈", icon: iconView },
+  { label: "한 입", icon: iconFood  },
+  { label: "한 숨", icon: iconRest  },
+  { label: "한 판", icon: iconShop  },
+  { label: "한 눈", icon: iconView  },
+  { label: "한 끼", icon: iconFood  },
 ];
 
 function HoursLabel({ place }) {
