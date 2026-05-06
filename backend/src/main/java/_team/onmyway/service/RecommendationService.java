@@ -3,14 +3,19 @@ package _team.onmyway.service;
 import _team.onmyway.dto.*;
 import _team.onmyway.entity.Place;
 import _team.onmyway.entity.ServiceCategory;
+import _team.onmyway.entity.WorkingTime;
 import _team.onmyway.repository.PlaceRepository;
 import _team.onmyway.repository.ServiceCategoryRepository;
+import _team.onmyway.repository.WorkingTimeRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -23,6 +28,7 @@ public class RecommendationService {
     private final PlaceRepository placeRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final GeoDistanceService geoDistanceService;
+    private final WorkingTimeRepository workingTimeRepository;
 
     private static final double RADIUS_METERS = 250.0;
     private static final int DEFAULT_LIMIT_PER_CATEGORY = 7;
@@ -77,9 +83,14 @@ public class RecommendationService {
                     List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
 
                     Collections.shuffle(categoryPlaces);
+                    int day = LocalDate.now().getDayOfWeek().getValue();
                     List<PlaceRecommendationDTO> placeInfos = categoryPlaces.stream()
                             .limit(DEFAULT_LIMIT_PER_CATEGORY)
-                            .map(p -> toPlaceRecommendationDTO(p, userLat, userLng))
+                            .map(p -> {
+                                List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(p);
+                                WorkingTime workingTime = placeWorkingTime.get(day);
+                                return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
+                            })
                             .toList();
 
                     PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
@@ -188,8 +199,14 @@ public class RecommendationService {
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
+
+        int day = LocalDate.now().getDayOfWeek().getValue();
         List<PlaceRecommendationDTO> placeInfos = places.stream()
-                .map(place -> toPlaceRecommendationDTO(place, lat, lng))
+                .map(place -> {
+                    List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(place);
+                    WorkingTime workingTime = placeWorkingTime.get(day);
+                    return toPlaceRecommendationDTO(place, lat, lng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
+                })
                 .toList();
         PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
         return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
@@ -223,7 +240,7 @@ public class RecommendationService {
         );
     }
 
-    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng) {
+    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng, boolean isClosed, LocalTime open, LocalTime close) {
         double distance = geoDistanceService.distanceMeters(userLat, userLng, place.getLat(), place.getLng());
         int walkingMinutes = geoDistanceService.estimateWalkingMinutes(distance);
         return new PlaceRecommendationDTO(
@@ -231,7 +248,36 @@ public class RecommendationService {
                 place.getLat(),
                 place.getLng(),
                 place.getServiceCategory().getName(),
-                walkingMinutes
+                walkingMinutes,
+                open,
+                close,
+                isOpen(isClosed, open, close)
         );
+    }
+
+    private boolean isOpen(boolean isClosed, LocalTime open, LocalTime close) {
+        LocalTime now = LocalTime.now();
+        if (isClosed) {
+            return false;
+        } else if (open == null || close == null) {
+            return true;
+        } else if (open.equals(close)) {
+            return true;
+        } else if (open.isBefore(close)) {
+            if (now.isAfter(open) && now.isBefore(close)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            LocalDate openDay = LocalDate.now();
+            LocalDate closeDay = LocalDate.now().plusDays(1);
+            LocalDate nowDay = LocalDate.now();
+            if (open.isAfter(now) && nowDay.equals(closeDay) || now.isAfter(open) && nowDay.equals(openDay)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 }

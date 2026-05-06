@@ -23,12 +23,12 @@ const CATEGORY_LABEL_TO_ID = {
 };
 
 const CAT_ICON = {
-  "한 잔": iconDrink,
-  "한 입": iconFood,
-  "한 숨": iconRest,
-  "한 판": iconShop,
-  "한 눈": iconView,
-  "한 끼": iconFood,
+  "한잔": iconDrink,
+  "한입": iconFood,
+  "한숨": iconRest,
+  "한판": iconShop,
+  "한눈": iconView,
+  "한끼": iconFood,
 };
 
 // 위치 미허용 시 기본 중심점: 부산대학교 정문
@@ -48,9 +48,9 @@ function toPlaceList(raw, startId = 0) {
     walkMin: p.walkingMinutes,
     lat: p.lat,
     lng: p.lng,
-    isOpen: true,
-    closeTime: null,
-    openTime: null,
+    isOpen: p.isOpen ?? p.open ?? true,
+    closeTime: p.closeTime ?? null,
+    openTime: p.openTime ?? null,
     desc: "",
     tags: [],
   }));
@@ -66,23 +66,28 @@ function mapToRecs(categories, categoryLabel) {
   return toPlaceList(raw);
 }
 
-// 지도 마커용: featured만
+// 지도 마커용: featured (없으면 places[0] 폴백)
 function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const raw =
     categoryLabel === "전체"
-      ? categories.flatMap((c) => c.featured ?? [])
-      : (categories.find((c) => c.categoryId === targetId)?.featured ?? []);
+      ? categories.flatMap((c) => c.featured ?? c.places?.[0] ?? [])
+      : (() => {
+          const c = categories.find((c) => c.categoryId === targetId);
+          return c?.featured ?? c?.places?.[0] ?? [];
+        })();
   return toPlaceList(raw);
 }
 
+const fmt = (t) => t?.slice(0, 5) ?? null;
+
 function HoursLabel({ place }) {
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[6.9px] font-light text-[#2b8237]">상시 개방</span>;
-    return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중 · {place.closeTime}에 종료</span>;
+    if (!place.closeTime) return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중</span>;
+    return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
   if (!place.openTime) return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료 · {place.openTime}에 시작</span>;
+  return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
 }
 
 export default function Onboard20() {
@@ -97,6 +102,7 @@ export default function Onboard20() {
   const [recsState, setRecsState]     = useState("visible"); // visible | fading | hidden
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -132,7 +138,7 @@ export default function Onboard20() {
         setLocStatus("granted");
         loadRecommendations(coords.lat, coords.lng)
           .then((data) => {
-            setAllCategories(data.categories);
+setAllCategories(data.categories);
             setRecs(mapToRecs(data.categories, "전체"));
             setFeaturedRecs(mapToFeatured(data.categories, "전체"));
           })
@@ -168,6 +174,7 @@ export default function Onboard20() {
         window.kakao.maps.event.addListener(kakaoMapRef.current, "click", () => {
           setSidebarOpen(false);
         });
+        setMapReady(true);
         console.log("카카오맵 초기화 성공");
       } catch (e) {
         console.error("카카오맵 초기화 실패:", e);
@@ -209,7 +216,7 @@ export default function Onboard20() {
     // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
-      content:  `<div style="width:12px;height:12px;border-radius:50%;background:#c8873a;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+      content:  `<div style="width:15px;height:15px;border-radius:50%;background:#6A8042;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
       map,
       yAnchor:  0.5,
       xAnchor:  0.5,
@@ -227,8 +234,28 @@ export default function Onboard20() {
 
     if (recsState === "hidden" || locStatus !== "granted") return;
 
+    // 겹치는 마커 분리: 20m(~0.00018°) 이내 좌표는 나선형으로 오프셋
+    const SPREAD = 0.00018;
+    const spiralOffsets = [
+      [0, 0], [SPREAD, 0], [-SPREAD, 0],
+      [0, SPREAD], [0, -SPREAD], [SPREAD, SPREAD], [-SPREAD, -SPREAD],
+    ];
+    const placed = [];
+
     featuredRecs.forEach(place => {
-      const icon = CAT_ICON[place.category];
+      let lat = place.lat;
+      let lng = place.lng;
+      let offsetIdx = 0;
+      while (
+        placed.some(p => Math.abs(p.lat - lat) < SPREAD * 0.9 && Math.abs(p.lng - lng) < SPREAD * 0.9) &&
+        offsetIdx < spiralOffsets.length - 1
+      ) {
+        offsetIdx++;
+        lat = place.lat + spiralOffsets[offsetIdx][0];
+        lng = place.lng + spiralOffsets[offsetIdx][1];
+      }
+      placed.push({ lat, lng });
+
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
@@ -236,24 +263,21 @@ export default function Onboard20() {
             width:28px;height:28px;border-radius:50%;
             background:#c8873a;border:2px solid white;
             box-shadow:0 2px 8px rgba(0,0,0,0.25);
-            display:flex;align-items:center;justify-content:center;
             cursor:pointer;transition:transform 0.15s;
           "
           onmouseover="this.style.transform='scale(1.2)'"
           onmouseout="this.style.transform='scale(1)'"
-        >
-          <img src="${icon}" style="width:13px;height:13px;pointer-events:none;" />
-        </div>
+        ></div>
       `;
       const overlay = new window.kakao.maps.CustomOverlay({
-        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        position: new window.kakao.maps.LatLng(lat, lng),
         content,
         map,
         yAnchor: 1,
       });
       overlaysRef.current.push(overlay);
     });
-  }, [featuredRecs, recsState, locStatus]);
+  }, [featuredRecs, recsState, locStatus, mapReady]);
 
   // ── 핸들러 ──
   const handleCategoryChange = (label) => {
@@ -261,7 +285,6 @@ export default function Onboard20() {
     setActiveCategory(label);
     setSelectedPlace(null);
     setRecs(mapToRecs(allCategories, label));
-    setFeaturedRecs(mapToFeatured(allCategories, label));
   };
 
   const handleRecsHide = () => {
@@ -327,7 +350,7 @@ export default function Onboard20() {
           .then((data) => {
             setAllCategories(data.categories);
             setRecs(mapToRecs(data.categories, activeCategory));
-            setFeaturedRecs(mapToFeatured(data.categories, activeCategory));
+            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
           })
           .catch(console.error);
       },

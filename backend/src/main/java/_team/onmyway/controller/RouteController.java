@@ -25,12 +25,12 @@ public class RouteController {
     private final RecommendationService recommendationService;
     private final ObjectMapper objectMapper;
 
-    @PostMapping("/slow")
-    public ResponseEntity<?> getSlowRoutes(@RequestBody List<PositionDTO> positions) {
+    @PostMapping("/findOut")
+    public ResponseEntity<?> getFindOutRoute(@RequestBody List<PositionDTO> positions) {
         if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         PositionDTO start = positions.get(0);
 
-        RouteResponseDTO routing = routeService.slowRoute(positions).block();
+        RouteResponseDTO routing = routeService.findOutRoute(positions).block();
         AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
 
         ObjectNode response = objectMapper.createObjectNode();
@@ -46,6 +46,21 @@ public class RouteController {
         PositionDTO start = positions.get(0);
 
         RouteResponseDTO routing = routeService.rightRoute(positions).block();
+        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
+
+        ObjectNode response = objectMapper.createObjectNode();
+        response.set("route", objectMapper.valueToTree(routing));
+        response.set("recommendations", objectMapper.valueToTree(recommendations));
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/slow")
+    public ResponseEntity<?> getRoute(@RequestBody List<PositionDTO> positions) {
+        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        PositionDTO start = positions.get(0);
+
+        RouteResponseDTO routing = routeService.slowRoute(positions).block();
         AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
 
         ObjectNode response = objectMapper.createObjectNode();
