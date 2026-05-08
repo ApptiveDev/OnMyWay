@@ -1,53 +1,82 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import iconLogin from "@/assets/icon-login-new.svg";
-import iconMenu  from "@/assets/icon-menu-new.svg";
+import iconSearch from "@/assets/Button_dialog.svg";
+import iconMenu   from "@/assets/header_search.svg";
+
+// Figma 로고 아이콘 (7일 후 만료 → 로컬 파일로 교체 필요)
+import LOGO_ICON from "@/assets/Frame 16.svg";
+
+const NAV_ITEMS = [
+  { label: "길찾기",  path: "/find-route" },
+  { label: "탐색하기", path: "/discover"   },
+  { label: "둘러보기", path: "/explore"    },
+];
 
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const navItem = (label, path) => {
-    const active = pathname === path;
-    return (
-      <button
-        onClick={() => navigate(path)}
-        className={`px-4 py-2 rounded-full text-sm transition-colors ${
-          active
-            ? "bg-[rgba(200,135,58,0.1)] text-[#c8873a] font-medium"
-            : "text-[#8b7e6a] hover:text-[#2c2417]"
-        }`}
-      >
-        {label}
-      </button>
-    );
-  };
-
   return (
-    <header className="sticky top-0 z-50 bg-[rgba(250,246,240,0.8)] backdrop-blur-sm border-b border-[rgba(44,36,23,0.06)]">
-      <div className="max-w-[1101px] mx-auto px-10 h-14 flex items-center justify-between">
-        <button
-          onClick={() => navigate("/")}
-          className="text-[#c8873a] font-semibold text-[19.2px] tracking-[1.92px]"
-          style={{ fontFamily: "'Noto Serif KR', serif" }}
-        >
-          가는길
-        </button>
-
-        <nav className="flex items-center gap-1">
-          {navItem("길찾기", "/find-route")}
-          {navItem("둘러보기", "/explore")}
-        </nav>
-
-        <div className="flex items-center gap-2">
+    <header className="sticky top-0 z-50 bg-[#FFFBEC]">
+      {/* 상단 바: 로그인 | 회원가입 */}
+      <div className="flex justify-end mr-[200px] pt-[10px] pb-0 ">
+        <div className="flex items-center gap-[8px]">
           <button
             onClick={() => navigate("/login")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[#8b7e6a] text-[13.6px] hover:text-[#2c2417] transition-colors"
+            className="text-[#858585] text-[10px] font-medium tracking-[-0.28px] hover:text-[#3e2722] transition-colors"
+            style={{ fontFamily: "'Pretendard', sans-serif" }}
           >
-            <img src={iconLogin} alt="" className="w-[15px] h-[15px]" />
             로그인
           </button>
-          <button className="w-10 h-10 rounded-full bg-[rgba(240,232,218,0.5)] flex items-center justify-center hover:bg-[rgba(240,232,218,0.8)] transition-colors">
-            <img src={iconMenu} alt="메뉴" className="w-[18px] h-[18px]" />
+          <div className="w-px h-[10px] bg-[#858585]" />
+          <button
+            onClick={() => navigate("/signup")}
+            className="text-[#858585] text-[10px] font-medium tracking-[-0.28px] hover:text-[#3e2722] transition-colors"
+            style={{ fontFamily: "'Pretendard', sans-serif" }}
+          >
+            회원가입
+          </button>
+        </div>
+      </div>
+
+      {/* 메인 헤더 행 */}
+      <div className="max-w-[1101px] mx-auto px-14 h-[45px] flex items-center gap-[150px] border-b border-[rgba(44,36,23,0.06)]">
+        {/* 로고 */}
+        <button
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2 shrink-0"
+>
+          <img src={LOGO_ICON} className="h-[24px] w-auto ml-[200px]" />
+        
+        </button>
+
+        {/* 내비게이션 */}
+        <nav className="flex items-center gap-[35px]">
+          {NAV_ITEMS.map(({ label, path }) => {
+            const active = pathname === path;
+            return (
+              <button
+                key={path}
+                onClick={() => navigate(path)}
+                className={`pb-[2px] text-[15px] tracking-[-0.4px] transition-colors border-b-[2px] ${
+                  active
+                    ? "border-[#3e2722] text-[#3e2722] font-semibold"
+                    : "border-transparent text-[#3e2722] font-medium hover:border-[#3e2722]/40"
+                }`}
+                style={{ fontFamily: "'Pretendard', sans-serif" }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* 우측 아이콘 */}
+        <div className="flex items-center gap-[16px] shrink-0">
+          <button className="w-[15px] h-[15px] flex items-center justify-center hover:opacity-70 transition-opacity">
+            <img src={iconMenu} alt="메뉴" className="w-[15px] h-[15px]" />
+          </button>
+          <button className="w-[15px] h-[15px] flex items-center justify-center hover:opacity-70 transition-opacity">
+            <img src={iconSearch} alt="검색" className="w-[15px] h-[15px]" />
           </button>
         </div>
       </div>

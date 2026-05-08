@@ -11,17 +11,23 @@ import iconFood   from "@/assets/icon-food.svg";
 import iconRest   from "@/assets/icon-rest.svg";
 import iconShop   from "@/assets/icon-shop.svg";
 import iconView   from "@/assets/icon-view.svg";
+import iconAllActive   from "@/assets/icon-all-active.svg";
+import iconDrinkActive from "@/assets/icon-drink-active.svg";
+import iconFoodActive  from "@/assets/icon-food-active.svg";
+import iconRestActive  from "@/assets/icon-rest-active.svg";
+import iconShopActive  from "@/assets/icon-shop-active.svg";
+import iconViewActive  from "@/assets/icon-view-active.svg";
 import iconHeart  from "@/assets/icon-heart.svg";
 import imgPlace   from "@/assets/img-place.jpg";
 
 const CATEGORIES = [
-  { label: "전체",  icon: iconAll   },
-  { label: "한 잔", icon: iconDrink },
-  { label: "한 입", icon: iconFood  },
-  { label: "한 숨", icon: iconRest  },
-  { label: "한 판", icon: iconShop  },
-  { label: "한 눈", icon: iconView  },
-  { label: "한 끼", icon: iconFood  },
+  { label: "전체",  icon: iconAll,   iconActive: iconAllActive   },
+  { label: "한 잔", icon: iconDrink, iconActive: iconDrinkActive },
+  { label: "한 입", icon: iconFood,  iconActive: iconFoodActive  },
+  { label: "한 숨", icon: iconRest,  iconActive: iconRestActive  },
+  { label: "한 판", icon: iconShop,  iconActive: iconShopActive  },
+  { label: "한 눈", icon: iconView,  iconActive: iconViewActive  },
+  { label: "한 끼", icon: iconFood,  iconActive: iconFoodActive  },
 ];
 
 const fmt = (t) => t?.slice(0, 5) ?? null;
@@ -149,7 +155,7 @@ export default function Sidebar20({
 
       {/* ── 사이드바 ── */}
       <aside
-        className="absolute top-[10px] left-4 w-[360px] h-[calc(100vh-35px)] bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] overflow-visible flex flex-col z-10 transition-transform duration-300 ease-in-out"
+        className="absolute top-[10px] left-4 w-[360px] h-[calc(100vh-90px)] bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] overflow-visible flex flex-col z-10 transition-transform duration-300 ease-in-out"
         style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))" }}
       >
         {/* 열기/닫기 탭 */}
@@ -168,7 +174,7 @@ export default function Sidebar20({
           {/* ── 출발지 ── */}
           <div className="px-4 pt-4 pb-0 shrink-0">
             <form onSubmit={handleDeptSubmit}>
-              <div className={`flex items-center gap-3 px-3 py-3 rounded-[14px] transition-colors ${
+              <div className={`flex items-center gap-1 px-2 py-2 rounded-[14px] transition-colors ${
                 deptFocused
                   ? "bg-white border border-[rgba(200,135,58,0.4)] shadow-sm"
                   : "bg-[rgba(245,240,232,0.6)]"
@@ -179,12 +185,12 @@ export default function Sidebar20({
                   className={`w-[15px] h-[15px] shrink-0 transition-opacity ${!granted ? "opacity-30" : ""}`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-light text-[#8b7e6a] leading-tight mb-0.5">출발지</p>
+                  <p className="text-[12px] font-light text-[#8b7e6a] leading-tight mb-0.5">출발지</p>
                   {granted && !deptFocused ? (
                     // 위치 허용 상태 + 포커스 아닐 때: "현재 위치" 텍스트 버튼
                     <button
                       type="button"
-                      className="text-[18px] font-medium text-[#c8873a] leading-tight text-left w-full"
+                      className="text-[12px] font-medium text-[#c8873a] leading-tight text-left w-full"
                       onClick={handleDeptFocus}
                     >
                       현재 위치
@@ -197,7 +203,7 @@ export default function Sidebar20({
                       onChange={e => setDeptText(e.target.value)}
                       onFocus={handleDeptFocus}
                       placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
-                      className={`w-full text-[18px] font-light bg-transparent outline-none leading-tight placeholder:text-[rgba(44,36,23,0.3)] ${
+                      className={`w-full text-[15px] font-light bg-transparent outline-none leading-tight placeholder:text-[rgba(44,36,23,0.3)] ${
                         granted && !deptText ? "text-[#c8873a]" : "text-[#2c2417]"
                       }`}
                       autoFocus={deptFocused}
@@ -208,7 +214,7 @@ export default function Sidebar20({
                   <button
                     type="button"
                     onClick={() => setDeptText("")}
-                    className="shrink-0 text-[#8b7e6a] text-[18px] hover:text-[#2c2417]"
+                    className="shrink-0 text-[#8b7e6a] text-[9px] hover:text-[#2c2417]"
                   >
                     ✕
                   </button>
@@ -219,7 +225,7 @@ export default function Sidebar20({
               </div>
             </form>
 
-            <div className="flex items-center gap-3 px-3 my-3">
+            <div className="flex items-center gap-2 px-2 my-1">
               <div className="flex-1 h-px bg-[#f3f4f6]" />
               <div className="w-1.5 h-1.5 rounded-full bg-[rgba(200,135,58,0.3)]" />
               <div className="flex-1 h-px bg-[#f3f4f6]" />
@@ -246,7 +252,7 @@ export default function Sidebar20({
                     onChange={e => setDestText(e.target.value)}
                     onFocus={handleDestFocus}
                     placeholder="어디로 가시나요?"
-                    className="absolute bg-transparent outline-none text-[17px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] w-[calc(100%-40px)]"
+                    className="absolute bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] w-[calc(100%-40px)]"
                     style={{ left: 40, top: 14 }}
                   />
                 </div>
@@ -267,7 +273,7 @@ export default function Sidebar20({
                     onChange={e => setDestText(e.target.value)}
                     onFocus={handleDestFocus}
                     placeholder="어디로 가시나요?"
-                    className="flex-1 bg-transparent outline-none text-[18px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] min-w-0"
+                    className="flex-1 bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] min-w-0"
                     autoFocus
                   />
                   {destText && (
@@ -354,20 +360,30 @@ export default function Sidebar20({
 
               {/* 카테고리 필터 */}
               <div className="px-[22px] pt-2 pb-2 flex items-center gap-[2px] shrink-0">
-                {CATEGORIES.map(({ label, icon }) => (
-                  <button
-                    key={label}
-                    onClick={() => onCategoryChange(label)}
-                    className={`flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
-                      activeCategory === label
-                        ? "bg-[#FDFDFD] text-[#3E2722]"
-                        : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover-text-[#FFFFFF]"
-                    }`}
-                  >
-                    <img src={icon} alt="" className="w-[7.8px] h-[7.8px]" />
-                    {label}
-                  </button>
-                ))}
+                {CATEGORIES.map(({ label, icon, iconActive }) => {
+                  const isActive = activeCategory === label;
+                  return (
+                    <button
+                      key={label}
+                      onClick={() => onCategoryChange(label)}
+                      className={`group flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
+                        isActive
+                          ? "bg-[#ED7A13] text-[#FDFDFD]"
+                          : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
+                      }`}
+                    >
+                      <img
+                        src={isActive ? iconActive : icon}
+                        alt=""
+                        className={`w-[7.8px] h-[7.8px] ${!isActive ? "group-hover:hidden" : ""}`}
+                      />
+                      {!isActive && (
+                        <img src={iconActive} alt="" className="w-[7.8px] h-[7.8px] hidden group-hover:block" />
+                      )}
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
 
               {/* 장소 목록 */}
@@ -388,22 +404,23 @@ export default function Sidebar20({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div className="min-w-0">
-                          <p className="text-[15px] font-medium text-[#2c2417] leading-tight truncate">
+                          <p className="text-[12px] font-medium text-[#2c2417] leading-tight truncate">
                             {place.name}
                           </p>
                           <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                            <span className="text-[11px] font-light text-[#8b7e6a]">{place.category}</span>
-                            <span className="text-[11px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
-                            <span className="text-[11px] font-light text-[#8b7e6a]">도보 {place.walkMin}분</span>
+                            <span className="text-[10px] font-light text-[#8b7e6a]">{place.category}</span>
+                            <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
+                            <span className="text-[10px] font-light text-[#8b7e6a]">도보 {place.walkMin}분</span>
                             <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
                             <HoursLabel place={place} />
                           </div>
                         </div>
                         <button
-                          className="shrink-0 ml-1 w-[17px] h-[17px] flex items-center justify-center"
+                          className="shrink-0 ml-1 w-[15px] h-[17px] flex items-center justify-center"
                           onClick={e => e.stopPropagation()}
                         >
                           <img src={iconHeart} alt="저장" className="w-[8.6px] h-[8.6px]" />
+                          
                         </button>
                       </div>
                       <p className="text-[9px] font-light text-[#8b7e6a] mt-1 leading-relaxed line-clamp-1">
