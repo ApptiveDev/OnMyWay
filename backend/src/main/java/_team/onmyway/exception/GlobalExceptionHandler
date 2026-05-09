@@ -1,4 +1,13 @@
-@ExceptionHandler(Exception.class)
-public ResponseEntity<String> handleException(Exception e) {
-    return ResponseEntity.status(500).body("NETWORK_ERROR");
+package _team.onmyway.exception;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleException(Exception e) {
+        return ResponseEntity.status(500).body("서버에 오류가 발생했습니다");
+    }
 }
