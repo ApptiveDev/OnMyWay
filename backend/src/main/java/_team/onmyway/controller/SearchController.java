@@ -1,4 +1,4 @@
-package _team.onmyway.controllers;
+package _team.onmyway.controller;
 
 import _team.onmyway.dto.PointDTO;
 import _team.onmyway.service.SearchService;
