@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build & xcopy /s /y dist ..\\..\\backend\\src\\main\\resources\\static",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
