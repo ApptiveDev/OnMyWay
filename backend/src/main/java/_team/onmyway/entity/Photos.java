@@ -17,4 +17,8 @@ public class Photos {
     private Place place;
 
     private String photoURL;
+
+    public String getPhotoURL() {
+        return photoURL;
+    }
 }

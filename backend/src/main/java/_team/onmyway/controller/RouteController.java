@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
+
 import java.util.List;
 
 @RestController
@@ -31,7 +33,7 @@ public class RouteController {
         PositionDTO start = positions.get(0);
 
         RouteResponseDTO routing = routeService.findOutRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
+        Mono<AllCategoryRecommendationsDTO> recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
 
         ObjectNode response = objectMapper.createObjectNode();
         response.set("route", objectMapper.valueToTree(routing));
@@ -46,7 +48,7 @@ public class RouteController {
         PositionDTO start = positions.get(0);
 
         RouteResponseDTO routing = routeService.rightRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
+        Mono<AllCategoryRecommendationsDTO> recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
 
         ObjectNode response = objectMapper.createObjectNode();
         response.set("route", objectMapper.valueToTree(routing));
@@ -61,7 +63,7 @@ public class RouteController {
         PositionDTO start = positions.get(0);
 
         RouteResponseDTO routing = routeService.slowRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
+        Mono<AllCategoryRecommendationsDTO> recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
 
         ObjectNode response = objectMapper.createObjectNode();
         response.set("route", objectMapper.valueToTree(routing));
