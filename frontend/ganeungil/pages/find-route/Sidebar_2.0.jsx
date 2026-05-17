@@ -1,18 +1,19 @@
 import { useState, useRef, useEffect } from "react";
 
-import iconGPS            from "@/assets/icon-gps.svg";
+import api from "../../api/api"
+import iconGPS             from "@/assets/icon-gps.svg";
 import iconCurrentLocation from "@/assets/icon-current-location.svg";
-import iconArrow     from "@/assets/icon-arrow.svg";
-import iconSearch    from "@/assets/icon-search.svg";
-import iconSearchNew from "@/assets/icon-search-new.svg";
-import iconAll    from "@/assets/icon-all.svg";
-import iconDrink  from "@/assets/icon-drink.svg";
-import iconFood   from "@/assets/icon-food.svg";
-import iconRest   from "@/assets/icon-rest.svg";
-import iconShop   from "@/assets/icon-shop.svg";
-import iconView   from "@/assets/icon-view.svg";
-import iconHeart  from "@/assets/icon-heart.svg";
-import imgPlace   from "@/assets/img-place.jpg";
+import iconArrow      from "@/assets/icon-arrow.svg";
+import iconSearch     from "@/assets/icon-search.svg";
+import iconSearchNew  from "@/assets/icon-search-new.svg";
+import iconAll     from "@/assets/icon-all.svg";
+import iconDrink   from "@/assets/icon-drink.svg";
+import iconFood    from "@/assets/icon-food.svg";
+import iconRest    from "@/assets/icon-rest.svg";
+import iconShop    from "@/assets/icon-shop.svg";
+import iconView    from "@/assets/icon-view.svg";
+import iconHeart   from "@/assets/icon-heart.svg";
+import imgPlace    from "@/assets/img-place.jpg";
 
 const CATEGORIES = [
   { label: "전체", icon: iconAll },
@@ -21,6 +22,13 @@ const CATEGORIES = [
   { label: "한 숨", icon: iconRest },
   { label: "한 손", icon: iconShop },
   { label: "한 눈", icon: iconView },
+];
+
+// ── [추가] 경로 로직 옵션 정의 ──
+const ROUTE_MODES = [
+  { id: "right",   label: "바른길",     endpoint: "/route/right" },
+  { id: "slow",    label: "느린길",     endpoint: "/route/slow" },
+  { id: "findOut", label: "발견하는길", endpoint: "/route/findOut" },
 ];
 
 function HoursLabel({ place }) {
@@ -65,6 +73,8 @@ export default function Sidebar20({
   onRecsShow,
   onDestinationSelect,
   onDestinationClear,
+  onDrawRoute, // 부모(Onboard20)로부터 받은 함수
+  userCoords,  // 부모로부터 받은 현재 위치 (출발지용)
 }) {
   const [destText, setDestText]         = useState("");
   const [destFocused, setDestFocused]   = useState(false);
@@ -73,6 +83,9 @@ export default function Sidebar20({
   const [searchResults, setSearchResults] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
   const [isSearching, setIsSearching]   = useState(false);
+
+  // ── [추가] 현재 선택된 경로 모드 상태 (기본값: 느린길) ──
+  const [selectedMode, setSelectedMode] = useState("slow");
 
   const destInputRef = useRef(null);
   const deptInputRef = useRef(null);
@@ -123,11 +136,48 @@ export default function Sidebar20({
     e?.preventDefault();
   };
 
-  // 검색 결과 선택 → 지도 이동
-  const handleResultClick = (result) => {
+  // ── [추가/수정] 경로 요청 공통 함수 ──
+  const fetchRouteData = async (modeId, result) => {
+    if (!userCoords || !result) return;
+    const mode = ROUTE_MODES.find(m => m.id === modeId);
+
+    try {
+      console.log(`🚀 ${mode.label} 요청 중...`, { from: userCoords, to: { lat: result.y, lon: result.x } });
+      const response = await api.post(mode.endpoint, [
+        { lat: userCoords.lat, lon: userCoords.lng },
+        { lat: parseFloat(result.y), lon: parseFloat(result.x) }
+      ]);
+
+      const features = response.data.route?.features;
+      if (features && Array.isArray(features)) {
+        onDrawRoute?.(features); 
+      }
+    } catch (error) {
+      console.error("❌ 경로 호출 에러:", error);
+    }
+  };
+
+  // ── [수정] 결과 클릭 시 호출 ──
+  const handleResultClick = async (result) => {
+    console.log("📍 1. 리스트 클릭됨:", result.place_name);
     setSelectedResult(result);
     setDestText(result.place_name);
     onDestinationSelect?.(result);
+
+    if (!userCoords) {
+      alert("현재 위치를 먼저 잡아주세요.");
+      return;
+    }
+    // 현재 설정된 모드로 경로 호출
+    fetchRouteData(selectedMode, result);
+  };
+
+  // ── [추가] 모드 변경 핸들러 ──
+  const handleModeChange = (modeId) => {
+    setSelectedMode(modeId);
+    if (selectedResult) {
+      fetchRouteData(modeId, selectedResult);
+    }
   };
 
   const isSearchMode = destFocused || deptFocused;
@@ -178,7 +228,6 @@ export default function Sidebar20({
                 <div className="flex-1 min-w-0">
                   <p className="text-[11.2px] font-light text-[#8b7e6a] leading-tight mb-0.5">출발지</p>
                   {granted && !deptFocused ? (
-                    // 위치 허용 상태 + 포커스 아닐 때: "현재 위치" 텍스트 버튼
                     <button
                       type="button"
                       className="text-[14px] font-medium text-[#c8873a] leading-tight text-left w-full"
@@ -299,6 +348,25 @@ export default function Sidebar20({
               </button>
             )}
           </div>
+
+          {/* ── [추가] 경로 로직 선택 탭 (목적지가 있을 때만 노출) ── */}
+          {selectedResult && (
+            <div className="px-4 py-2 flex gap-1.5 bg-[#fcfaf7] border-b border-[#f3f4f6] shrink-0">
+              {ROUTE_MODES.map((mode) => (
+                <button
+                  key={mode.id}
+                  onClick={() => handleModeChange(mode.id)}
+                  className={`flex-1 py-2 text-[10.5px] font-medium rounded-xl transition-all ${
+                    selectedMode === mode.id
+                      ? "bg-[#c8873a] text-white shadow-sm"
+                      : "bg-white text-[#8b7e6a] border border-[#eee] hover:bg-[#faf6f0]"
+                  }`}
+                >
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* ── 카카오 장소 검색 결과 ── */}
           {showResults && (
