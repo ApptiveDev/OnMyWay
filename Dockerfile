@@ -32,5 +32,5 @@ RUN ls -R /app
 # 빌드된 jar 파일만 가져오기
 COPY --from=backend-builder /build-be/backend/build/libs/*.jar app.jar
 
-EXPOSE 8080
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
