@@ -88,7 +88,7 @@ public class RecommendationService {
                             .limit(DEFAULT_LIMIT_PER_CATEGORY)
                             .map(p -> {
                                 List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(p);
-                                WorkingTime workingTime = placeWorkingTime.get(day);
+                                WorkingTime workingTime = placeWorkingTime.get(day%7);
                                 return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
                             })
                             .toList();
@@ -204,7 +204,7 @@ public class RecommendationService {
         List<PlaceRecommendationDTO> placeInfos = places.stream()
                 .map(place -> {
                     List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(place);
-                    WorkingTime workingTime = placeWorkingTime.get(day);
+                    WorkingTime workingTime = placeWorkingTime.get(day%7);
                     return toPlaceRecommendationDTO(place, lat, lng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
                 })
                 .toList();
