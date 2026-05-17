@@ -40,21 +40,21 @@ jobs:
         key: ${{ secrets.SERVER_KEY }}
         script: |
           # 1. Docker Hub 로그인
-          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | sudo docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           
           # 2. 최신 이미지 Pull
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/onmyway:test
+          sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/onmyway:test
           
           # 3. 기존에 실행 중인 동일한 이름의 컨테이너 중지 및 삭제
-          docker stop test-onmyway || true
-          docker rm test-onmyway || true
+          sudo docker stop test-onmyway || true
+          sudo docker rm test-onmyway || true
           
           # 5. ⭐ --env-file 옵션을 사용하여 컨테이너 실행
-          docker run -d \
+          sudo docker run -d \
             --name test-onmyway \
             -p 8081:8081 \
             --env-file .env.dev \
             ${{ secrets.DOCKERHUB_USERNAME }}/onmyway:test
           
           # 6. 사용하지 않는 구버전 이미지 청소
-          docker image prune -f
+          sudo docker image prune -f
