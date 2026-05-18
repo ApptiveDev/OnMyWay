@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../../api/api";
 import Sidebar20 from "./Sidebar_2.0";
-import Loading20 from "./Loading_2.0";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
 import imgPlace  from "@/assets/img-place.jpg";
@@ -13,83 +13,96 @@ import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
 import iconDestPin from "@/assets/icon-destination-pin.svg";
 
+const CATEGORY_LABEL_TO_ID = {
+  "한 잔": 1,
+  "한 입": 2,
+  "한 숨": 3,
+  "한 판": 4,
+  "한 눈": 5,
+  "한 끼": 6,
+};
+
 const CAT_ICON = {
-  "한 잔": iconDrink,
-  "한 입": iconFood,
-  "한 숨": iconRest,
-  "한 손": iconShop,
-  "한 눈": iconView,
+  "한잔": iconDrink,
+  "한입": iconFood,
+  "한숨": iconRest,
+  "한판": iconShop,
+  "한눈": iconView,
+  "한끼": iconFood,
 };
 
 // 위치 미허용 시 기본 중심점: 부산대학교 정문
 const PUSAN_UNIV = { lat: 35.2316, lng: 129.0839 };
 
-// ── 목 데이터 풀 (절대 건드리지 않음) ──
-const POOL = [
-  { id: 1,  name: "온기 카페",     category: "한 잔", walkMin: 2,  isOpen: true,  closeTime: "22:00", openTime: "09:00", desc: "골목 안 작은 로스터리. 매일 아침 직접 볶은 원두.",  tags: ["#로스팅", "#조용한"] },
-  { id: 2,  name: "달달 커피",     category: "한 잔", walkMin: 5,  isOpen: true,  closeTime: "21:00", openTime: "10:00", desc: "달콤한 디저트와 함께하는 감성 카페.",              tags: ["#디저트", "#달콤"] },
-  { id: 3,  name: "새벽 커피",     category: "한 잔", walkMin: 7,  isOpen: false, closeTime: "18:00", openTime: "07:00", desc: "새벽부터 여는 핸드드립 전문 카페.",               tags: ["#핸드드립", "#새벽"] },
-  { id: 4,  name: "파도 카페",     category: "한 잔", walkMin: 3,  isOpen: true,  closeTime: "20:00", openTime: "11:00", desc: "감성적인 분위기의 골목 카페.",                     tags: ["#감성", "#골목"] },
-  { id: 5,  name: "숲속 티하우스", category: "한 잔", walkMin: 10, isOpen: true,  closeTime: "19:00", openTime: "10:00", desc: "다양한 차를 즐길 수 있는 조용한 공간.",            tags: ["#티하우스", "#여유"] },
-  { id: 6,  name: "한입 식당",     category: "한 입", walkMin: 4,  isOpen: true,  closeTime: "21:00", openTime: "11:00", desc: "집밥처럼 따뜻한 한식.",                           tags: ["#한식", "#집밥"] },
-  { id: 7,  name: "골목 분식",     category: "한 입", walkMin: 6,  isOpen: true,  closeTime: "20:00", openTime: "12:00", desc: "추억의 맛이 살아있는 분식집.",                     tags: ["#분식", "#추억"] },
-  { id: 8,  name: "맛집 라면",     category: "한 입", walkMin: 8,  isOpen: false, closeTime: "22:00", openTime: "11:00", desc: "진한 사골 국물의 라면집.",                         tags: ["#라면", "#국물"] },
-  { id: 9,  name: "야채 비빔밥",   category: "한 입", walkMin: 3,  isOpen: true,  closeTime: "19:00", openTime: "10:00", desc: "신선한 야채로 만든 건강 비빔밥.",                  tags: ["#비빔밥", "#건강"] },
-  { id: 10, name: "밥집 온돌",     category: "한 입", walkMin: 5,  isOpen: true,  closeTime: "20:30", openTime: "11:30", desc: "정성스러운 한 끼 밥상.",                          tags: ["#정식", "#따뜻"] },
-  { id: 11, name: "공원 벤치",     category: "한 숨", walkMin: 2,  isOpen: true,  closeTime: null,    openTime: null,    desc: "잠시 앉아 쉬어가는 작은 공원.",                   tags: ["#공원", "#산책"] },
-  { id: 12, name: "골목 쉼터",     category: "한 숨", walkMin: 5,  isOpen: true,  closeTime: null,    openTime: null,    desc: "도심 속 조용한 휴식 공간.",                       tags: ["#쉼터", "#조용"] },
-  { id: 13, name: "도서관 라운지", category: "한 숨", walkMin: 7,  isOpen: true,  closeTime: "22:00", openTime: "09:00", desc: "책과 함께 조용히 쉴 수 있는 라운지.",              tags: ["#도서관", "#독서"] },
-  { id: 14, name: "동네 서점",     category: "한 손", walkMin: 4,  isOpen: true,  closeTime: "20:00", openTime: "10:00", desc: "동네 사람들이 사랑하는 독립서점.",                 tags: ["#서점", "#독립"] },
-  { id: 15, name: "편집샵 모아",   category: "한 손", walkMin: 6,  isOpen: false, closeTime: "20:00", openTime: "11:00", desc: "감각적인 물건들이 모인 편집샵.",                   tags: ["#편집샵", "#감성"] },
-  { id: 16, name: "핸드메이드 숍", category: "한 손", walkMin: 8,  isOpen: true,  closeTime: "19:00", openTime: "11:00", desc: "직접 만든 공예품과 소품 가게.",                    tags: ["#공예", "#핸드메이드"] },
-  { id: 17, name: "전망대",        category: "한 눈", walkMin: 10, isOpen: true,  closeTime: null,    openTime: null,    desc: "동네 전경을 한눈에 볼 수 있는 전망대.",            tags: ["#전망", "#뷰"] },
-  { id: 18, name: "벽화 골목",     category: "한 눈", walkMin: 3,  isOpen: true,  closeTime: null,    openTime: null,    desc: "예술가들의 작품이 가득한 벽화 골목.",              tags: ["#벽화", "#예술"] },
-  { id: 19, name: "역사 골목",     category: "한 눈", walkMin: 6,  isOpen: true,  closeTime: null,    openTime: null,    desc: "옛 이야기가 담긴 역사 골목.",                      tags: ["#역사", "#문화"] },
-];
+async function loadRecommendations(lat, lng) {
+  const res = await api.get("/places/recommend", { params: { lat, lng } });
+  return res.data; // { categories: [ { categoryId, categoryName, places, featured } ] }
+}
 
-function assignCoords(places, lat, lng) {
-  return places.map(p => ({
-    ...p,
-    lat: lat + (Math.random() - 0.5) * 0.007,
-    lng: lng + (Math.random() - 0.5) * 0.009,
+function toPlaceList(raw, startId = 0) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((p, i) => ({
+    id: p.id ?? startId + i + 1,
+    name: p.name,
+    category: p.category,
+    walkMin: p.walkingMinutes,
+    lat: p.lat,
+    lng: p.lng,
+    isOpen: p.isOpen ?? p.open ?? true,
+    closeTime: p.closeTime ?? null,
+    openTime: p.openTime ?? null,
+    desc: "",
+    tags: [],
   }));
 }
 
-function pickRandom(arr, n) {
-  return [...arr].sort(() => Math.random() - 0.5).slice(0, Math.min(n, arr.length));
+// 사이드바용: 카테고리 전체 places
+function mapToRecs(categories, categoryLabel) {
+  const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
+  const raw =
+    categoryLabel === "전체"
+      ? categories.flatMap((c) => c.places ?? [])
+      : (categories.find((c) => c.categoryId === targetId)?.places ?? []);
+  return toPlaceList(raw);
 }
-function pickAll() {
-  return [
-    ...pickRandom(POOL.filter(p => p.category === "한 잔"), 2),
-    ...pickRandom(POOL.filter(p => p.category === "한 입"), 2),
-    ...pickRandom(POOL.filter(p => p.category === "한 숨"), 1),
-    ...pickRandom(POOL.filter(p => p.category === "한 손"), 1),
-    ...pickRandom(POOL.filter(p => p.category === "한 눈"), 1),
-  ];
+
+// 지도 마커용: featured (없으면 places[0] 폴백)
+function mapToFeatured(categories, categoryLabel) {
+  const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
+  const raw =
+    categoryLabel === "전체"
+      ? categories.flatMap((c) => c.featured ?? c.places?.[0] ?? [])
+      : (() => {
+          const c = categories.find((c) => c.categoryId === targetId);
+          return c?.featured ?? c?.places?.[0] ?? [];
+        })();
+  return toPlaceList(raw);
 }
-function pickCat(cat) {
-  return pickRandom(POOL.filter(p => p.category === cat), 7);
-}
+
+const fmt = (t) => t?.slice(0, 5) ?? null;
 
 function HoursLabel({ place }) {
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[6.9px] font-light text-[#2b8237]">상시 개방</span>;
-    return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중 · {place.closeTime}에 종료</span>;
+    if (!place.closeTime) return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중</span>;
+    return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
   if (!place.openTime) return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료 · {place.openTime}에 시작</span>;
+  return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
 }
 
 export default function Onboard20() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("전체");
-  const [locStatus, setLocStatus]     = useState("pending");
-  const [userCoords, setUserCoords]   = useState(null);
-  const [recs, setRecs]               = useState([]);
+  const [locStatus, setLocStatus]     = useState("pending"); // pending | granted | denied
+  const [userCoords, setUserCoords]   = useState(null);      // { lat, lng }
+  const [allCategories, setAllCategories] = useState([]);    // API 전체 응답
+  const [recs, setRecs]               = useState([]);        // 사이드바: 전체 places
+  const [featuredRecs, setFeaturedRecs] = useState([]);      // 지도 마커: featured만
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [recsState, setRecsState]     = useState("visible");
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
 
   const mapContainerRef = useRef(null);
   const kakaoMapRef     = useRef(null);
@@ -102,10 +115,11 @@ export default function Onboard20() {
   const routeMarkersRef = useRef([]);
 
   useEffect(() => { recsRef.current = recs; }, [recs]);
+  useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
 
   useEffect(() => {
     window.__onMarkerClick = (id) => {
-      const place = recsRef.current.find(p => p.id === id);
+      const place = featuredRef.current.find(p => p.id === id);
       if (!place) return;
       setSelectedPlace(prev => (prev?.id === id ? null : place));
     };
@@ -119,7 +133,13 @@ export default function Onboard20() {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserCoords(coords);
         setLocStatus("granted");
-        setRecs(assignCoords(pickAll(), coords.lat, coords.lng));
+        loadRecommendations(coords.lat, coords.lng)
+          .then((data) => {
+setAllCategories(data.categories);
+            setRecs(mapToRecs(data.categories, "전체"));
+            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
+          })
+          .catch(console.error);
       },
       () => setLocStatus("denied")
     );
@@ -139,14 +159,21 @@ export default function Onboard20() {
         setTimeout(init, 100);
         return;
       }
-      const center = new window.kakao.maps.LatLng(PUSAN_UNIV.lat, PUSAN_UNIV.lng);
-      kakaoMapRef.current = new window.kakao.maps.Map(mapContainerRef.current, {
-        center,
-        level: 4,
-      });
-      window.kakao.maps.event.addListener(kakaoMapRef.current, "click", () => {
-        setSidebarOpen(false);
-      });
+      if (kakaoMapRef.current) return; // 이미 초기화됨 (StrictMode 이중 실행 방지)
+      try {
+        const center = new window.kakao.maps.LatLng(PUSAN_UNIV.lat, PUSAN_UNIV.lng);
+        kakaoMapRef.current = new window.kakao.maps.Map(mapContainerRef.current, {
+          center,
+          level: 4,
+        });
+        window.kakao.maps.event.addListener(kakaoMapRef.current, "click", () => {
+          setSidebarOpen(false);
+        });
+        setMapReady(true);
+        console.log("카카오맵 초기화 성공");
+      } catch (e) {
+        console.error("카카오맵 초기화 실패:", e);
+      }
     };
     init();
   }, []);
@@ -163,14 +190,28 @@ export default function Onboard20() {
     if (locStatus !== "granted" || !userCoords) return;
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
+
+    // 250m 반경 원
     circleRef.current = new window.kakao.maps.Circle({
-      center: pos, radius: 500, strokeWeight: 2, strokeColor: "#c8873a", strokeOpacity: 0.5, fillColor: "#c8873a", fillOpacity: 0.08, map,
+      center:         pos,
+      radius:         250,
+      strokeWeight:   2,
+      strokeColor:    "#c8873a",
+      strokeOpacity:  0.5,
+      fillColor:      "#c8873a",
+      fillOpacity:    0.08,
+      map,
     });
     userDotRef.current = new window.kakao.maps.CustomOverlay({
-      position: pos, content: `<div style="width:12px;height:12px;border-radius:50%;background:#c8873a;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`, map, yAnchor: 0.5, xAnchor: 0.5,
+      position: pos,
+      content:  `<div style="width:15px;height:15px;border-radius:50%;background:#6A8042;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+      map,
+      yAnchor:  0.5,
+      xAnchor:  0.5,
     });
   }, [locStatus, userCoords]);
 
+  // ── 지도 마커 갱신: featured 장소만 표시
   useEffect(() => {
     const map = kakaoMapRef.current;
     if (!map) return;
@@ -189,15 +230,13 @@ export default function Onboard20() {
       });
       overlaysRef.current.push(overlay);
     });
-  }, [recs, recsState, locStatus]);
+  }, [featuredRecs, recsState, locStatus, mapReady]);
 
   const handleCategoryChange = (label) => {
     if (label === activeCategory) return;
     setActiveCategory(label);
     setSelectedPlace(null);
-    const base   = label === "전체" ? pickAll() : pickCat(label);
-    const center = userCoords ?? PUSAN_UNIV;
-    setRecs(assignCoords(base, center.lat, center.lng));
+    setRecs(mapToRecs(allCategories, label));
   };
 
   const handleRecsHide = () => {
@@ -243,9 +282,15 @@ export default function Onboard20() {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserCoords(coords);
         setLocStatus("granted");
-        setRecs(assignCoords(pickAll(), coords.lat, coords.lng));
         setRecsState("visible");
         setSelectedPlace(null);
+        loadRecommendations(coords.lat, coords.lng)
+          .then((data) => {
+            setAllCategories(data.categories);
+            setRecs(mapToRecs(data.categories, activeCategory));
+            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
+          })
+          .catch(console.error);
       },
       () => {}
     );
@@ -258,6 +303,10 @@ export default function Onboard20() {
     }, 200);
     return () => clearInterval(check);
   }, []);
+  const granted      = locStatus === "granted";
+  const showOverlay  = granted && recsState !== "hidden";
+  const overlayFading = recsState === "fading";
+
 
   // ── 경로 시각화 로직 ──
   const createMarkerHTML = (type) => {

@@ -115,10 +115,10 @@ public class RouteService {
     }
 
     private PositionDTO makeStopOver(PositionDTO start, PositionDTO end) {
-        Double startLat = start.getLat(); // x축 역할 - 위도
+        Double startLat = start.getLat(); // y축 역할 - 위도
         Double endLat = end.getLat();
 
-        Double startLon = start.getLon(); // y축 역할 - 경도
+        Double startLon = start.getLon(); // x축 역할 - 경도
         Double endLon = end.getLon();
 
         Double deltaLat = endLat - startLat;
@@ -126,8 +126,8 @@ public class RouteService {
 
         Double gradation = 0.0;
 
-        if (deltaLat != 0.0) {
-            gradation = deltaLon / deltaLat;
+        if (deltaLon != 0.0) {
+            gradation = deltaLat / deltaLon;
         }
 
         Double length = Math.sqrt(deltaLat * deltaLat + deltaLon * deltaLon);
@@ -135,19 +135,19 @@ public class RouteService {
         Double unitLat = deltaLat / length;
         Double unitLon = deltaLon / length;
 
-        Double positionLat = deltaLat * Math.random() + startLat; // start ~ end까지 랜덤
-        Double positionLon = startLon;
+        Double positionLon = deltaLon * Math.random() + startLon; // start ~ end까지 랜덤
+        Double positionLat = startLat;
 
         if (gradation != 0.0) {
-            positionLon = gradation*(positionLat-startLat) + startLon;
+            positionLat = gradation*(positionLon-startLon) + startLat;
         }
 
         Double d = 0.0011;
 
         if (gradation > 0) {
-            return new PositionDTO(positionLat+unitLon*d, positionLon-unitLat*d); // 시계방향 회전
+            return new PositionDTO(positionLat-unitLon*d, positionLon+unitLat*d); // 시계방향 회전
         } else {
-            return new PositionDTO(positionLat-unitLon*d, positionLon+unitLat*d); // 반시계방향 회전
+            return new PositionDTO(positionLat+unitLon*d, positionLon-unitLat*d); // 반시계방향 회전
         }
     }
 }

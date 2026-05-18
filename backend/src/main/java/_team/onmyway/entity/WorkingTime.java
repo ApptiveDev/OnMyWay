@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 import java.time.LocalTime;
 
 @Entity
+@Table(indexes = {
+        @Index(name="place_idx", columnList = "place_id")
+})
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
