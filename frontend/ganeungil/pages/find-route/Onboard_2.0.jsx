@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Sidebar20 from "./Sidebar_2.0";
+import Loading20 from "./Loading_2.0.jsx";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
 import imgPlace  from "@/assets/img-place.jpg";
