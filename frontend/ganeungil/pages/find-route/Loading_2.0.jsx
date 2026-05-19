@@ -108,4 +108,3 @@ export default function Loading20() {
     </div>
   );
 }
-`
