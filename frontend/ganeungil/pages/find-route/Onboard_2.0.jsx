@@ -99,26 +99,24 @@ export default function Onboard20() {
   const [recs, setRecs]               = useState([]);        // 사이드바: 전체 places
   const [featuredRecs, setFeaturedRecs] = useState([]);      // 지도 마커: featured만
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const [recsState, setRecsState]     = useState("visible"); // visible | fading | hidden
+  const [recsState, setRecsState]     = useState("visible");
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
 
-  // 카카오맵 관련 refs
-  const mapContainerRef = useRef(null); // <div> DOM 노드
-  const kakaoMapRef     = useRef(null); // kakao.maps.Map 인스턴스
-  const circleRef       = useRef(null); // 500m 반경 Circle
-  const userDotRef      = useRef(null); // 내 위치 CustomOverlay
-  const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
-  const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
-  const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
-  const destMarkerRef   = useRef(null); // 목적지 마커 CustomOverlay
+  const mapContainerRef = useRef(null);
+  const kakaoMapRef     = useRef(null);
+  const circleRef       = useRef(null);
+  const userDotRef      = useRef(null);
+  const overlaysRef     = useRef([]);
+  const recsRef         = useRef([]);
+  const destMarkerRef   = useRef(null);
+  const polylineRef     = useRef(null);
+  const routeMarkersRef = useRef([]);
 
-  // ref 동기화
   useEffect(() => { recsRef.current = recs; }, [recs]);
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
 
-  // ── 지도 마커 클릭 핸들러 (window에 등록 → CustomOverlay HTML에서 호출)
   useEffect(() => {
     window.__onMarkerClick = (id) => {
       const place = featuredRef.current.find(p => p.id === id);
@@ -128,7 +126,6 @@ export default function Onboard20() {
     return () => { delete window.__onMarkerClick; };
   }, []);
 
-  // ── 위치 권한 요청 (네이티브 UI)
   useEffect(() => {
     if (!navigator.geolocation) { setLocStatus("denied"); return; }
     navigator.geolocation.getCurrentPosition(
@@ -148,7 +145,6 @@ setAllCategories(data.categories);
     );
   }, []);
 
-  // ── 네트워크 상태 감지
   useEffect(() => {
     const on  = () => setIsOffline(false);
     const off = () => setIsOffline(true);
@@ -157,7 +153,6 @@ setAllCategories(data.categories);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
-  // ── 카카오맵 초기화 (SDK 로드 대기 후 실행)
   useEffect(() => {
     const init = () => {
       if (!window.kakao?.maps || !mapContainerRef.current) {
@@ -183,21 +178,16 @@ setAllCategories(data.categories);
     init();
   }, []);
 
-  // ── 위치 확정 시 지도 중심 이동 + 반경 원 + 내 위치 마커
   useEffect(() => {
     const map = kakaoMapRef.current;
     if (!map) return;
-
-    // 기존 원/마커 제거
     if (circleRef.current)  { circleRef.current.setMap(null);  circleRef.current = null; }
     if (userDotRef.current) { userDotRef.current.setMap(null); userDotRef.current = null; }
-
     if (locStatus === "denied") {
       map.setCenter(new window.kakao.maps.LatLng(PUSAN_UNIV.lat, PUSAN_UNIV.lng));
       return;
     }
     if (locStatus !== "granted" || !userCoords) return;
-
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
 
@@ -212,8 +202,6 @@ setAllCategories(data.categories);
       fillOpacity:    0.08,
       map,
     });
-
-    // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
       content:  `<div style="width:15px;height:15px;border-radius:50%;background:#6A8042;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
@@ -227,59 +215,23 @@ setAllCategories(data.categories);
   useEffect(() => {
     const map = kakaoMapRef.current;
     if (!map) return;
-
-    // 기존 마커 제거
     overlaysRef.current.forEach(o => o.setMap(null));
     overlaysRef.current = [];
-
     if (recsState === "hidden" || locStatus !== "granted") return;
-
-    // 겹치는 마커 분리: 20m(~0.00018°) 이내 좌표는 나선형으로 오프셋
-    const SPREAD = 0.00018;
-    const spiralOffsets = [
-      [0, 0], [SPREAD, 0], [-SPREAD, 0],
-      [0, SPREAD], [0, -SPREAD], [SPREAD, SPREAD], [-SPREAD, -SPREAD],
-    ];
-    const placed = [];
-
-    featuredRecs.forEach(place => {
-      let lat = place.lat;
-      let lng = place.lng;
-      let offsetIdx = 0;
-      while (
-        placed.some(p => Math.abs(p.lat - lat) < SPREAD * 0.9 && Math.abs(p.lng - lng) < SPREAD * 0.9) &&
-        offsetIdx < spiralOffsets.length - 1
-      ) {
-        offsetIdx++;
-        lat = place.lat + spiralOffsets[offsetIdx][0];
-        lng = place.lng + spiralOffsets[offsetIdx][1];
-      }
-      placed.push({ lat, lng });
-
+    recs.forEach(place => {
+      const icon = CAT_ICON[place.category];
       const content = `
-        <div
-          onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style="
-            width:28px;height:28px;border-radius:50%;
-            background:#c8873a;border:2px solid white;
-            box-shadow:0 2px 8px rgba(0,0,0,0.25);
-            cursor:pointer;transition:transform 0.15s;
-          "
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'"
-        ></div>
+        <div onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})" style="width:28px;height:28px;border-radius:50%;background:#c8873a;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.15s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'">
+          <img src="${icon}" style="width:13px;height:13px;pointer-events:none;" />
+        </div>
       `;
       const overlay = new window.kakao.maps.CustomOverlay({
-        position: new window.kakao.maps.LatLng(lat, lng),
-        content,
-        map,
-        yAnchor: 1,
+        position: new window.kakao.maps.LatLng(place.lat, place.lng), content, map, yAnchor: 1,
       });
       overlaysRef.current.push(overlay);
     });
   }, [featuredRecs, recsState, locStatus, mapReady]);
 
-  // ── 핸들러 ──
   const handleCategoryChange = (label) => {
     if (label === activeCategory) return;
     setActiveCategory(label);
@@ -298,7 +250,6 @@ setAllCategories(data.categories);
     setSelectedPlace(null);
   };
 
-  // 목적지 마커 제거
   const clearDestMarker = () => {
     if (destMarkerRef.current) {
       destMarkerRef.current.setMap(null);
@@ -306,37 +257,24 @@ setAllCategories(data.categories);
     }
   };
 
-  // 카카오 장소 검색 결과 선택 → 지도 이동 + 마커 표시
   const handleDestinationSelect = (place) => {
     const map = kakaoMapRef.current;
     if (!map) return;
     const pos = new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x));
     map.setCenter(pos);
     map.setLevel(3);
-
     clearDestMarker();
-
     destMarkerRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
       content: `
-        <div style="
-          width:36px; height:36px;
-          background:#e8c36a;
-          border:3px solid white;
-          border-radius:17px 17px 17px 4px;
-          box-shadow:0px 2px 8px rgba(0,0,0,0.3);
-          display:flex; align-items:center; justify-content:center;
-        ">
+        <div style="width:36px; height:36px; background:#e8c36a; border:3px solid white; border-radius:17px 17px 17px 4px; box-shadow:0px 2px 8px rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
           <img src="${iconDestPin}" style="width:15px;height:15px;display:block;" />
         </div>
       `,
-      map,
-      yAnchor: 1,
-      xAnchor: 0,
+      map, yAnchor: 1, xAnchor: 0,
     });
   };
 
-  // 현재 위치 보정
   const handleRecalibrate = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -358,127 +296,117 @@ setAllCategories(data.categories);
     );
   };
 
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    const check = setInterval(() => {
+      if (kakaoMapRef.current) { setMapReady(true); clearInterval(check); }
+    }, 200);
+    return () => clearInterval(check);
+  }, []);
   const granted      = locStatus === "granted";
   const showOverlay  = granted && recsState !== "hidden";
   const overlayFading = recsState === "fading";
 
 
+  // ── 경로 시각화 로직 ──
+  const createMarkerHTML = (type) => {
+    let color = "#c8873a"; 
+    let label = "";
+    if (type === "SP") label = "출발";
+    else if (type === "EP") label = "도착";
+    else if (type.startsWith("PP")) { color = "#2b8237"; label = "경유"; }
+    return `<div style="background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:10px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2); margin-bottom:10px;">${label}</div>`;
+  };
+
+  const displayRoute = (features) => {
+    const map = kakaoMapRef.current;
+    if (!map || !features) return;
+    if (polylineRef.current) polylineRef.current.setMap(null);
+    routeMarkersRef.current.forEach(marker => marker.setMap(null));
+    routeMarkersRef.current = [];
+
+    const path = [];
+    const newMarkers = [];
+    features.forEach((feature) => {
+      if (feature.geometry.type === "LineString") {
+        feature.geometry.coordinates.forEach(coord => {
+          path.push(new window.kakao.maps.LatLng(coord[1], coord[0]));
+        });
+      }
+      if (feature.geometry.type === "Point") {
+        const { pointType } = feature.properties;
+        const coords = feature.geometry.coordinates;
+        const pos = new window.kakao.maps.LatLng(coords[1], coords[0]);
+        if (pointType === "SP" || pointType === "EP" || pointType.startsWith("PP")) {
+          const marker = new window.kakao.maps.CustomOverlay({ position: pos, content: createMarkerHTML(pointType), yAnchor: 1 });
+          marker.setMap(map);
+          newMarkers.push(marker);
+        }
+      }
+    });
+
+    const polyline = new window.kakao.maps.Polyline({ path, strokeWeight: 5, strokeColor: '#c8873a', strokeOpacity: 0.8 });
+    polyline.setMap(map);
+    polylineRef.current = polyline;
+    routeMarkersRef.current = newMarkers;
+
+    const bounds = new window.kakao.maps.LatLngBounds();
+    path.forEach(pos => bounds.extend(pos));
+    map.setBounds(bounds);
+  };
+
   return (
-    <div
-      className="bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-      style={{ fontFamily: "'Noto Serif KR', serif" }}
-    >
+    <div className="bg-[#faf6f0] text-[#2c2417] overflow-hidden" style={{ fontFamily: "'Noto Serif KR', serif" }}>
       <style>{`
-        @keyframes fadeOutDown {
-          from { opacity: 1; transform: translateY(0); }
-          to   { opacity: 0; transform: translateY(8px); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeOutDown { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
         .fade-out { animation: fadeOutDown 0.28s ease forwards; }
         .fade-in  { animation: fadeInUp   0.28s ease forwards; }
-
-        .kakao-map-wrap,
-        .kakao-map-wrap canvas,
-        .kakao-map-wrap img {
-          will-change: transform;
-          -webkit-transform: translateZ(0);
-          transform: translateZ(0);
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
-        }
-        .kakao-map-wrap img {
-          image-rendering: -webkit-optimize-contrast;
-        }
+        .kakao-map-wrap, .kakao-map-wrap canvas, .kakao-map-wrap img { will-change: transform; transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+        .kakao-map-wrap img { image-rendering: -webkit-optimize-contrast; }
       `}</style>
 
-      {/* ── 메인 ── */}
       <main className="relative h-[calc(100vh-56px)] overflow-hidden">
-
-        {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
         <div className="absolute inset-0">
-          <div
-            ref={mapContainerRef}
-            className="w-full h-full kakao-map-wrap"
-            style={{ transform: "translateZ(0)", willChange: "transform" }}
-          />
+          <div ref={mapContainerRef} className="kakao-map-wrap w-full h-full" style={{ transform: "translateZ(0)", willChange: "transform" }} />
         </div>
 
-        {/* ── 사이드바 ── */}
+        {!mapReady && <div className="absolute inset-0 z-30"><Loading20 /></div>}
+
         <Sidebar20
-          locStatus={locStatus}
-          recs={recs}
-          activeCategory={activeCategory}
-          recsState={recsState}
-          selectedPlace={selectedPlace}
-          sidebarOpen={sidebarOpen}
-          onCategoryChange={handleCategoryChange}
-          onPlaceSelect={setSelectedPlace}
-          onSidebarToggle={() => setSidebarOpen(prev => !prev)}
-          onRecalibrate={handleRecalibrate}
-          onRecsHide={handleRecsHide}
-          onRecsShow={handleRecsShow}
-          onDestinationSelect={handleDestinationSelect}
-          onDestinationClear={clearDestMarker}
+          locStatus={locStatus} recs={recs} activeCategory={activeCategory} recsState={recsState} selectedPlace={selectedPlace} sidebarOpen={sidebarOpen}
+          onCategoryChange={handleCategoryChange} onPlaceSelect={setSelectedPlace} onSidebarToggle={() => setSidebarOpen(prev => !prev)}
+          onRecalibrate={handleRecalibrate} onRecsHide={handleRecsHide} onRecsShow={handleRecsShow} onDestinationSelect={handleDestinationSelect}
+          onDestinationClear={clearDestMarker} userCoords={userCoords} onDrawRoute={displayRoute}
         />
 
-        {/* ── 장소 상세 카드 ── */}
         {selectedPlace && (
           <div className="absolute top-[10px] left-[322px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
-              <button
-                onClick={() => setSelectedPlace(null)}
-                className="absolute top-2 right-2 w-5 h-5 bg-[rgba(0,0,0,0.45)] rounded-full flex items-center justify-center text-white text-[9px] hover:bg-[rgba(0,0,0,0.65)] transition-colors"
-              >
-                ✕
-              </button>
-              <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
-                {selectedPlace.category}
-              </span>
+              <button onClick={() => setSelectedPlace(null)} className="absolute top-2 right-2 w-5 h-5 bg-[rgba(0,0,0,0.45)] rounded-full flex items-center justify-center text-white text-[9px] hover:bg-[rgba(0,0,0,0.65)] transition-colors">✕</button>
+              <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">{selectedPlace.category}</span>
             </div>
             <div className="p-3">
               <div className="flex items-start justify-between mb-1">
                 <h3 className="text-[12px] font-medium text-[#2c2417] leading-tight">{selectedPlace.name}</h3>
-                <button onClick={e => e.stopPropagation()} className="ml-1 shrink-0">
-                  <img src={iconHeart} alt="저장" className="w-3.5 h-3.5" />
-                </button>
+                <button onClick={e => e.stopPropagation()} className="ml-1 shrink-0"><img src={iconHeart} alt="저장" className="w-3.5 h-3.5" /></button>
               </div>
-              <p className="text-[9.6px] font-light text-[#8b7e6a] mb-2">
-                내 위치로부터 도보 {selectedPlace.walkMin}분
-              </p>
+              <p className="text-[9.6px] font-light text-[#8b7e6a] mb-2">내 위치로부터 도보 {selectedPlace.walkMin}분</p>
               <div className="flex items-center gap-1.5 mb-2">
-                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>
-                  {selectedPlace.isOpen ? "영업 중" : "영업 종료"}
-                </span>
-                {selectedPlace.isOpen && selectedPlace.closeTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.closeTime}에 종료</span>
-                )}
-                {!selectedPlace.isOpen && selectedPlace.openTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.openTime}에 시작</span>
-                )}
+                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>{selectedPlace.isOpen ? "영업 중" : "영업 종료"}</span>
+                {selectedPlace.isOpen && selectedPlace.closeTime && <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.closeTime}에 종료</span>}
+                {!selectedPlace.isOpen && selectedPlace.openTime && <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.openTime}에 시작</span>}
               </div>
-              <p className="text-[8.4px] font-light text-[#8b7e6a] leading-relaxed mb-2">
-                {selectedPlace.desc}
-              </p>
-              <div className="flex gap-[3px] flex-wrap">
-                {selectedPlace.tags.map(tag => (
-                  <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[7px] font-normal px-[4px] py-[1.5px] rounded-[3px]">
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <p className="text-[8.4px] font-light text-[#8b7e6a] leading-relaxed mb-2">{selectedPlace.desc}</p>
+              <div className="flex gap-[3px] flex-wrap">{selectedPlace.tags.map(tag => (<span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[7px] font-normal px-[4px] py-[1.5px] rounded-[3px]">{tag}</span>))}</div>
             </div>
           </div>
         )}
 
-        {/* ── 인터넷 불안정 오류 ── */}
         {isOffline && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#2c2417] text-white text-[11.2px] font-light px-4 py-2.5 rounded-full shadow-lg z-30 flex items-center gap-2 whitespace-nowrap">
-            <span>⚠</span>
-            <span>인터넷 연결이 불안정합니다</span>
+            <span>⚠</span><span>인터넷 연결이 불안정합니다</span>
           </div>
         )}
       </main>
