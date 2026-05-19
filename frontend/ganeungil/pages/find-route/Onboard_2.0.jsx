@@ -296,7 +296,6 @@ setAllCategories(data.categories);
     );
   };
 
-  const [mapReady, setMapReady] = useState(false);
   useEffect(() => {
     const check = setInterval(() => {
       if (kakaoMapRef.current) { setMapReady(true); clearInterval(check); }
