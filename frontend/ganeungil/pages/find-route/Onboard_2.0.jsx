@@ -111,6 +111,7 @@ export default function Onboard20() {
   const userDotRef      = useRef(null);
   const overlaysRef     = useRef([]);
   const recsRef         = useRef([]);
+  const featuredRef     = useRef([]);
   const destMarkerRef   = useRef(null);
   const polylineRef     = useRef(null);
   const routeMarkersRef = useRef([]);
