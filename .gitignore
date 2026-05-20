@@ -197,6 +197,7 @@ backend/.env
 # Env files
 # =========================
 backend/.env
+backend/.env.dev
 
 # =========================
 # Git 내부
