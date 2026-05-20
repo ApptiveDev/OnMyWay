@@ -1,5 +1,6 @@
 package _team.onmyway.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -15,5 +16,9 @@ public class PlaceRecommendationDTO {
     private int walkingMinutes;
     private LocalTime openTime;
     private LocalTime closeTime;
+
+    @JsonProperty("isOpen")
     private boolean isOpen;
+
+    private String imageURL;
 }
