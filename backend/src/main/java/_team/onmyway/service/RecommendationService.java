@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -256,7 +257,9 @@ public class RecommendationService {
     }
 
     private boolean isOpen(boolean isClosed, LocalTime open, LocalTime close) {
-        LocalTime now = LocalTime.now();
+        ZoneId koreaZone = ZoneId.of("Asia/Seoul");
+        LocalTime now = LocalTime.now(koreaZone);
+
         if (isClosed) {
             return false;
         } else if (open == null || close == null) {
