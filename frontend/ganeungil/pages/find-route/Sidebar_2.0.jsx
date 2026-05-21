@@ -30,15 +30,25 @@ const CATEGORIES = [
   { label: "한 끼", icon: iconFood,  iconActive: iconFoodActive  },
 ];
 
+const CATEGORY_BADGE_ICON = {
+  "한 잔": iconDrinkActive,
+  "한 입": iconFoodActive,
+  "한 숨": iconRestActive,
+  "한 판": iconShopActive,
+  "한 눈": iconViewActive,
+  "한 끼": iconFoodActive,
+};
+
 const fmt = (t) => t?.slice(0, 5) ?? null;
 
 function HoursLabel({ place }) {
+  const cls = "text-[7.714px] font-light leading-[1.334] whitespace-nowrap";
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[10px] font-light text-[#2b8237]">영업 중</span>;
-    return <span className="text-[10px] font-light text-[#2b8237]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
+    if (!place.closeTime) return <span className={`${cls} text-[#6a8042]`}>영업 중</span>;
+    return <span className={`${cls} text-[#6a8042]`}>영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
-  if (!place.openTime) return <span className="text-[10px] font-light text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[10px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
+  if (!place.openTime) return <span className={`${cls} text-[#c82b2b]`}>영업 종료</span>;
+  return <span className={`${cls} text-[#c82b2b]`}>영업 종료 ({fmt(place.openTime)}에 시작)</span>;
 }
 
 /**
@@ -362,15 +372,25 @@ export default function Sidebar20({
               <div className="px-[22px] pt-2 pb-2 flex items-center gap-[2px] shrink-0">
                 {CATEGORIES.map(({ label, icon, iconActive }) => {
                   const isActive = activeCategory === label;
+                  const isHanJan = label === "한 잔";
                   return (
                     <button
                       key={label}
                       onClick={() => onCategoryChange(label)}
-                      className={`group flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
-                        isActive
-                          ? "bg-[#ED7A13] text-[#FDFDFD]"
-                          : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
+                      className={`group flex items-center transition-colors whitespace-nowrap ${
+                        isHanJan
+                          ? `gap-[2.9px] px-[7px] py-[2.9px] rounded-[14px] text-[9px] ${
+                              isActive
+                                ? "bg-[#ED7A13] text-white"
+                                : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-white"
+                            }`
+                          : `gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium ${
+                              isActive
+                                ? "bg-[#ED7A13] text-[#FDFDFD]"
+                                : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
+                            }`
                       }`}
+                      style={isHanJan ? { fontFamily: "'Pretendard', sans-serif", fontWeight: 500 } : {}}
                     >
                       <img
                         src={isActive ? iconActive : icon}
@@ -387,52 +407,71 @@ export default function Sidebar20({
               </div>
 
               {/* 장소 목록 */}
-              <div className="flex-1 overflow-y-auto px-[14px] pb-3 flex flex-col gap-2">
+              <div className="flex-1 overflow-y-auto px-[8px] pb-3 flex flex-col gap-0">
                 {recs.map(place => (
                   <div
                     key={place.id}
                     onClick={() => onPlaceSelect(selectedPlace?.id === place.id ? null : place)}
-                    className={`flex gap-[7.4px] items-start border rounded-[9.9px] p-[8px] cursor-pointer transition-all ${
-                      selectedPlace?.id === place.id
-                        ? "bg-[rgba(200,135,58,0.05)] border-[rgba(200,135,58,0.3)] shadow-sm"
-                        : "bg-white border-[#f3f4f6] hover:shadow-sm"
-                    }`}
+                    className="p-[8px] cursor-pointer"
                   >
-                    <div className="w-[39.5px] h-[39.5px] rounded-[8.6px] overflow-hidden shrink-0">
-                      <img src={imgPlace} alt={place.name} className="object-cover w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-[#2c2417] leading-tight truncate">
-                            {place.name}
-                          </p>
-                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                            <span className="text-[10px] font-light text-[#8b7e6a]">{place.category}</span>
-                            <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
-                            <span className="text-[10px] font-light text-[#8b7e6a]">도보 {place.walkMin}분</span>
-                            <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
-                            <HoursLabel place={place} />
+                    <div className={`bg-[#fdfdfd] border-[1.286px] border-solid rounded-[25.714px] flex items-start pt-[14px] pb-[9px] px-[16px] transition-all overflow-hidden ${
+                      selectedPlace?.id === place.id
+                        ? "border-[rgba(200,135,58,0.5)] shadow-sm"
+                        : "border-[rgba(175,175,175,0.5)] hover:shadow-sm"
+                    }`}>
+                      {/* 이미지 + 콘텐츠 */}
+                      <div className="flex gap-[6px] items-start flex-1 min-w-0">
+                        <div className="w-[80.286px] h-[80.286px] rounded-[10px] overflow-hidden shrink-0 bg-[#f5f0e8]">
+                          <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
+                        </div>
+                        <div className="flex flex-col gap-[10px] flex-1 min-w-0">
+                          <div className="flex flex-col gap-[11px]">
+                            <div className="flex flex-col gap-[7px]">
+                              {/* 가게명 + 카테고리 배지 */}
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-[12.857px] text-[#3e2722] leading-[1.334] truncate"
+                                   style={{ fontFamily: "'Pretendard', sans-serif", fontWeight: 600 }}>
+                                  {place.name}
+                                </p>
+                                <div className="bg-[#ed7a13] flex gap-[3.675px] items-center justify-center px-[5px] py-[3.675px] rounded-[14.293px] shrink-0">
+                                  {CATEGORY_BADGE_ICON[place.category] && (
+                                    <img src={CATEGORY_BADGE_ICON[place.category]} alt="" className="w-[6.9px] h-[6.9px]" />
+                                  )}
+                                  <span className="text-[6.43px] text-white whitespace-nowrap"
+                                        style={{ fontFamily: "'Pretendard', sans-serif", fontWeight: 500 }}>
+                                    {place.category}
+                                  </span>
+                                </div>
+                              </div>
+                              {/* 도보 + 영업시간 */}
+                              <div className="flex gap-[12px] items-center flex-wrap">
+                                <span className="text-[7.714px] text-[#3e2722] leading-[1.334] font-light whitespace-nowrap">
+                                  내 위치로부터 도보 {place.walkMin}분
+                                </span>
+                                <HoursLabel place={place} />
+                              </div>
+                            </div>
+                            {/* 설명 */}
+                            <p className="text-[9px] text-[#3e2722] leading-[1.334] font-light line-clamp-2">
+                              {place.desc}
+                            </p>
+                          </div>
+                          {/* 태그 */}
+                          <div className="flex gap-[4px] items-center flex-wrap">
+                            {place.tags.map(tag => (
+                              <span key={tag}
+                                    className="bg-[#fff2b9] text-[#3e2722] text-[6.429px] font-light px-[6.429px] py-[3.857px] rounded-[12.857px] whitespace-nowrap">
+                                {tag}
+                              </span>
+                            ))}
                           </div>
                         </div>
-                        <button
-                          className="shrink-0 ml-1 w-[15px] h-[17px] flex items-center justify-center"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <img src={iconHeart} alt="저장" className="w-[8.6px] h-[8.6px]" />
-                          
-                        </button>
                       </div>
-                      <p className="text-[9px] font-light text-[#8b7e6a] mt-1 leading-relaxed line-clamp-1">
-                        {place.desc}
-                      </p>
-                      <div className="flex gap-[2.5px] mt-1.5">
-                        {place.tags.map(tag => (
-                          <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[8px] font-normal px-[3.7px] py-[1.2px] rounded-[2.5px]">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                      {/* 하트 */}
+                      <button className="shrink-0 ml-3 w-[19px] h-[19px] flex items-center justify-center"
+                              onClick={e => e.stopPropagation()}>
+                        <img src={iconHeart} alt="저장" className="w-[13.705px] h-[13.705px]" />
+                      </button>
                     </div>
                   </div>
                 ))}

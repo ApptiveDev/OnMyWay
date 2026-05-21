@@ -51,6 +51,7 @@ function toPlaceList(raw, startId = 0) {
     isOpen: p.isOpen ?? p.open ?? true,
     closeTime: p.closeTime ?? null,
     openTime: p.openTime ?? null,
+    imageURL: p.imageURL ?? null,
     desc: "",
     tags: [],
   }));
@@ -134,6 +135,7 @@ export default function Onboard20() {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        console.log("[위치] 허용됨:", coords);
         setUserCoords(coords);
         setLocStatus("granted");
         loadRecommendations(coords.lat, coords.lng)
@@ -144,7 +146,7 @@ setAllCategories(data.categories);
           })
           .catch(console.error);
       },
-      () => setLocStatus("denied")
+      (err) => { console.error("[위치] 거부됨:", err); setLocStatus("denied"); }
     );
   }, []);
 
@@ -185,6 +187,7 @@ setAllCategories(data.categories);
 
   // ── 위치 확정 시 지도 중심 이동 + 반경 원 + 내 위치 마커
   useEffect(() => {
+    console.log("[위치 effect]", { locStatus, userCoords, mapReady, map: !!kakaoMapRef.current });
     const map = kakaoMapRef.current;
     if (!map) return;
 
@@ -221,7 +224,7 @@ setAllCategories(data.categories);
       yAnchor:  0.5,
       xAnchor:  0.5,
     });
-  }, [locStatus, userCoords]);
+  }, [locStatus, userCoords, mapReady]);
 
   // ── 지도 마커 갱신: featured 장소만 표시
   useEffect(() => {
