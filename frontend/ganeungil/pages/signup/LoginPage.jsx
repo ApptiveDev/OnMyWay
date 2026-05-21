@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleKakaoLogin = () => {
-    window.location.href = "http://localhost:8081/oauth2/authorization/kakao";
+    window.location.href = "/oauth2/authorization/kakao";
   };
 
   const handleLogin = (e) => {
