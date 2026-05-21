@@ -4,6 +4,7 @@ import _team.onmyway.entity.Place;
 import _team.onmyway.entity.ServiceCategory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -29,15 +30,15 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
         LIMIT :limit
         """, nativeQuery = true)
     List<Place> findRandomByCategoryInRadius(
-            double centerLat,
-            double centerLng,
-            double latMin,
-            double latMax,
-            double lngMin,
-            double lngMax,
-            double radiusMeters,
-            ServiceCategory category,
-            int limit
+            @Param("centerLat") double centerLat,
+            @Param("centerLng") double centerLng,
+            @Param("latMin") double latMin,
+            @Param("latMax") double latMax,
+            @Param("lngMin") double lngMin,
+            @Param("lngMax") double lngMax,
+            @Param("radiusMeters") double radiusMeters,
+            @Param("category") ServiceCategory category,
+            @Param("limit") int limit
     );
 
     @Query(value = """
@@ -47,11 +48,11 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
           AND p.lng BETWEEN :minLng AND :maxLng
         """, nativeQuery = true)
     List<Place> findByBoundingBox(
-            List<Long> categoryIds,
-            double minLat,
-            double maxLat,
-            double minLng,
-            double maxLng
+            @Param("categoryIds") List<Long> categoryIds,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng
     );
 
     public List<Place> findByAddressAndName(String address, String name);

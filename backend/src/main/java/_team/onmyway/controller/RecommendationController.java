@@ -16,8 +16,8 @@ public class RecommendationController {
     // 전체 카테고리 로드: 카테고리별 7개(대표 포함) + 메인용 대표 1개
     @GetMapping("/recommend")
     public Mono<AllCategoryRecommendationsDTO> recommendAllCategories(
-            @RequestParam double lat,
-            @RequestParam double lng
+            @RequestParam("lat") double lat,
+            @RequestParam("lng") double lng
     ) {
         return recommendationService.recommend(lat, lng);
     }
