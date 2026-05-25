@@ -179,18 +179,18 @@ export default function Onboard20() {
     circleRef.current = new window.kakao.maps.Circle({
       center:         pos,
       radius:         500,
-      strokeWeight:   2,
-      strokeColor:    "#c8873a",
-      strokeOpacity:  0.5,
-      fillColor:      "#c8873a",
-      fillOpacity:    0.08,
+      strokeWeight:   7,
+      strokeColor:    "#ffeda1",
+      strokeOpacity:  1,
+      fillColor:      "#afafaf",
+      fillOpacity:    0.1,
       map,
     });
 
     // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
-      content:  `<div style="width:12px;height:12px;border-radius:50%;background:#c8873a;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+      content:  `<div style="width:12px;height:12px;border-radius:50%;background:#ed7a13;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
       map,
       yAnchor:  0.5,
       xAnchor:  0.5,
@@ -214,16 +214,16 @@ export default function Onboard20() {
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
           style="
-            width:28px;height:28px;border-radius:50%;
-            background:#c8873a;border:2px solid white;
-            box-shadow:0 2px 8px rgba(0,0,0,0.25);
+            width:41px;height:41px;border-radius:20px;
+            background:#ed7a13;border:2.577px solid white;
+            box-shadow:0 5px 8px rgba(0,0,0,0.3);
             display:flex;align-items:center;justify-content:center;
             cursor:pointer;transition:transform 0.15s;
           "
-          onmouseover="this.style.transform='scale(1.2)'"
+          onmouseover="this.style.transform='scale(1.15)'"
           onmouseout="this.style.transform='scale(1)'"
         >
-          <img src="${icon}" style="width:13px;height:13px;pointer-events:none;" />
+          <img src="${icon}" style="width:18px;height:18px;pointer-events:none;" />
         </div>
       `;
       const overlay = new window.kakao.maps.CustomOverlay({
@@ -329,7 +329,7 @@ export default function Onboard20() {
 
   return (
     <div
-      className="bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+      className="text-[#3e2722] overflow-hidden"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       <style>{`
@@ -359,7 +359,7 @@ export default function Onboard20() {
       `}</style>
 
       {/* ── 메인 ── */}
-      <main className="relative h-[calc(100vh-56px)] overflow-hidden">
+      <main className="relative w-[1920px] h-[1155px] overflow-hidden">
 
         {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
         <div className="absolute inset-0">
@@ -397,7 +397,7 @@ export default function Onboard20() {
 
         {/* ── 장소 상세 카드 ── */}
         {selectedPlace && (
-          <div className="absolute top-[10px] left-[322px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
+          <div className="absolute top-[154px] left-[572px] w-[280px] bg-[#fdfdfd] rounded-[25px] shadow-[0px_4px_20px_0px_rgba(0,0,0,0.18)] border border-[rgba(175,175,175,0.3)] overflow-hidden z-20 fade-in">
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
               <button
@@ -406,7 +406,7 @@ export default function Onboard20() {
               >
                 ✕
               </button>
-              <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
+              <span className="absolute top-2 left-2 bg-[#ed7a13] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
                 {selectedPlace.category}
               </span>
             </div>
@@ -421,7 +421,7 @@ export default function Onboard20() {
                 내 위치로부터 도보 {selectedPlace.walkMin}분
               </p>
               <div className="flex items-center gap-1.5 mb-2">
-                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>
+                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#6a8042]" : "text-[#c82b2b]"}`}>
                   {selectedPlace.isOpen ? "영업 중" : "영업 종료"}
                 </span>
                 {selectedPlace.isOpen && selectedPlace.closeTime && (
