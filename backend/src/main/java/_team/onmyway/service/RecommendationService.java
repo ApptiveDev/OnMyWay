@@ -86,7 +86,7 @@ public class RecommendationService {
         Map<Long, List<Place>> groupedByCategoryId = filteredPlaces.stream()
                 .collect(Collectors.groupingBy(p -> p.getServiceCategory().getId()));
 
-        int day = LocalDate.now().getDayOfWeek().getValue();
+        int day = LocalDate.now().getDayOfWeek().getValue()%7;
 
         return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
                 .flatMap(categoryId ->
@@ -245,7 +245,7 @@ public class RecommendationService {
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
 
-        int day = LocalDate.now().getDayOfWeek().getValue();
+        int day = LocalDate.now().getDayOfWeek().getValue()%7;
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
