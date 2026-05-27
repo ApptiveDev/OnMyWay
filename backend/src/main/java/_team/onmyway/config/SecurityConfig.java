@@ -1,5 +1,6 @@
 package _team.onmyway.config;
 
+import _team.onmyway.repository.cookie.CookieAuthorizationRequestRepository;
 import _team.onmyway.security.OAuthFailureHandler;
 import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
@@ -25,6 +26,7 @@ public class SecurityConfig {
     private final OAuthSuccessHandler successHandler;
     private final OAuthFailureHandler failureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CookieAuthorizationRequestRepository cookieRepository;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,7 +34,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
-                                        "/**",
+                                        "/",
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/auth/**",
@@ -49,6 +51,7 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(oauth -> oauth
+                        .authorizationEndpoint(authEndpoint -> authEndpoint.authorizationRequestRepository(cookieRepository))
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuthUserService)) // 사용자 정보 이용(회원가입 등)
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
                         .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳

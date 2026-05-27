@@ -12,6 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,20 +39,25 @@ public class RecommendationService {
     private static final double METERS_PER_DEGREE = 111000.0;
     private static final List<Long> SUPPORTED_CATEGORY_IDS = List.of(1L, 2L, 3L, 4L, 5L, 6L);
 
-    public AllCategoryRecommendationsDTO recommend(double lat, double lng) {
-        List<CategoryRecommendationDTO> categories = SUPPORTED_CATEGORY_IDS.stream()
-                .map(categoryId -> recommendSingleCategory(lat, lng, categoryId))
-                .toList();
-        return new AllCategoryRecommendationsDTO(categories);
+    public Mono<AllCategoryRecommendationsDTO> recommend(double lat, double lng) {
+
+        return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
+                .flatMap(categoryId -> recommendSingleCategory(lat, lng, categoryId))
+                .collectList()
+                .map(categories -> new AllCategoryRecommendationsDTO(categories));
+//        List<CategoryRecommendationDTO> categories = SUPPORTED_CATEGORY_IDS.stream()
+//                .map(categoryId -> recommendSingleCategory(lat, lng, categoryId))
+//                .toList();
+//        return new AllCategoryRecommendationsDTO(categories);
     }
 
-    public AllCategoryRecommendationsDTO recommendByRoute(RouteResponseDTO routeResponse, double userLat, double userLng) {
+    public Mono<AllCategoryRecommendationsDTO> recommendByRoute(RouteResponseDTO routeResponse, double userLat, double userLng) {
         // 1. T-map 응답에서 모든 경로 좌표 추출
         List<PositionDTO> allPoints = extractRoutePoints(routeResponse);
         // 2. 경로의 총 거리에 비례하여 약 150m 간격으로 샘플링
         List<PositionDTO> sampledPoints = samplePointsByDistance(allPoints, 150.0);
 
-        if (sampledPoints.isEmpty()) return new AllCategoryRecommendationsDTO(Collections.emptyList());
+        if (sampledPoints.isEmpty()) return Mono.just(new AllCategoryRecommendationsDTO(Collections.emptyList()));
 
         // 3. 전체 경로를 포함하는 거대 Bounding Box 계산 (1차 필터링용)
         double minLat = sampledPoints.stream().mapToDouble(PositionDTO::getLat).min().orElse(0.0);
@@ -196,7 +204,7 @@ public class RecommendationService {
     }
 
 
-    private CategoryRecommendationDTO recommendSingleCategory(double lat, double lng, Long categoryId) {
+    private Mono<CategoryRecommendationDTO> recommendSingleCategory(double lat, double lng, Long categoryId) {
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
