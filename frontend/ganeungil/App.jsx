@@ -4,7 +4,8 @@ import Layout from "./components/Layout";
 import Onboard_new from "./pages/home/Onboard_1.0";
 import Onboard20 from "./pages/find-route/Onboard_2.0";
 import Onboard30 from "./pages/explore/Onboard_3.0";
-import LoginPage from "./LoginPage";
+import DiscoverPage from "./pages/discover/discover_page";
+import LoginPage from "./pages/signup/LoginPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import api from "./api/api";
 
@@ -28,8 +29,9 @@ function AppRoutes() {
           <Route path="/" element={<Onboard_new />} />
           <Route path="/find-route" element={<Onboard20 />} />
           <Route path="/explore" element={<Onboard30 />} />
+          <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/login" element={<LoginPage />} />
         </Route>
-        <Route path="/login" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );

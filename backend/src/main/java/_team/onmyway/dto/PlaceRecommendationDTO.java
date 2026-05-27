@@ -16,9 +16,5 @@ public class PlaceRecommendationDTO {
     private int walkingMinutes;
     private LocalTime openTime;
     private LocalTime closeTime;
-
-    @JsonProperty("isOpen")
     private boolean isOpen;
-
-    private String imageURL;
 }

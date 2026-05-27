@@ -1,7 +1,6 @@
 package _team.onmyway.dto;
 
 import _team.onmyway.entity.Place;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -33,11 +32,7 @@ public class RecommendationResponseDTO {
         private int walkingMinutes;
         private LocalTime open;
         private LocalTime close;
-
-        @JsonProperty("isOpen")
         private boolean isOpen;
-
-        private String imageURL;
 
         public static PlaceInfo from(PlaceRecommendationDTO p, double userLat, double userLng) {
 
@@ -52,8 +47,7 @@ public class RecommendationResponseDTO {
                     minutes,
                     p.getOpenTime(),
                     p.getCloseTime(),
-                    p.isOpen(),
-                    p.getImageURL()
+                    p.isOpen()
             );
         }
 
