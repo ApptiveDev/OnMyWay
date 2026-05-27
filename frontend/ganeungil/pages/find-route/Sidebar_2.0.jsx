@@ -24,7 +24,6 @@ const CATEGORIES = [
   { label: "전체",  icon: iconAll,   iconActive: iconAllActive   },
   { label: "한 잔", icon: iconDrink, iconActive: iconDrinkActive },
   { label: "한 입", icon: iconFood,  iconActive: iconFoodActive  },
-  { label: "한 숨", icon: iconRest,  iconActive: iconRestActive  },
   { label: "한 판", icon: iconShop,  iconActive: iconShopActive  },
   { label: "한 눈", icon: iconView,  iconActive: iconViewActive  },
   { label: "한 끼", icon: iconFood,  iconActive: iconFoodActive  },
@@ -34,11 +33,11 @@ const fmt = (t) => t?.slice(0, 5) ?? null;
 
 function HoursLabel({ place }) {
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[10px] font-light text-[#2b8237]">영업 중</span>;
-    return <span className="text-[10px] font-light text-[#2b8237]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
+    if (!place.closeTime) return <span className="text-[7.714px] font-family:MaruburiOTF font-normal font-weight:300 text-[#6A8042]">영업 중</span>;
+    return <span className="text-[7.714px] font-light text-[#6A8042]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
-  if (!place.openTime) return <span className="text-[10px] font-light text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[10px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
+  if (!place.openTime) return <span className="text-[7.714px] font-family:MaruburiOTF font-normal font-weight:300 text-[#c82b2b]">영업 종료</span>;
+  return <span className="text-[7.714px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
 }
 
 /**
@@ -146,7 +145,7 @@ export default function Sidebar20({
       {/* ── 위치 보정 버튼 (사이드바 바로 옆) ── */}
       <button
         onClick={onRecalibrate}
-        className="absolute top-[10px] w-8 h-8 bg-white rounded-full border border-[#f3f4f6] shadow flex items-center justify-center hover:shadow-md transition-all duration-300 z-20"
+        className="absolute top-[159px] w-8 h-8 bg-white rounded-full border border-[#f3f4f6] shadow flex items-center justify-center hover:shadow-md transition-all duration-300 z-20"
         style={{ left: sidebarOpen ? "380px" : "-40px" }}
         title="현재 위치 보정"
       >
@@ -155,18 +154,9 @@ export default function Sidebar20({
 
       {/* ── 사이드바 ── */}
       <aside
-        className="absolute top-[10px] left-4 w-[360px] h-[calc(100vh-90px)] bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] overflow-visible flex flex-col z-10 transition-transform duration-300 ease-in-out"
+        className="absolute top-[px] left-4 w-[360px] h-[calc(100vh-90px)] bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] overflow-visible flex flex-col z-10 transition-transform duration-300 ease-in-out"
         style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))" }}
       >
-        {/* 열기/닫기 탭 */}
-        <button
-          onClick={onSidebarToggle}
-          className="absolute top-1/2 -translate-y-1/2 -right-[22px] w-[22px] h-14 bg-white border border-l-0 border-[#f3f4f6] rounded-r-xl shadow-[2px_0px_6px_rgba(0,0,0,0.07)] flex items-center justify-center hover:bg-[#faf6f0] transition-colors z-10"
-        >
-          <span className="text-[#8b7e6a] text-[18px] select-none">
-            {sidebarOpen ? "‹" : "›"}
-          </span>
-        </button>
 
         {/* 내부 콘텐츠 */}
         <div className="flex flex-col flex-1 overflow-hidden rounded-2xl">

@@ -171,9 +171,6 @@ setAllCategories(data.categories);
           center,
           level: 4,
         });
-        window.kakao.maps.event.addListener(kakaoMapRef.current, "click", () => {
-          setSidebarOpen(false);
-        });
         setMapReady(true);
         console.log("카카오맵 초기화 성공");
       } catch (e) {
@@ -395,13 +392,13 @@ setAllCategories(data.categories);
       `}</style>
 
       {/* ── 메인 ── */}
-      <main className="relative h-[calc(100vh-56px)] overflow-hidden">
+      <main className="absolute w-[1920px] h-[1275px] ">
 
         {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
         <div className="absolute inset-0">
           <div
             ref={mapContainerRef}
-            className="w-full h-full kakao-map-wrap"
+            className="w-[1920px] h-[1155px] kakao-map-wrap"
             style={{ transform: "translateZ(0)", willChange: "transform" }}
           />
         </div>
@@ -424,9 +421,9 @@ setAllCategories(data.categories);
           onDestinationClear={clearDestMarker}
         />
 
-        {/* ── 장소 상세 카드 ── */}
+        {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
         {selectedPlace && (
-          <div className="absolute top-[10px] left-[322px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
+          <div className="absolute top-[50px] left-[400px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
               <button
