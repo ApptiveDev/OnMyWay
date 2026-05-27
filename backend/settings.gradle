@@ -1,1 +1,3 @@
 rootProject.name = 'onmyway'
+include 'frontend'
+include 'backend'
