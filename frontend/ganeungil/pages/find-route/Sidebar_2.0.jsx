@@ -375,6 +375,7 @@ export default function Sidebar20({
                   );
                 })}
               </div>
+                      
 
               {/* 장소 목록 */}
               <div className="flex-1 overflow-y-auto px-[14px] pb-3 flex flex-col gap-2">
