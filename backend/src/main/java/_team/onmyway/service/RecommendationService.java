@@ -32,6 +32,7 @@ public class RecommendationService {
     private final PlaceRepository placeRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final GeoDistanceService geoDistanceService;
+    private final ImageService imageService;
     private final WorkingTimeRepository workingTimeRepository;
 
     private static final double RADIUS_METERS = 250.0;
@@ -86,28 +87,64 @@ public class RecommendationService {
         Map<Long, List<Place>> groupedByCategoryId = filteredPlaces.stream()
                 .collect(Collectors.groupingBy(p -> p.getServiceCategory().getId()));
 
-        List<CategoryRecommendationDTO> categoryDTOs = SUPPORTED_CATEGORY_IDS.stream()
-                .map(categoryId -> {
-                    ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElseThrow();
-                    List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
+        int day = LocalDate.now().getDayOfWeek().getValue();
 
-                    Collections.shuffle(categoryPlaces);
-                    int day = LocalDate.now().getDayOfWeek().getValue();
-                    List<PlaceRecommendationDTO> placeInfos = categoryPlaces.stream()
-                            .limit(DEFAULT_LIMIT_PER_CATEGORY)
-                            .map(p -> {
-                                List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(p);
-                                WorkingTime workingTime = placeWorkingTime.get(day%7);
-                                return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
-                            })
-                            .toList();
+        return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
+                .flatMap(categoryId ->
+                        // 1. Optional을 Mono로 변환
+                        Mono.fromCallable(() -> serviceCategoryRepository.findById(categoryId))
+                                .subscribeOn(Schedulers.boundedElastic()) // JPA는 블로킹이므로 전용 스레드 할당
+                                .flatMap(optionalCategory -> Mono.justOrEmpty(optionalCategory))
+                                .flatMap(category -> {
+                                    // 2. 장소 목록 준비 및 셔플
+                                    List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
+                                    Collections.shuffle(categoryPlaces);
 
-                    PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
-                    return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
-                })
-                .toList();
+                                    // 3. 비동기 스트림 처리
+                                    return Flux.fromIterable(categoryPlaces)
+                                            .take(DEFAULT_LIMIT_PER_CATEGORY)
+                                            .flatMap(p ->
+                                                    imageService.getImageURL(p)
+                                                            .map(imageURL -> {
+                                                                WorkingTime workingTime = p.getWorkingTimes().get(day);
+                                                                return toPlaceRecommendationDTO(p, userLat, userLng,
+                                                                        workingTime.isClosed(), workingTime.getOpenTime(),
+                                                                        workingTime.getCloseTime(), imageURL);
+                                                            })
+                                            )
+                                            .collectList()
+                                            .map(placeInfos -> {
+                                                PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
+                                                return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
+                                            });
+                                })
+                )
+                .collectList()
+                .map(categoryDTOs -> new AllCategoryRecommendationsDTO(categoryDTOs));
 
-        return new AllCategoryRecommendationsDTO(categoryDTOs);
+//        List<CategoryRecommendationDTO> categoryDTOs = SUPPORTED_CATEGORY_IDS.stream()
+//                .map(categoryId -> {
+//                    ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElseThrow();
+//                    List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
+//
+//                    Collections.shuffle(categoryPlaces);
+//                    int day = LocalDate.now().getDayOfWeek().getValue();
+//                    List<PlaceRecommendationDTO> placeInfos = categoryPlaces.stream()
+//                            .limit(DEFAULT_LIMIT_PER_CATEGORY)
+//                            .map(p -> {
+//                                List<WorkingTime> placeWorkingTime = p.getWorkingTimes();
+//                                WorkingTime workingTime = placeWorkingTime.get(day);
+//                                String imageURL = imageService.getImageURL(p);
+//                                return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime(), imageURL);
+//                            })
+//                            .toList();
+//
+//                    PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
+//                    return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
+//                })
+//                .toList();
+//
+//        return new AllCategoryRecommendationsDTO(categoryDTOs);
     }
 
     private boolean isPlaceNearAnySamplePoint(Place place, List<PositionDTO> samples, double radiusMeters) {
@@ -210,15 +247,37 @@ public class RecommendationService {
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
 
         int day = LocalDate.now().getDayOfWeek().getValue();
-        List<PlaceRecommendationDTO> placeInfos = places.stream()
-                .map(place -> {
-                    List<WorkingTime> placeWorkingTime = workingTimeRepository.findByPlace(place);
-                    WorkingTime workingTime = placeWorkingTime.get(day%7);
-                    return toPlaceRecommendationDTO(place, lat, lng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime());
+        return Flux.fromIterable(places)
+                .flatMap(place -> {
+                    List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
+                    WorkingTime workingTime = placeWorkingTime.get(day);
+
+                    // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
+                    return imageService.getImageURL(place)
+                            .map(imageURL -> toPlaceRecommendationDTO(
+                                    place, lat, lng,
+                                    workingTime.isClosed(),
+                                    workingTime.getOpenTime(),
+                                    workingTime.getCloseTime(),
+                                    imageURL
+                            ));
                 })
-                .toList();
-        PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
-        return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
+                .collectList() // 3. 비동기로 생성된 DTO들을 다시 List로 모음
+                .map(placeInfos -> {
+                    // 4. 리스트가 완성되면 최종 CategoryRecommendationDTO 생성
+                    PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
+                    return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
+                });
+//        List<PlaceRecommendationDTO> placeInfos = places.stream()
+//                .map(place -> {
+//                    List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
+//                    WorkingTime workingTime = placeWorkingTime.get(day);
+//                    String imageURL = imageService.getImageURL(place);
+//                    return toPlaceRecommendationDTO(place, lat, lng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime(), imageURL);
+//                })
+//                .toList();
+//        PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
+//        return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
     }
 
     private List<Place> getPlacesInRadius(double lat, double lng, Long categoryId, int limit) {
@@ -249,7 +308,7 @@ public class RecommendationService {
         );
     }
 
-    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng, boolean isClosed, LocalTime open, LocalTime close) {
+    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng, boolean isClosed, LocalTime open, LocalTime close, String imageURL) {
         double distance = geoDistanceService.distanceMeters(userLat, userLng, place.getLat(), place.getLng());
         int walkingMinutes = geoDistanceService.estimateWalkingMinutes(distance);
         return new PlaceRecommendationDTO(
@@ -260,7 +319,8 @@ public class RecommendationService {
                 walkingMinutes,
                 open,
                 close,
-                isOpen(isClosed, open, close)
+                isOpen(isClosed, open, close),
+                imageURL
         );
     }
 
