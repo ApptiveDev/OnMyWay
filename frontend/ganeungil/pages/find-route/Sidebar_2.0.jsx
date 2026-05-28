@@ -5,24 +5,39 @@ import iconCurrentLocation from "@/assets/icon-current-location.svg";
 import iconArrow     from "@/assets/icon-arrow.svg";
 import iconSearch    from "@/assets/icon-search.svg";
 import iconSearchNew from "@/assets/icon-search-new.svg";
-import iconAll    from "@/assets/all.svg";
-import iconSip    from "@/assets/sip.svg";
-import iconBite   from "@/assets/bite.svg";
-import iconFight  from "@/assets/fight.svg";
-import iconSee    from "@/assets/see.svg";
-import iconMeal   from "@/assets/meal.svg";
+import iconAll       from "@/assets/all.svg";
+import iconWhiteAll  from "@/assets/whiteall.svg";
+import iconSip       from "@/assets/sip.svg";
+import iconOrgSip    from "@/assets/org_sip.svg";
+import iconBite      from "@/assets/bite.svg";
+import iconOrgBite   from "@/assets/org_bite.svg";
+import iconFight     from "@/assets/fight.svg";
+import iconOrgFight  from "@/assets/org_fight.svg";
+import iconSee       from "@/assets/see.svg";
+import iconOrgSee    from "@/assets/org_see.svg";
+import iconMeal      from "@/assets/meal.svg";
+import iconOrgMeal   from "@/assets/org_meal.svg";
 import iconHeart  from "@/assets/icon-heart.svg";
 import imgPlace   from "@/assets/img-place.jpg";
 import iconex     from "@/assets/icon-ex.svg";
 
 const CATEGORIES = [
-  { label: "전체",  icon: iconAll   },
-  { label: "한 잔", icon: iconSip   },
-  { label: "한 입", icon: iconBite  },
-  { label: "한 판", icon: iconFight },
-  { label: "한 눈", icon: iconSee   },
-  { label: "한 끼", icon: iconMeal  },
+  { label: "전체",  icon: iconWhiteAll, iconActive: iconAll      },
+  { label: "한 잔", icon: iconSip,      iconActive: iconOrgSip   },
+  { label: "한 입", icon: iconBite,     iconActive: iconOrgBite  },
+  { label: "한 판", icon: iconFight,    iconActive: iconOrgFight },
+  { label: "한 눈", icon: iconSee,      iconActive: iconOrgSee   },
+  { label: "한 끼", icon: iconMeal,     iconActive: iconOrgMeal  },
 ];
+
+const CATEGORY_ICON_MAP = {
+  "한잔": iconOrgSip,
+  "한입": iconOrgBite,
+  "한숨": iconAll,
+  "한판": iconOrgFight,
+  "한눈": iconOrgSee,
+  "한끼": iconOrgMeal,
+};
 
 const fmt = (t) => t?.slice(0, 5) ?? null;
 
@@ -246,20 +261,18 @@ export default function Sidebar20({
                 </p>
               </div>
               <div className="px-[24px] pt-[15px] pb-2 flex items-center gap-[7px] shrink-0">
-                {CATEGORIES.map(({ label, icon }) => {
+                {CATEGORIES.map(({ label, icon, iconActive }) => {
                   const isActive = activeCategory === label;
                   return (
-                    <button
-                      key={label}
-                      onClick={() => onCategoryChange(label)}
-                      className={`flex w-[70.695px] h-[31.813px] p-[7.069px] justify-center items-center gap-[7.069px] rounded-full font-['Pretendard'] text-[12.372px] font-medium leading-[140%] transition-colors whitespace-nowrap ${
-                        isActive
-                          ? "bg-[#ED7A13] text-[#FDFDFD]"
-                          : "bg-[#FDFDFD] rounded-[35.347px] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
-                      }`}
-                    >
-                      <img src={icon} alt="" className="w-[7.8px] h-[7.8px]" />
-                      {label}
+                    <button key={label} onClick={() => onCategoryChange(label)} className="shrink-0 group">
+                      <img
+                        src={isActive ? iconActive : icon}
+                        alt={label}
+                        className={`w-[70.695px] h-[31.813px] ${!isActive ? "group-hover:hidden" : ""}`}
+                      />
+                      {!isActive && (
+                        <img src={iconActive} alt={label} className="w-[70.695px] h-[31.813px] hidden group-hover:block" />
+                      )}
                     </button>
                   );
                 })}
@@ -326,11 +339,17 @@ export default function Sidebar20({
                       <div className="flex flex-col gap-[10px] items-start flex-1 min-w-0">
                         <div className="flex flex-col gap-[11px] items-start w-full">
                           {/* 이름 + 카테고리 배지 */}
-                          <div className="flex items-center gap-[8px]">
+                          <div className="flex items-center">
                             <p className="font-['Pretendard'] font-semibold text-[#3e2722] text-[12.857px] whitespace-nowrap shrink-0">{place.name}</p>
-                            <div className="bg-[#ed7a13] flex gap-[3.675px] h-[16.512px] items-center justify-center px-[3.675px] rounded-[14.293px] shrink-0">
-                              <p className="font-['Pretendard'] font-medium text-white text-[6.43px] whitespace-nowrap">{place.category}</p>
-                            </div>
+                            {CATEGORY_ICON_MAP[place.category] && (
+                              <div className="flex w-[37.286px] h-[16.512px] p-[3.675px] justify-center items-center gap-[3.675px] ml-[14.14px] shrink-0">
+                                <img
+                                  src={CATEGORY_ICON_MAP[place.category]}
+                                  alt={place.category}
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            )}
                           </div>
                           {/* 도보 + 영업시간 */}
                           <div className="flex items-center gap-[12px]">
