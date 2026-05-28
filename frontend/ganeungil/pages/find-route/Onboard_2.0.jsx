@@ -51,6 +51,7 @@ function toPlaceList(raw, startId = 0) {
     isOpen: p.isOpen ?? p.open ?? true,
     closeTime: p.closeTime ?? null,
     openTime: p.openTime ?? null,
+    imageURL: p.imageURL ?? null,
     desc: "",
     tags: [],
   }));

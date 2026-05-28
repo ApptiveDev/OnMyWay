@@ -102,14 +102,20 @@ public class RecommendationService {
                                     // 3. 비동기 스트림 처리
                                     return Flux.fromIterable(categoryPlaces)
                                             .take(DEFAULT_LIMIT_PER_CATEGORY)
-                                            .flatMap(p ->
-                                                    imageService.getImageURL(p)
-                                                            .map(imageURL -> {
-                                                                WorkingTime workingTime = p.getWorkingTimes().get(day);
-                                                                return toPlaceRecommendationDTO(p, userLat, userLng,
-                                                                        workingTime.isClosed(), workingTime.getOpenTime(),
-                                                                        workingTime.getCloseTime(), imageURL);
-                                                            })
+                                            .flatMap(p -> {
+                                                    WorkingTime workingTime = p.getWorkingTimes().stream()
+                                                            .filter(wt -> wt.getDayOfWeek() != null && wt.getDayOfWeek() == day)
+                                                            .findFirst()
+                                                            .orElse(null);
+                                                    return imageService.getImageURL(p)
+                                                            .map(imageURL -> toPlaceRecommendationDTO(p, userLat, userLng,
+                                                                    workingTime != null && workingTime.isClosed(),
+                                                                    workingTime != null ? workingTime.getOpenTime() : null,
+                                                                    workingTime != null ? workingTime.getCloseTime() : null,
+                                                                    imageURL))
+                                                            .onErrorReturn(toPlaceRecommendationDTO(
+                                                                    p, userLat, userLng, false, null, null, ""));
+                                                    }
                                             )
                                             .collectList()
                                             .map(placeInfos -> {
@@ -245,20 +251,26 @@ public class RecommendationService {
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
 
-        int day = LocalDate.now().getDayOfWeek().getValue();
+        int day = LocalDate.now().getDayOfWeek().getValue(); // 월=1 ~ 일=7
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
-                    WorkingTime workingTime = placeWorkingTime.get(day);
+                    // 인덱스 대신 dayOfWeek 필드로 정확히 찾기
+                    WorkingTime workingTime = placeWorkingTime.stream()
+                            .filter(wt -> wt.getDayOfWeek() != null && wt.getDayOfWeek() == day)
+                            .findFirst()
+                            .orElse(null);
 
-                    // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
                     return imageService.getImageURL(place)
                             .map(imageURL -> toPlaceRecommendationDTO(
                                     place, lat, lng,
-                                    workingTime.isClosed(),
-                                    workingTime.getOpenTime(),
-                                    workingTime.getCloseTime(),
+                                    workingTime != null && workingTime.isClosed(),
+                                    workingTime != null ? workingTime.getOpenTime() : null,
+                                    workingTime != null ? workingTime.getCloseTime() : null,
                                     imageURL
+                            ))
+                            .onErrorReturn(toPlaceRecommendationDTO(
+                                    place, lat, lng, false, null, null, ""
                             ));
                 })
                 .collectList() // 3. 비동기로 생성된 DTO들을 다시 List로 모음

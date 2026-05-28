@@ -390,7 +390,7 @@ export default function Sidebar20({
                     }`}
                   >
                     <div className="w-[39.5px] h-[39.5px] rounded-[8.6px] overflow-hidden shrink-0">
-                      <img src={imgPlace} alt={place.name} className="object-cover w-full h-full" />
+                      <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">

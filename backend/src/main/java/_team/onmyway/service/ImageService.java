@@ -33,7 +33,7 @@ public class ImageService {
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",p.getName()+" 외관")
+                            .queryParam("query",p.getName())
                             .queryParam("sort","sim")
                             .build())
                     .retrieve()
