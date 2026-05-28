@@ -154,301 +154,300 @@ export default function Sidebar20({
 
       {/* ── 사이드바 ── */}
       <aside
-        className="absolute top-[px] left-4 w-[360px] h-[calc(100vh-90px)] bg-white border border-[#f3f4f6] rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] overflow-visible flex flex-col z-10 transition-transform duration-300 ease-in-out"
+        /*사이드바 기본 스타일*/
+        className="absolute top-[34px] left-[36px] w-[492px] h-[1091px] flex-shrink-0 rounded-[30px] bg-[#FDFDFD] shadow-[0_4px_10px_0_rgba(0,0,0,0.25)] "
         style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))" }}
       >
 
         {/* 내부 콘텐츠 */}
-        <div className="flex flex-col flex-1 overflow-hidden rounded-2xl">
+        <div className="flex flex-col flex-1 w-[492px] h-[359px] rounded-t-[30px] rounded-b-[0px] overflow-hidden bg-[#FFEDA1] ">
 
-          {/* ── 출발지 ── */}
-          <div className="px-4 pt-4 pb-0 shrink-0">
-            <form onSubmit={handleDeptSubmit}>
-              <div className={`flex items-center gap-1 px-2 py-2 rounded-[14px] transition-colors ${
-                deptFocused
-                  ? "bg-white border border-[rgba(200,135,58,0.4)] shadow-sm"
-                  : "bg-[rgba(245,240,232,0.6)]"
-              }`}>
-                <img
-                  src={iconCurrentLocation}
-                  alt=""
-                  className={`w-[15px] h-[15px] shrink-0 transition-opacity ${!granted ? "opacity-30" : ""}`}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-light text-[#8b7e6a] leading-tight mb-0.5">출발지</p>
-                  {granted && !deptFocused ? (
-                    // 위치 허용 상태 + 포커스 아닐 때: "현재 위치" 텍스트 버튼
-                    <button
-                      type="button"
-                      className="text-[12px] font-medium text-[#c8873a] leading-tight text-left w-full"
-                      onClick={handleDeptFocus}
-                    >
-                      현재 위치
-                    </button>
-                  ) : (
-                    <input
-                      ref={deptInputRef}
-                      type="text"
-                      value={deptText}
-                      onChange={e => setDeptText(e.target.value)}
-                      onFocus={handleDeptFocus}
-                      placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
-                      className={`w-full text-[15px] font-light bg-transparent outline-none leading-tight placeholder:text-[rgba(44,36,23,0.3)] ${
-                        granted && !deptText ? "text-[#c8873a]" : "text-[#2c2417]"
-                      }`}
-                      autoFocus={deptFocused}
-                    />
-                  )}
-                </div>
-                {deptFocused && deptText && (
-                  <button
-                    type="button"
-                    onClick={() => setDeptText("")}
-                    className="shrink-0 text-[#8b7e6a] text-[9px] hover:text-[#2c2417]"
-                  >
-                    ✕
-                  </button>
-                )}
-                {!deptFocused && (
-                  <img src={iconArrow} alt="" className="w-[14px] h-[14px] shrink-0" />
-                )}
-              </div>
-            </form>
-
-            <div className="flex items-center gap-2 px-2 my-1">
-              <div className="flex-1 h-px bg-[#f3f4f6]" />
-              <div className="w-1.5 h-1.5 rounded-full bg-[rgba(200,135,58,0.3)]" />
-              <div className="flex-1 h-px bg-[#f3f4f6]" />
-            </div>
-          </div>
-
-          {/* ── 목적지 검색 ── */}
-          <div className="px-4 pb-3 shrink-0">
-            <form onSubmit={handleDestSubmit} className="relative">
-
-              {/* 기본 상태 (28:2103) */}
-              {!destFocused && !destText && (
-                <div className="bg-[#f5f0e8] rounded-[14px] h-[53px] relative overflow-hidden">
-                  <img
-                    src={iconSearchNew}
-                    alt=""
-                    className="absolute w-[17px] h-[17px] pointer-events-none"
-                    style={{ left: 16, top: 18 }}
-                  />
-                  <input
-                    ref={destInputRef}
-                    type="text"
-                    value={destText}
-                    onChange={e => setDestText(e.target.value)}
-                    onFocus={handleDestFocus}
-                    placeholder="어디로 가시나요?"
-                    className="absolute bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] w-[calc(100%-40px)]"
-                    style={{ left: 40, top: 14 }}
-                  />
-                </div>
-              )}
-
-              {/* 검색 중 상태 (28:2131) */}
-              {(destFocused || destText) && (
-                <div className="bg-[#f5f0e8] rounded-[14px] flex items-center px-[40px] py-[12px] relative">
-                  <img
-                    src={iconCurrentLocation}
-                    alt=""
-                    className="absolute left-[16px] w-[17px] h-[17px] pointer-events-none"
-                  />
-                  <input
-                    ref={destInputRef}
-                    type="text"
-                    value={destText}
-                    onChange={e => setDestText(e.target.value)}
-                    onFocus={handleDestFocus}
-                    placeholder="어디로 가시나요?"
-                    className="flex-1 bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] min-w-0"
-                    autoFocus
-                  />
-                  {destText && (
-                    <>
+          <div className = "flex-col gap-[25px] items-start align-stretch mx"> 
+            {/* ── 출발지 ── */}
+            <div className="px-4 pt-4 pb-0 shrink-0">
+              <form onSubmit={handleDeptSubmit}>
+                <div className={`flex items-center gap-3 px-5 py-[14px] rounded-full transition-colors ${
+                  deptFocused
+                    ? "bg-[#fffbec] border-[1.5px] border-[rgba(200,135,58,0.6)] shadow-sm"
+                    : "bg-[#fffbec] border-[1.5px] border-[#d9d9d9]"
+                }`}>
+                  
+                  <div className="flex-1 min-w-0">
+                    {granted && !deptFocused ? (
                       <button
                         type="button"
-                        onClick={() => setDestText("")}
-                        className="w-6 h-6 rounded-full bg-[#e0d8cc] flex items-center justify-center shrink-0 ml-2"
+                        className="text-[20px] tracking-[-0.54px] font-normal text-[#3E2722] leading-tight text-left w-full"
+                        onClick={handleDeptFocus}
                       >
-                        <span className="text-[#8b7e6a] text-[13px]">✕</span>
+                        현재 위치
                       </button>
+                    ) : (
+                      <input
+                        ref={deptInputRef}
+                        type="text"
+                        value={deptText}
+                        onChange={e => setDeptText(e.target.value)}
+                        onFocus={handleDeptFocus}
+                        placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
+                        className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[rgba(62,39,34,0.35)] text-[#3e2722]"
+                        autoFocus={deptFocused}
+                      />
+                    )}
+                  </div>
+                  {deptFocused && deptText && (
+                    <button
+                      type="button"
+                      onClick={() => setDeptText("")}
+                      className="shrink-0 text-[#8b7e6a] text-[11px] hover:text-[#2c2417]"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <img src={iconSearchNew} alt="" className="w-[20px] h-[20px] shrink-0 opacity-50" />
+                </div>
+              </form>
+
+              <div className="flex items-center gap-2 px-2 my-1">
+                <div className="flex-1 h-px bg-[#f3f4f6]" />
+                <div className="w-1.5 h-1.5 rounded-full bg-[rgba(200,135,58,0.3)]" />
+                <div className="flex-1 h-px bg-[#f3f4f6]" />
+              </div>
+            </div>
+
+
+
+
+
+
+
+            {/* ── 목적지 검색 ── */}
+            <div className="px-4 pb-3 shrink-0">
+              <form onSubmit={handleDestSubmit} className="relative">
+
+                {/* 기본 상태 (28:2103) */}
+                {!destFocused && !destText && (
+                  <div className="bg-[#f5f0e8] rounded-[14px] h-[53px] relative overflow-hidden">
+                    <img
+                      src={iconSearchNew}
+                      alt=""
+                      className="absolute w-[17px] h-[17px] pointer-events-none"
+                      style={{ left: 16, top: 18 }}
+                    />
+                    <input
+                      ref={destInputRef}
+                      type="text"
+                      value={destText}
+                      onChange={e => setDestText(e.target.value)}
+                      onFocus={handleDestFocus}
+                      placeholder="어디로 가시나요?"
+                      className="absolute bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] w-[calc(100%-40px)]"
+                      style={{ left: 40, top: 14 }}
+                    />
+                  </div>
+                )}
+
+                {/* 검색 중 상태 (28:2131) */}
+                {(destFocused || destText) && (
+                  <div className="bg-[#f5f0e8] rounded-[14px] flex items-center px-[40px] py-[12px] relative">
+                    <img
+                      src={iconCurrentLocation}
+                      alt=""
+                      className="absolute left-[16px] w-[17px] h-[17px] pointer-events-none"
+                    />
+                    <input
+                      ref={destInputRef}
+                      type="text"
+                      value={destText}
+                      onChange={e => setDestText(e.target.value)}
+                      onFocus={handleDestFocus}
+                      placeholder="어디로 가시나요?"
+                      className="flex-1 bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] min-w-0"
+                      autoFocus
+                    />
+                    {destText && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setDestText("")}
+                          className="w-6 h-6 rounded-full bg-[#e0d8cc] flex items-center justify-center shrink-0 ml-2"
+                        >
+                          <span className="text-[#8b7e6a] text-[13px]">✕</span>
+                        </button>
+                        <button
+                          type="submit"
+                          className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0"
+                        >
+                          검색
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+              </form>
+
+              {/* 취소 버튼 */}
+              {isSearchMode && (
+                <button
+                  onClick={handleCancel}
+                  className="mt-2 w-full text-center text-[18px] text-[#8b7e6a] hover:text-[#2c2417] transition-colors"
+                >
+                  취소
+                </button>
+              )}
+            </div>
+
+            {/* ── 카카오 장소 검색 결과 ── */}
+            {showResults && (
+              <div className="flex flex-col flex-1 overflow-hidden border-t border-[#f3f4f6]">
+                <div className="flex-1 overflow-y-auto">
+                  {isSearching ? (
+                    <div className="flex items-center justify-center h-16">
+                      <p className="text-[15px] font-light text-[#8b7e6a]">검색 중...</p>
+                    </div>
+                  ) : (
+                    searchResults.map((result, idx) => (
                       <button
-                        type="submit"
-                        className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0"
+                        key={result.id}
+                        onClick={() => handleResultClick(result)}
+                        className={`w-full flex items-center gap-3 px-4 py-[10px] text-left transition-colors ${
+                          selectedResult?.id === result.id
+                            ? "bg-[rgba(232,195,106,0.2)] rounded-[12px]"
+                            : "border-b border-[#f9fafb] hover:bg-[#faf6f0]"
+                        }`}
                       >
-                        검색
+                        <div className="w-7 h-7 rounded-[10px] bg-[rgba(200,135,58,0.1)] flex items-center justify-center shrink-0">
+                          <img src={iconGPS} alt="" className="w-[13px] h-[13px]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[18px] font-medium text-[#2c2417] leading-[20.4px] truncate">
+                            {result.place_name}
+                          </p>
+                          <p className="text-[15px] font-light text-[#8b7e6a] leading-[16.8px] truncate">
+                            {result.road_address_name || result.address_name}
+                          </p>
+                        </div>
                       </button>
-                    </>
+                    ))
                   )}
                 </div>
-              )}
-
-            </form>
-
-            {/* 취소 버튼 */}
-            {isSearchMode && (
-              <button
-                onClick={handleCancel}
-                className="mt-2 w-full text-center text-[18px] text-[#8b7e6a] hover:text-[#2c2417] transition-colors"
-              >
-                취소
-              </button>
+              </div>
             )}
-          </div>
 
-          {/* ── 카카오 장소 검색 결과 ── */}
-          {showResults && (
-            <div className="flex flex-col flex-1 overflow-hidden border-t border-[#f3f4f6]">
-              <div className="flex-1 overflow-y-auto">
-                {isSearching ? (
-                  <div className="flex items-center justify-center h-16">
-                    <p className="text-[15px] font-light text-[#8b7e6a]">검색 중...</p>
-                  </div>
-                ) : (
-                  searchResults.map((result, idx) => (
-                    <button
-                      key={result.id}
-                      onClick={() => handleResultClick(result)}
-                      className={`w-full flex items-center gap-3 px-4 py-[10px] text-left transition-colors ${
-                        selectedResult?.id === result.id
-                          ? "bg-[rgba(232,195,106,0.2)] rounded-[12px]"
-                          : "border-b border-[#f9fafb] hover:bg-[#faf6f0]"
+            {/* ── 추천 섹션 ── */}
+            {!showResults && granted && showRecs && (
+              <div
+                className={`flex flex-col flex-1 overflow-hidden ${overlayFading ? "fade-out" : "fade-in"}`}
+              >
+                <div className="px-4 pt-1 shrink-0">
+                  <p className="text-[12px] font-light text-[#2c2417]">
+                    가는길에{" "}
+                    <span className="font-medium text-[#c8873a]">잠시 들러보세요</span>
+                  </p>
+                </div>
+
+                {/* 카테고리 필터 */}
+                <div className="px-[22px] pt-2 pb-2 flex items-center gap-[2px] shrink-0">
+                  {CATEGORIES.map(({ label, icon, iconActive }) => {
+                    const isActive = activeCategory === label;
+                    return (
+                      <button
+                        key={label}
+                        onClick={() => onCategoryChange(label)}
+                        className={`group flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
+                          isActive
+                            ? "bg-[#ED7A13] text-[#FDFDFD]"
+                            : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
+                        }`}
+                      >
+                        <img
+                          src={isActive ? iconActive : icon}
+                          alt=""
+                          className={`w-[7.8px] h-[7.8px] ${!isActive ? "group-hover:hidden" : ""}`}
+                        />
+                        {!isActive && (
+                          <img src={iconActive} alt="" className="w-[7.8px] h-[7.8px] hidden group-hover:block" />
+                        )}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+                        
+
+                {/* 장소 목록 */}
+                <div className="flex-1 overflow-y-auto px-[14px] pb-3 flex flex-col gap-2">
+                  {recs.map(place => (
+                    <div
+                      key={place.id}
+                      onClick={() => onPlaceSelect(selectedPlace?.id === place.id ? null : place)}
+                      className={`flex gap-[7.4px] items-start border rounded-[9.9px] p-[8px] cursor-pointer transition-all ${
+                        selectedPlace?.id === place.id
+                          ? "bg-[rgba(200,135,58,0.05)] border-[rgba(200,135,58,0.3)] shadow-sm"
+                          : "bg-white border-[#f3f4f6] hover:shadow-sm"
                       }`}
                     >
-                      <div className="w-7 h-7 rounded-[10px] bg-[rgba(200,135,58,0.1)] flex items-center justify-center shrink-0">
-                        <img src={iconGPS} alt="" className="w-[13px] h-[13px]" />
+                      <div className="w-[39.5px] h-[39.5px] rounded-[8.6px] overflow-hidden shrink-0">
+                        <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[18px] font-medium text-[#2c2417] leading-[20.4px] truncate">
-                          {result.place_name}
-                        </p>
-                        <p className="text-[15px] font-light text-[#8b7e6a] leading-[16.8px] truncate">
-                          {result.road_address_name || result.address_name}
-                        </p>
-                      </div>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ── 추천 섹션 ── */}
-          {!showResults && granted && showRecs && (
-            <div
-              className={`flex flex-col flex-1 overflow-hidden ${overlayFading ? "fade-out" : "fade-in"}`}
-            >
-              <div className="px-4 pt-1 shrink-0">
-                <p className="text-[12px] font-light text-[#2c2417]">
-                  가는길에{" "}
-                  <span className="font-medium text-[#c8873a]">잠시 들러보세요</span>
-                </p>
-              </div>
-
-              {/* 카테고리 필터 */}
-              <div className="px-[22px] pt-2 pb-2 flex items-center gap-[2px] shrink-0">
-                {CATEGORIES.map(({ label, icon, iconActive }) => {
-                  const isActive = activeCategory === label;
-                  return (
-                    <button
-                      key={label}
-                      onClick={() => onCategoryChange(label)}
-                      className={`group flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
-                        isActive
-                          ? "bg-[#ED7A13] text-[#FDFDFD]"
-                          : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
-                      }`}
-                    >
-                      <img
-                        src={isActive ? iconActive : icon}
-                        alt=""
-                        className={`w-[7.8px] h-[7.8px] ${!isActive ? "group-hover:hidden" : ""}`}
-                      />
-                      {!isActive && (
-                        <img src={iconActive} alt="" className="w-[7.8px] h-[7.8px] hidden group-hover:block" />
-                      )}
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-                      
-
-              {/* 장소 목록 */}
-              <div className="flex-1 overflow-y-auto px-[14px] pb-3 flex flex-col gap-2">
-                {recs.map(place => (
-                  <div
-                    key={place.id}
-                    onClick={() => onPlaceSelect(selectedPlace?.id === place.id ? null : place)}
-                    className={`flex gap-[7.4px] items-start border rounded-[9.9px] p-[8px] cursor-pointer transition-all ${
-                      selectedPlace?.id === place.id
-                        ? "bg-[rgba(200,135,58,0.05)] border-[rgba(200,135,58,0.3)] shadow-sm"
-                        : "bg-white border-[#f3f4f6] hover:shadow-sm"
-                    }`}
-                  >
-                    <div className="w-[39.5px] h-[39.5px] rounded-[8.6px] overflow-hidden shrink-0">
-                      <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between">
-                        <div className="min-w-0">
-                          <p className="text-[12px] font-medium text-[#2c2417] leading-tight truncate">
-                            {place.name}
-                          </p>
-                          <div className="flex items-center gap-1 mt-0.5 flex-wrap">
-                            <span className="text-[10px] font-light text-[#8b7e6a]">{place.category}</span>
-                            <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
-                            <span className="text-[10px] font-light text-[#8b7e6a]">도보 {place.walkMin}분</span>
-                            <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
-                            <HoursLabel place={place} />
+                        <div className="flex items-start justify-between">
+                          <div className="min-w-0">
+                            <p className="text-[12px] font-medium text-[#2c2417] leading-tight truncate">
+                              {place.name}
+                            </p>
+                            <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                              <span className="text-[10px] font-light text-[#8b7e6a]">{place.category}</span>
+                              <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
+                              <span className="text-[10px] font-light text-[#8b7e6a]">도보 {place.walkMin}분</span>
+                              <span className="text-[10px] text-[rgba(139,126,106,0.3)] leading-none">·</span>
+                              <HoursLabel place={place} />
+                            </div>
                           </div>
+                          <button
+                            className="shrink-0 ml-1 w-[15px] h-[17px] flex items-center justify-center"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <img src={iconHeart} alt="저장" className="w-[8.6px] h-[8.6px]" />
+                            
+                          </button>
                         </div>
-                        <button
-                          className="shrink-0 ml-1 w-[15px] h-[17px] flex items-center justify-center"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <img src={iconHeart} alt="저장" className="w-[8.6px] h-[8.6px]" />
-                          
-                        </button>
-                      </div>
-                      <p className="text-[9px] font-light text-[#8b7e6a] mt-1 leading-relaxed line-clamp-1">
-                        {place.desc}
-                      </p>
-                      <div className="flex gap-[2.5px] mt-1.5">
-                        {place.tags.map(tag => (
-                          <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[8px] font-normal px-[3.7px] py-[1.2px] rounded-[2.5px]">
-                            {tag}
-                          </span>
-                        ))}
+                        <p className="text-[9px] font-light text-[#8b7e6a] mt-1 leading-relaxed line-clamp-1">
+                          {place.desc}
+                        </p>
+                        <div className="flex gap-[2.5px] mt-1.5">
+                          {place.tags.map(tag => (
+                            <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[8px] font-normal px-[3.7px] py-[1.2px] rounded-[2.5px]">
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* 위치 거부 안내 */}
-          {!showResults && locStatus === "denied" && (
-            <div className="flex flex-col items-center justify-center flex-1 gap-3 px-4 text-center">
-              <div className="w-10 h-10 rounded-full bg-[rgba(139,126,106,0.08)] flex items-center justify-center">
-                <img src={iconGPS} alt="" className="w-4 h-4 opacity-30" />
+            {/* 위치 거부 안내 */}
+            {!showResults && locStatus === "denied" && (
+              <div className="flex flex-col items-center justify-center flex-1 gap-3 px-4 text-center">
+                <div className="w-10 h-10 rounded-full bg-[rgba(139,126,106,0.08)] flex items-center justify-center">
+                  <img src={iconGPS} alt="" className="w-4 h-4 opacity-30" />
+                </div>
+                <p className="text-[15px] font-light text-[#8b7e6a] leading-relaxed">
+                  위치 정보를 허용하면<br />주변 추천 장소를 볼 수 있어요
+                </p>
+                <button
+                  onClick={onRecalibrate}
+                  className="text-[18px] text-[#c8873a] border border-[rgba(200,135,58,0.3)] px-4 py-1.5 rounded-full hover:bg-[rgba(200,135,58,0.05)] transition-colors"
+                >
+                  위치 허용하기
+                </button>
               </div>
-              <p className="text-[15px] font-light text-[#8b7e6a] leading-relaxed">
-                위치 정보를 허용하면<br />주변 추천 장소를 볼 수 있어요
-              </p>
-              <button
-                onClick={onRecalibrate}
-                className="text-[18px] text-[#c8873a] border border-[rgba(200,135,58,0.3)] px-4 py-1.5 rounded-full hover:bg-[rgba(200,135,58,0.05)] transition-colors"
-              >
-                위치 허용하기
-              </button>
-            </div>
-          )}
-
+            )}
+          
+          </div>
         </div>
       </aside>
     </>
