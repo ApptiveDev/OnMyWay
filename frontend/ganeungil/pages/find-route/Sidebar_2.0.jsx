@@ -19,6 +19,7 @@ import iconShopActive  from "@/assets/icon-shop-active.svg";
 import iconViewActive  from "@/assets/icon-view-active.svg";
 import iconHeart  from "@/assets/icon-heart.svg";
 import imgPlace   from "@/assets/img-place.jpg";
+import iconex     from "@/assets/icon-ex.svg";
 
 const CATEGORIES = [
   { label: "전체",  icon: iconAll,   iconActive: iconAllActive   },
@@ -154,148 +155,123 @@ export default function Sidebar20({
 
       {/* ── 사이드바 ── */}
       <aside
-        /*사이드바 기본 스타일*/
-        className="absolute top-[34px] left-[36px] w-[492px] h-[1091px] flex-shrink-0 rounded-[30px] bg-[#FDFDFD] shadow-[0_4px_10px_0_rgba(0,0,0,0.25)] "
+        className="absolute top-[34px] left-[36px] w-[492px] h-[1091px] flex-shrink-0 rounded-[30px] bg-[#FDFDFD] shadow-[0_4px_10px_0_rgba(0,0,0,0.25)]"
         style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))" }}
       >
 
         {/* 내부 콘텐츠 */}
-        <div className="flex flex-col flex-1 w-[492px] h-[359px] rounded-t-[30px] rounded-b-[0px] overflow-hidden bg-[#FFEDA1] ">
+        <div className="flex flex-col flex-1 w-[492px] h-[359px] rounded-t-[30px] rounded-b-[0px] overflow-hidden bg-[#FFEDA1]">
 
-          <div className = "flex-col gap-[25px] items-start align-stretch mx"> 
-            {/* ── 출발지 ── */}
-            <div className="px-4 pt-4 pb-0 shrink-0">
-              <form onSubmit={handleDeptSubmit}>
-                <div className={`flex items-center gap-3 px-5 py-[14px] rounded-full transition-colors ${
-                  deptFocused
-                    ? "bg-[#fffbec] border-[1.5px] border-[rgba(200,135,58,0.6)] shadow-sm"
-                    : "bg-[#fffbec] border-[1.5px] border-[#d9d9d9]"
-                }`}>
-                  
-                  <div className="flex-1 min-w-0">
-                    {granted && !deptFocused ? (
-                      <button
-                        type="button"
-                        className="text-[20px] tracking-[-0.54px] font-normal text-[#3E2722] leading-tight text-left w-full"
-                        onClick={handleDeptFocus}
-                      >
-                        현재 위치
-                      </button>
-                    ) : (
-                      <input
-                        ref={deptInputRef}
-                        type="text"
-                        value={deptText}
-                        onChange={e => setDeptText(e.target.value)} 
-                        onFocus={handleDeptFocus}
-                        placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
-                        className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[rgba(62,39,34,0.35)] text-[#3e2722]"
-                        autoFocus={deptFocused}
-                      />
-                    )}
-                  </div>
-                  {deptFocused && deptText && (
+          <div className="flex-col gap-[40px] items-start self-stretch">
+
+            {/* ── 출발지 + 목적지 — Figma 1024:254 ── */}
+            <div className="flex gap-[18px] items-center w-full px-[18px] pt-[18px]">
+
+              {/* 왼쪽: 출발/도착 인디케이터 — Figma: w-[24px] h-[91px] */}
+              <div className="flex flex-col items-center w-[24px] h-[91px] shrink-0 py-[5px]">
+                <div className="w-[14px] h-[14px] rounded-full bg-[#ED7A13] ring-2 ring-white" />
+                <div className="flex-1 w-px border-l border-dashed border-[rgba(62,39,34,0.3)]" />
+                <div className="w-[14px] h-[14px] rounded-full bg-[#3E2722] ring-2 ring-white" />
+              </div>
+
+              {/* 오른쪽: 입력 박스 컬럼 — Figma: flex flex-col items-center flex-1 */}
+              <div className="flex flex-col items-center flex-1">
+
+                {/* 출발지 — Figma: flex flex-col items-start p-[8px] w-full */}
+                <div className="flex flex-col items-start p-[8px] w-full">
+                  <form onSubmit={handleDeptSubmit} className="w-full">
+                    <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center gap-[15.068px] mt-[41px] pl-[37.67px] rounded-[37.669px] ${
+                      deptFocused ? "border-[rgba(200,135,58,0.6)] shadow-sm" : "border-[#d9d9d9]"
+                    }`}>
+                      <div className="flex-1 min-w-0">
+                        {granted && !deptFocused ? (
+                          <button
+                            type="button"
+                            className="font-['Pretendard'] text-[20px] font-normal leading-[133.4%] tracking-[-0.54px] text-[#3e2722] text-left w-full"
+                            onClick={handleDeptFocus}
+                          >
+                            부산대학교
+                          </button>
+                        ) : (
+                          <input
+                            ref={deptInputRef}
+                            type="text"
+                            value={deptText}
+                            onChange={e => setDeptText(e.target.value)}
+                            onFocus={handleDeptFocus}
+                            placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
+                            className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722]"
+                            autoFocus={deptFocused}
+                          />
+                        )}
+                      </div>
+                      {deptFocused && deptText && (
+                        <button
+                          type="button"
+                          onClick={() => setDeptText("")}
+                          className="shrink-0 text-[#8b7e6a] text-[11px] hover:text-[#2c2417]"
+                        >
+                          ✕
+                        </button>
+                      )}
+                      <img src={iconSearchNew} alt="" className="w-[25.188px] h-[25.188px] shrink-0 opacity-60" />
+                    </div>
+                  </form>
+                </div>
+
+                {/* 목적지 */}
+                <div className="flex flex-col items-start p-[8px] w-full">
+                  <form onSubmit={handleDestSubmit} className="w-full">
+                    <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center px-[37.669px] rounded-[37.669px] w-full transition-colors ${
+                      destFocused ? "border-[rgba(200,135,58,0.6)] shadow-sm" : "border-[#d9d9d9]"
+                    }`}>
+                      <div className="flex-1 min-w-0">
+                        <input
+                          ref={destInputRef}
+                          type="text"
+                          value={destText}
+                          onChange={e => setDestText(e.target.value)}
+                          onFocus={handleDestFocus}
+                          placeholder="어디로 가시나요?"
+                          className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722]"
+                          autoFocus={destFocused}
+                        />
+                      </div>
+                      {destText && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setDestText("")}
+                            className="w-6 h-6 rounded-full bg-[#e0d8cc] flex items-center justify-center shrink-0 ml-2"
+                          >
+                            <span className="text-[#8b7e6a] text-[13px]">✕</span>
+                          </button>
+                          <button
+                            type="submit"
+                            className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0"
+                          >
+                            검색
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </form>
+                  {/* 취소 버튼 */}
+                  {isSearchMode && (
                     <button
-                      type="button"
-                      onClick={() => setDeptText("")}
-                      className="shrink-0 text-[#8b7e6a] text-[11px] hover:text-[#2c2417]"
+                      onClick={handleCancel}
+                      className="flex items-center justify-center w-full mt-2 transition-opacity hover:opacity-70"
                     >
-                      ✕
+                      <img src={iconex} alt="취소" className="w-[20.221px] h-[18.184px]" />
                     </button>
                   )}
-                  <img src={iconSearchNew} alt="" className="w-[20px] h-[20px] shrink-0 opacity-50" />
                 </div>
-              </form>
 
-              <div className="flex items-center gap-2 px-2 my-1">
-                <div className="flex-1 h-px bg-[#f3f4f6]" />
-                <div className="w-1.5 h-1.5 rounded-full bg-[rgba(200,135,58,0.3)]" />
-                <div className="flex-1 h-px bg-[#f3f4f6]" />
               </div>
             </div>
 
-
-
-
-
-
-
-            {/* ── 목적지 검색 ── */}
-            <div className="px-4 pb-3 shrink-0">
-              <form onSubmit={handleDestSubmit} className="relative">
-
-                {/* 기본 상태 (28:2103) */}
-                {!destFocused && !destText && (
-                  <div className="bg-[#f5f0e8] rounded-[14px] h-[53px] relative overflow-hidden">
-                    <img
-                      src={iconSearchNew}
-                      alt=""
-                      className="absolute w-[17px] h-[17px] pointer-events-none"
-                      style={{ left: 16, top: 18 }}
-                    />
-                    <input
-                      ref={destInputRef}
-                      type="text"
-                      value={destText}
-                      onChange={e => setDestText(e.target.value)}
-                      onFocus={handleDestFocus}
-                      placeholder="어디로 가시나요?"
-                      className="absolute bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] w-[calc(100%-40px)]"
-                      style={{ left: 40, top: 14 }}
-                    />
-                  </div>
-                )}
-
-                {/* 검색 중 상태 (28:2131) */}
-                {(destFocused || destText) && (
-                  <div className="bg-[#f5f0e8] rounded-[14px] flex items-center px-[40px] py-[12px] relative">
-                    <img
-                      src={iconCurrentLocation}
-                      alt=""
-                      className="absolute left-[16px] w-[17px] h-[17px] pointer-events-none"
-                    />
-                    <input
-                      ref={destInputRef}
-                      type="text"
-                      value={destText}
-                      onChange={e => setDestText(e.target.value)}
-                      onFocus={handleDestFocus}
-                      placeholder="어디로 가시나요?"
-                      className="flex-1 bg-transparent outline-none text-[15px] text-[#2c2417] placeholder:text-[rgba(139,126,106,0.5)] min-w-0"
-                      autoFocus
-                    />
-                    {destText && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setDestText("")}
-                          className="w-6 h-6 rounded-full bg-[#e0d8cc] flex items-center justify-center shrink-0 ml-2"
-                        >
-                          <span className="text-[#8b7e6a] text-[13px]">✕</span>
-                        </button>
-                        <button
-                          type="submit"
-                          className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0"
-                        >
-                          검색
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-
-              </form>
-
-              {/* 취소 버튼 */}
-              {isSearchMode && (
-                <button
-                  onClick={handleCancel}
-                  className="mt-2 w-full text-center text-[18px] text-[#8b7e6a] hover:text-[#2c2417] transition-colors"
-                >
-                  취소
-                </button>
-              )}
-            </div>
+            {/* 구분선 */}
+            <div className="w-[423px] h-px bg-[#d9d9d9] mx-auto mt-[32px] shrink-0" />
 
             {/* ── 카카오 장소 검색 결과 ── */}
             {showResults && (
@@ -339,25 +315,25 @@ export default function Sidebar20({
               <div
                 className={`flex flex-col flex-1 overflow-hidden ${overlayFading ? "fade-out" : "fade-in"}`}
               >
-                <div className="px-4 pt-1 shrink-0">
-                  <p className="text-[12px] font-light text-[#2c2417]">
+                <div className="px-4 pt-[25px] shrink-0">
+                  <p className="text-[15px] font-normal text-[#000000] leading-[133.4%] tracking-[-0.405px] opacity-70">
                     가는길에{" "}
-                    <span className="font-medium text-[#c8873a]">잠시 들러보세요</span>
+                    <span>잠시 들러 보세요</span>
                   </p>
                 </div>
 
                 {/* 카테고리 필터 */}
-                <div className="px-[22px] pt-2 pb-2 flex items-center gap-[2px] shrink-0">
+                <div className="px-[24px] pt-[15px] pb-2 flex items-center gap-[7px] shrink-0">
                   {CATEGORIES.map(({ label, icon, iconActive }) => {
                     const isActive = activeCategory === label;
                     return (
                       <button
                         key={label}
                         onClick={() => onCategoryChange(label)}
-                        className={`group flex items-center gap-[4px] px-[8px] py-[5px] rounded-full text-[9px] font-medium transition-colors whitespace-nowrap ${
+                        className={`group flex w-[70.695px] h-[31.813px] p-[7.069px] justify-center items-center gap-[7.069px] rounded-full font-['Pretendard'] text-[12.372px] font-medium leading-[140%] transition-colors whitespace-nowrap ${
                           isActive
                             ? "bg-[#ED7A13] text-[#FDFDFD]"
-                            : "border-[rgba(44,36,23,0.1)] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
+                            : "bg-[#FDFDFD] rounded-[35.347px] text-[#3E2722] hover:bg-[#ED7A13] hover:text-[#FDFDFD]"
                         }`}
                       >
                         <img
@@ -373,7 +349,8 @@ export default function Sidebar20({
                     );
                   })}
                 </div>
-                        
+
+        <div className="flex flex-col flex-1 w-[492px] h-[359px] rounded-t-[30px] rounded-b-[0px] overflow-hidden bg-[#FFEDA1] ">
 
                 {/* 장소 목록 */}
                 <div className="flex-1 overflow-y-auto px-[14px] pb-3 flex flex-col gap-2">
@@ -409,7 +386,6 @@ export default function Sidebar20({
                             onClick={e => e.stopPropagation()}
                           >
                             <img src={iconHeart} alt="저장" className="w-[8.6px] h-[8.6px]" />
-                            
                           </button>
                         </div>
                         <p className="text-[9px] font-light text-[#8b7e6a] mt-1 leading-relaxed line-clamp-1">
@@ -426,28 +402,12 @@ export default function Sidebar20({
                     </div>
                   ))}
                 </div>
+        </div>
               </div>
             )}
 
-            {/* 위치 거부 안내 */}
-            {!showResults && locStatus === "denied" && (
-              <div className="flex flex-col items-center justify-center flex-1 gap-3 px-4 text-center">
-                <div className="w-10 h-10 rounded-full bg-[rgba(139,126,106,0.08)] flex items-center justify-center">
-                  <img src={iconGPS} alt="" className="w-4 h-4 opacity-30" />
-                </div>
-                <p className="text-[15px] font-light text-[#8b7e6a] leading-relaxed">
-                  위치 정보를 허용하면<br />주변 추천 장소를 볼 수 있어요
-                </p>
-                <button
-                  onClick={onRecalibrate}
-                  className="text-[18px] text-[#c8873a] border border-[rgba(200,135,58,0.3)] px-4 py-1.5 rounded-full hover:bg-[rgba(200,135,58,0.05)] transition-colors"
-                >
-                  위치 허용하기
-                </button>
-              </div>
-            )}
-          
           </div>
+
         </div>
       </aside>
     </>
