@@ -161,23 +161,29 @@ export default function Sidebar20({
         {/* ── 노란 상단 영역 (359px 고정) ── */}
         <div className="w-[492px] h-[407.19px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
 
-          {/* 출발지 + 목적지 */}
-          <div className="flex gap-[18px] items-center w-full px-[18px] pt-[18px]">
+          {/* Figma 1098:186 — flex flex-col gap-[37px] (입력섹션 + 구분선) */}
+          <div className="flex flex-col gap-[37px] items-center px-[41px] pt-[41px] w-full">
 
-            {/* 출발/도착 인디케이터 */}
-            <div className="flex flex-col items-center w-[24px] h-[91px] shrink-0 py-[5px]">
-              <div className="w-[14px] h-[14px] rounded-full bg-[#ED7A13] ring-2 ring-white" />
-              <div className="flex-1 w-px border-l border-dashed border-[rgba(62,39,34,0.3)]" />
-              <div className="w-[14px] h-[14px] rounded-full bg-[#3E2722] ring-2 ring-white" />
-            </div>
+            {/* 입력 섹션 — 1024:254 */}
+            <div className="flex flex-col items-center w-full">
+              {/* 인디케이터 + 입력박스 행 — 1024:253, gap-[18px] */}
+              <div className="flex gap-[18px] items-center w-full">
 
-            {/* 입력 박스 컬럼 */}
-            <div className="flex flex-col items-center flex-1">
+                {/* 출발/도착 인디케이터 — w-[24px] h-[91px] */}
+                <div className="flex flex-col items-center w-[24px] h-[91px] shrink-0 py-[5px]">
+                  <div className="w-[14px] h-[14px] rounded-full bg-[#ED7A13] ring-2 ring-white" />
+                  <div className="flex-1 w-px border-l border-dashed border-[rgba(62,39,34,0.3)]" />
+                  <div className="w-[14px] h-[14px] rounded-full bg-[#3E2722] ring-2 ring-white" />
+                </div>
+
+                {/* 입력 박스 컬럼 — 1024:252, w-[388px] */}
+                <div className="flex flex-col items-center w-[388px]">
+                <div className="flex flex-col items-center w-full">
 
               {/* 출발지 */}
               <div className="flex flex-col items-start p-[8px] w-full">
                 <form onSubmit={handleDeptSubmit} className="w-full">
-                  <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center gap-[15.068px] mt-[41px] pl-[37.67px] rounded-[37.669px] ${
+                  <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center gap-[15.068px] pl-[37.67px] rounded-[37.669px] ${
                     deptFocused ? "border-[rgba(200,135,58,0.6)] shadow-sm" : "border-[#d9d9d9]"
                   }`}>
                     <div className="flex-1 min-w-0">
@@ -205,7 +211,6 @@ export default function Sidebar20({
                     {deptFocused && deptText && (
                       <button type="button" onClick={() => setDeptText("")} className="shrink-0 text-[#8b7e6a] text-[11px] hover:text-[#2c2417]">✕</button>
                     )}
-                    <img src={iconSearchNew} alt="" className="w-[25.188px] h-[25.188px] shrink-0 opacity-60" />
                   </div>
                 </form>
               </div>
@@ -228,11 +233,10 @@ export default function Sidebar20({
                         autoFocus={destFocused}
                       />
                     </div>
+                    <img src={iconSearchNew} alt="" className="w-[25.188px] h-[25.188px] shrink-0 opacity-60" />
                     {destText && (
                       <>
-                        <button type="button" onClick={() => setDestText("")} className="w-6 h-6 rounded-full bg-[#e0d8cc] flex items-center justify-center shrink-0 ml-2">
-                          <span className="text-[#8b7e6a] text-[13px]">✕</span>
-                        </button>
+                        
                         <button type="submit" className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0">검색</button>
                       </>
                     )}
@@ -245,11 +249,15 @@ export default function Sidebar20({
                 )}
               </div>
 
+                </div>
+                </div>
+              </div>
             </div>
-          </div>
 
-          {/* 구분선 */}
-          <div className="w-[423px] h-px bg-[#d9d9d9] mx-auto mt-[32px] shrink-0 border border-[rgba(62,39,34,0.50)]" />
+            {/* 구분선 — gap-[37px]으로 간격 처리 */}
+            <div className="w-[423px] h-px bg-[#d9d9d9] shrink-0" />
+
+          </div>
 
           {/* 가는길에 + 카테고리 필터 */}
           {!showResults && granted && showRecs && (

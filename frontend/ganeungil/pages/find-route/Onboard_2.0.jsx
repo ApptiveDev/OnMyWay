@@ -13,6 +13,22 @@ import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
 import iconDestPin from "@/assets/icon-destination-pin.svg";
 
+import markerSip   from "@/assets/map/iconsip.svg";
+import markerBite  from "@/assets/map/iconbite.svg";
+import markerFight from "@/assets/map/iconfight.svg";
+import markerMeal  from "@/assets/map/iconmeal.svg";
+import markerSee   from "@/assets/map/iconsee.svg";
+import markerHansoom from "@/assets/map/icon_한숨.svg";
+
+const MARKER_ICON = {
+  "한잔":  markerSip,
+  "한입":  markerBite,
+  "한판":  markerFight,
+  "한끼":  markerMeal,
+  "한눈":  markerSee,
+  "한숨":  markerHansoom,
+};
+
 const CATEGORY_LABEL_TO_ID = {
   "한 잔": 1,
   "한 입": 2,
@@ -203,18 +219,16 @@ setAllCategories(data.categories);
     circleRef.current = new window.kakao.maps.Circle({
       center:         pos,
       radius:         250,
-      strokeWeight:   2,
-      strokeColor:    "#c8873a",
-      strokeOpacity:  0.5,
-      fillColor:      "#c8873a",
-      fillOpacity:    0.08,
+      strokeWeight:  7,                        
+      strokeColor:    "#FFEDA1",
+      shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
       map,
     });
 
     // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
-      content:  `<div style="width:15px;height:15px;border-radius:50%;background:#6A8042;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`,
+      content:  `<div style="width:25px;height:25px;border-radius:20.617px;background:#ED7A13; border:2.577px solid white; box-shadow:0px 2px 8px rgba(0,0,0,0.3);"></div>`,
       map,
       yAnchor:  0.5,
       xAnchor:  0.5,
@@ -240,7 +254,9 @@ setAllCategories(data.categories);
     ];
     const placed = [];
 
-    featuredRecs.forEach(place => {
+    console.log("[마커] featuredRecs:", featuredRecs.map(p => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, category: p.category })));
+
+    featuredRecs.filter(p => p.lat && p.lng).forEach(place => {
       let lat = place.lat;
       let lng = place.lng;
       let offsetIdx = 0;
@@ -254,13 +270,16 @@ setAllCategories(data.categories);
       }
       placed.push({ lat, lng });
 
+      const iconUrl = MARKER_ICON[place.category] || markerSip;
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
           style="
-            width:28px;height:28px;border-radius:50%;
-            background:#c8873a;border:2px solid white;
-            box-shadow:0 2px 8px rgba(0,0,0,0.25);
+            width:40px;height:40px;
+            background-image:url('${iconUrl}');
+            background-size:contain;
+            background-repeat:no-repeat;
+            background-position:center;
             cursor:pointer;transition:transform 0.15s;
           "
           onmouseover="this.style.transform='scale(1.2)'"
