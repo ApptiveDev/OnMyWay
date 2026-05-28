@@ -186,7 +186,7 @@ export default function Sidebar20({
                         ref={deptInputRef}
                         type="text"
                         value={deptText}
-                        onChange={e => setDeptText(e.target.value)}
+                        onChange={e => setDeptText(e.target.value)} 
                         onFocus={handleDeptFocus}
                         placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
                         className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[rgba(62,39,34,0.35)] text-[#3e2722]"
