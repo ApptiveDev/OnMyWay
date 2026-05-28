@@ -233,20 +233,17 @@ export default function Sidebar20({
                         autoFocus={destFocused}
                       />
                     </div>
-                    <img src={iconSearchNew} alt="" className="w-[25.188px] h-[25.188px] shrink-0 opacity-60" />
+                    {!destFocused && <img src={iconSearchNew} alt="" className="w-[25.188px] h-[25.188px] shrink-0 opacity-60" />}
+                    {destFocused && (
+                      <button type="button" onClick={handleCancel} className="shrink-0 ml-2 hover:opacity-70 transition-opacity">
+                        <img src={iconex} alt="취소" className="w-[20.221px] h-[18.184px]" />
+                      </button>
+                    )}
                     {destText && (
-                      <>
-                        
-                        <button type="submit" className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0">검색</button>
-                      </>
+                      <button type="submit" className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0">검색</button>
                     )}
                   </div>
                 </form>
-                {isSearchMode && (
-                  <button onClick={handleCancel} className="flex items-center justify-center w-full mt-2 transition-opacity hover:opacity-70">
-                    <img src={iconex} alt="취소" className="w-[20.221px] h-[18.184px]" />
-                  </button>
-                )}
               </div>
 
                 </div>
