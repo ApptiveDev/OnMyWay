@@ -159,7 +159,7 @@ export default function Sidebar20({
       >
 
         {/* ── 노란 상단 영역 (359px 고정) ── */}
-        <div className="w-[492px] h-[359px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0">
+        <div className="w-[492px] h-[359px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
 
           {/* 출발지 + 목적지 */}
           <div className="flex gap-[18px] items-center w-full px-[18px] pt-[18px]">
@@ -342,13 +342,11 @@ export default function Sidebar20({
                           <div className="flex items-center">
                             <p className="font-['Pretendard'] font-semibold text-[#3e2722] text-[12.857px] whitespace-nowrap shrink-0">{place.name}</p>
                             {CATEGORY_ICON_MAP[place.category] && (
-                              <div className="flex w-[37.286px] h-[16.512px] p-[3.675px] justify-center items-center gap-[3.675px] ml-[14.14px] shrink-0">
-                                <img
-                                  src={CATEGORY_ICON_MAP[place.category]}
-                                  alt={place.category}
-                                  className="w-full h-full object-contain"
-                                />
-                              </div>
+                              <img
+                                src={CATEGORY_ICON_MAP[place.category]}
+                                alt={place.category}
+                                className="w-[37.286px] h-[16.512px] shrink-0 ml-[14.14px]"
+                              />
                             )}
                           </div>
                           {/* 도보 + 영업시간 */}
