@@ -396,10 +396,10 @@ setAllCategories(data.categories);
       <main className="absolute w-[1920px] h-[1275px] ">
 
         {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
-        <div className="absolute inset-0">
+        <div className="absolute w-[1920px] h-[1155px] top-0 left-0">           
           <div
             ref={mapContainerRef}
-            className="w-[1920px] h-[1155px] kakao-map-wrap"
+            className="w-full h-[1155px] kakao-map-wrap"
             style={{ transform: "translateZ(0)", willChange: "transform" }}
           />
         </div>
