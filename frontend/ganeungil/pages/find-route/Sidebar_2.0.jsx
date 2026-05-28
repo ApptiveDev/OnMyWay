@@ -145,21 +145,21 @@ export default function Sidebar20({
       {/* ── 위치 보정 버튼 ── */}
       <button
         onClick={onRecalibrate}
-        className="absolute top-[159px] w-8 h-8 bg-white rounded-full border border-[#f3f4f6] shadow flex items-center justify-center hover:shadow-md transition-all duration-300 z-20"
-        style={{ left: sidebarOpen ? "380px" : "-40px" }}
+        className="absolute w-[66px] h-[66px] bg-[#fdfdfd] rounded-[33px] drop-shadow-[0px_4.5px_2.25px_rgba(0,0,0,0.25)] flex items-center justify-center p-[15px] transition-all duration-300 z-20"
+        style={{ left: "545px", top: "50px" }}  /*이거 다시 측정해야해서 일단 눈대중값으로 545*/
         title="현재 위치 보정"
       >
-        <img src={iconGPS} alt="위치 보정" className="w-3.5 h-3.5" />
+        <img src={iconGPS} alt="위치 보정" className="w-[35.982px] h-[35.982px]" />
       </button>
 
       {/* ── 사이드바 ── */}
       <aside
-        className="absolute top-[34px] left-[36px] w-[492px] h-[1091px] flex-shrink-0 rounded-[30px] bg-[#FDFDFD] shadow-[0_4px_10px_0_rgba(0,0,0,0.25)] flex flex-col"
+        className="absolute top-[34px] left-[36px] w-[492px] h-[1091px] flex-shrink-0 rounded-[30px] bg-[#FDFDFD] shadow-[0_4px_10px_0_rgba(0,0,0,0.25)] flex flex-col overflow-hidden"
         style={{ transform: sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))" }}
       >
 
         {/* ── 노란 상단 영역 (359px 고정) ── */}
-        <div className="w-[492px] h-[359px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
+        <div className="w-[492px] h-[407.19px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
 
           {/* 출발지 + 목적지 */}
           <div className="flex gap-[18px] items-center w-full px-[18px] pt-[18px]">
@@ -249,7 +249,7 @@ export default function Sidebar20({
           </div>
 
           {/* 구분선 */}
-          <div className="w-[423px] h-px bg-[#d9d9d9] mx-auto mt-[32px] shrink-0" />
+          <div className="w-[423px] h-px bg-[#d9d9d9] mx-auto mt-[32px] shrink-0 border border-[rgba(62,39,34,0.50)]" />
 
           {/* 가는길에 + 카테고리 필터 */}
           {!showResults && granted && showRecs && (
@@ -280,14 +280,17 @@ export default function Sidebar20({
             </>
           )}
 
+          {/* 카테고리 ~ 노란 박스 하단 여백 */}
+          <div className="h-[46.19px] shrink-0" />
+
         </div>
 
         {/* ── 흰색 하단 영역 (나머지 공간) — 목록 표시 ── */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto pt-[17]">
 
           {/* 카카오 장소 검색 결과 */}
           {showResults && (
-            <div className="flex flex-col px-4 py-3 gap-2">
+            <div className="flex flex-col gap-2 px-4 py-3">
               {isSearching ? (
                 <div className="flex items-center justify-center h-16">
                   <p className="text-[15px] font-light text-[#8b7e6a]">검색 중...</p>
