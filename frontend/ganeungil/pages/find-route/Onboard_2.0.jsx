@@ -427,12 +427,7 @@ setAllCategories(data.categories);
           <div className="absolute top-[50px] left-[400px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
-              <button
-                onClick={() => setSelectedPlace(null)}
-                className="absolute top-2 right-2 w-5 h-5 bg-[rgba(0,0,0,0.45)] rounded-full flex items-center justify-center text-white text-[9px] hover:bg-[rgba(0,0,0,0.65)] transition-colors"
-              >
-                ✕
-              </button>
+            
               <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
                 {selectedPlace.category}
               </span>
@@ -472,13 +467,7 @@ setAllCategories(data.categories);
           </div>
         )}
 
-        {/* ── 인터넷 불안정 오류 ── */}
-        {isOffline && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-[#2c2417] text-white text-[11.2px] font-light px-4 py-2.5 rounded-full shadow-lg z-30 flex items-center gap-2 whitespace-nowrap">
-            <span>⚠</span>
-            <span>인터넷 연결이 불안정합니다</span>
-          </div>
-        )}
+        
       </main>
     </div>
   );
