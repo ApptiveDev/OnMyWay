@@ -34,7 +34,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
-                                        "/**",
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/auth/**",
@@ -43,6 +42,7 @@ public class SecurityConfig {
                                         "/places/**",
                                         "/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+                                .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
