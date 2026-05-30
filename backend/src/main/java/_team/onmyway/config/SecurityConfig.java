@@ -34,7 +34,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
-                                        "/",
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/auth/**",
@@ -43,6 +42,7 @@ public class SecurityConfig {
                                         "/places/**",
                                         "/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+                                .requestMatchers("/", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -50,16 +50,13 @@ public class SecurityConfig {
                 .formLogin(formLogin -> formLogin.disable())
                 .logout(logout -> logout.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth -> oauth
                         .authorizationEndpoint(authEndpoint -> authEndpoint.authorizationRequestRepository(cookieRepository))
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuthUserService)) // 사용자 정보 이용(회원가입 등)
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
                         .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳
                 );
-
-        // JWT Filter 등록
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
@@ -68,6 +65,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.addAllowedOrigin("http://localhost:3000"); // React 주소
+        configuration.addAllowedOrigin("http://localhost:5173");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true); // 쿠키 사용(JWT refresh)

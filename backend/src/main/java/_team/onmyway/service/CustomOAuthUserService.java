@@ -1,12 +1,16 @@
 package _team.onmyway.service;
 
 import _team.onmyway.entity.OAuthAccounts;
+import _team.onmyway.entity.Profile;
 import _team.onmyway.entity.Users;
 import _team.onmyway.repository.OAuthAccountsRepository;
+import _team.onmyway.repository.ProfileRepository;
 import _team.onmyway.repository.UsersRepository;
 import _team.onmyway.security.CustomOAuth2User;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -23,6 +27,7 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
 
     private final UsersRepository usersRepository;
     private final OAuthAccountsRepository oauthAccountsRepository;
+    private final ProfileRepository profileRepository;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -70,21 +75,33 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
             user = Users.builder()
                     .nickname(nickname)
                     .email(email)
-                    .profileImageUrl(imageURL)
                     .role(Users.Role.USER) // Enum 적용
                     // isActive: Builder.Default(true) 적용
                     // createdAt / updatedAt: @CreationTimestamp / @UpdateTimestamp 자동 관리
                     .build();
+
+            Profile newProfile = Profile.builder()
+                    .user(user)
+                    .profileName(nickname)
+                    .imageURL(imageURL)
+                    .updatedAt(LocalDateTime.now())
+                    .build();
+
+            user.setProfile(newProfile);
             usersRepository.save(user);
             // OAuth 계정 연결 생성
             oauthAccountsRepository.save(new OAuthAccounts(user, OAuthAccounts.Provider.KAKAO, providerId));
+
         } else {
             // 기존 사용자 정보 업데이트
             user = accounts.getUser();
-            user.updateProfile(nickname, email, imageURL);
+            user.updateProfile(nickname, email);
             usersRepository.save(user);
-        }
 
+            Profile existProfile = profileRepository.findByUsers(user)
+                    .orElseThrow(() -> new EntityNotFoundException("사용자가 없습니다"));
+            existProfile.updateProfileImage(imageURL);
+        }
         return user;
     }
 }

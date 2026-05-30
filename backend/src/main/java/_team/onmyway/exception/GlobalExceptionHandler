@@ -1,13 +1,26 @@
 package _team.onmyway.exception;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.naming.AuthenticationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleException(Exception e) {
         return ResponseEntity.status(500).body("서버에 오류가 발생했습니다");
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<String> handleException(EntityNotFoundException e) {
+        return ResponseEntity.status(500).body(e.getMessage());
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleException(AuthenticationException e) {
+        return ResponseEntity.status(500).body(e.getMessage());
     }
 }

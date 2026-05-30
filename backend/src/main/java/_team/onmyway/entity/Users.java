@@ -24,8 +24,10 @@ public class Users {
 
     private String email;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Profile profile;
+//    @Column(name = "profile_image_url")
+//    private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     private Role role;
@@ -45,10 +47,14 @@ public class Users {
     @Column(name = "refresh_token")
     private String refreshToken;
 
-    public void updateProfile(String nickname, String email, String profileImageUrl) {
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public void updateProfile(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
-        this.profileImageUrl = profileImageUrl;
+        //this.profileImageUrl = profileImageUrl;
         this.isActive = true;
         // updatedAt은 @UpdateTimestamp가 자동 갱신
     }
