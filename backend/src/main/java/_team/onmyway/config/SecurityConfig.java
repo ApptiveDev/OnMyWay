@@ -35,6 +35,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
                                         "/",
+                                        "/index.html",
                                         "/assets/**",
                                         "/login",
                                         "/error",
@@ -63,7 +64,6 @@ public class SecurityConfig {
 
         // JWT Filter 등록
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
