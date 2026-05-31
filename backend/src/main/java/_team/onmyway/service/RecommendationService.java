@@ -33,7 +33,6 @@ public class RecommendationService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final GeoDistanceService geoDistanceService;
     private final ImageService imageService;
-    private final WorkingTimeRepository workingTimeRepository;
 
     private static final double RADIUS_METERS = 250.0;
     private static final int DEFAULT_LIMIT_PER_CATEGORY = 7;
@@ -106,7 +105,7 @@ public class RecommendationService {
                                             .flatMap(p ->
                                                     imageService.getImageURL(p)
                                                             .map(imageURL -> {
-                                                                WorkingTime workingTime = p.getWorkingTimes().get(day);
+                                                                WorkingTime workingTime = p.getWorkingTimes().get(day%7);
                                                                 return toPlaceRecommendationDTO(p, userLat, userLng,
                                                                         workingTime.isClosed(), workingTime.getOpenTime(),
                                                                         workingTime.getCloseTime(), imageURL);
@@ -250,7 +249,7 @@ public class RecommendationService {
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
-                    WorkingTime workingTime = placeWorkingTime.get(day);
+                    WorkingTime workingTime = placeWorkingTime.get(day%7);
 
                     // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
                     return imageService.getImageURL(place)
