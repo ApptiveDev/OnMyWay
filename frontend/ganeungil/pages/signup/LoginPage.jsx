@@ -9,9 +9,11 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleKakaoLogin = () => {
-    window.location.href = "http://localhost:8080/oauth2/authorization/kakao";
+  const params = new URLSearchParams(window.location.search);
+  const redirectUri = params.get('redirect_uri') || '/';
+  window.location.href = `http://localhost:8080/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirectUri)}`;
   };
-
+  
   const handleLogin = (e) => {
     e.preventDefault();
     // TODO: 이메일/비밀번호 로그인 API 연결
