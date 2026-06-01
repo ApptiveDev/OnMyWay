@@ -51,7 +51,10 @@ export default function Header() {
         {/* 우측: 로그인/회원가입 + 아이콘 */}
         <div className="flex items-center gap-[8px] ml-auto">
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              const currentPath = encodeURIComponent(pathname)
+              navigate(`/login?redirect-url=${currentPath}`)
+            }}
             className="text-[#858585] text-[14px] font-medium tracking-[-0.28px]"
             style={{ fontFamily: "Pretendard" }}
           >
