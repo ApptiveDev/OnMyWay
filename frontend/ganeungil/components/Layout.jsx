@@ -3,9 +3,11 @@ import Header from "./Header";
 
 export default function Layout() {
   return (
-    <div style={{ fontFamily: "'Noto Serif KR', serif" }}>
+    <div className="h-screen flex flex-col" style={{ fontFamily: "'Noto Serif KR', serif" }}>
       <Header />
-      <Outlet />
+      <div className="flex-1 overflow-hidden">
+        <Outlet />
+      </div>
     </div>
   );
 }

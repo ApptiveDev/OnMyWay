@@ -356,7 +356,7 @@ setAllCategories(data.categories);
 
   return (
     <div
-      className="w-screen h-screen bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+      className="w-full h-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       <style>{`
