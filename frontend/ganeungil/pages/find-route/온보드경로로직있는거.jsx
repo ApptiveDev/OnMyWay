@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Sidebar20 from "./Sidebar_2.0";
-import { useRoute } from "../../hooks/useRoute";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
 import imgPlace  from "@/assets/img-place.jpg";
@@ -12,6 +11,7 @@ import iconRest  from "@/assets/icon-rest.svg";
 import iconShop  from "@/assets/icon-shop.svg";
 import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
+import iconDestPin from "@/assets/icon-destination-pin.svg";
 
 import markerSip   from "@/assets/map/iconsip.svg";
 import markerBite  from "@/assets/map/iconbite.svg";
@@ -129,8 +129,7 @@ export default function Onboard20() {
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
   const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
-
-  const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
+  const destMarkerRef   = useRef(null); // 목적지 마커 CustomOverlay
 
   // ref 동기화
   useEffect(() => { recsRef.current = recs; }, [recs]);
@@ -316,6 +315,44 @@ setAllCategories(data.categories);
     setSelectedPlace(null);
   };
 
+  // 목적지 마커 제거
+  const clearDestMarker = () => {
+    if (destMarkerRef.current) {
+      destMarkerRef.current.setMap(null);
+      destMarkerRef.current = null;
+    }
+  };
+
+  // 카카오 장소 검색 결과 선택 → 지도 이동 + 마커 표시
+  const handleDestinationSelect = (place) => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    const pos = new window.kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x));
+    map.setCenter(pos);
+    map.setLevel(3);
+
+    clearDestMarker();
+
+    destMarkerRef.current = new window.kakao.maps.CustomOverlay({
+      position: pos,
+      content: `
+        <div style="
+          width:36px; height:36px;
+          background:#e8c36a;
+          border:3px solid white;
+          border-radius:17px 17px 17px 4px;
+          box-shadow:0px 2px 8px rgba(0,0,0,0.3);
+          display:flex; align-items:center; justify-content:center;
+        ">
+          <img src="${iconDestPin}" style="width:15px;height:15px;display:block;" />
+        </div>
+      `,
+      map,
+      yAnchor: 1,
+      xAnchor: 0,
+    });
+  };
+
   // 현재 위치 보정
   const handleRecalibrate = () => {
     if (!navigator.geolocation) return;
@@ -402,8 +439,6 @@ setAllCategories(data.categories);
           onRecsShow={handleRecsShow}
           onDestinationSelect={handleDestinationSelect}
           onDestinationClear={clearDestMarker}
-          userCoords={userCoords}
-          onDrawRoute={displayRoute}
         />
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  

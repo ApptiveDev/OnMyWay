@@ -87,6 +87,7 @@ export default function Loading20() {
             </div>
 
             {/* 검색 입력창 */}
+            ``
             <div className="relative">
               <div className="bg-[#f5f0e8] rounded-[14px] h-[51px] flex items-center pl-[44px] pr-[40px]">
                 <span className="text-[15.2px] text-[rgba(139,126,106,0.5)]">어디로 가시나요?</span>
@@ -107,3 +108,4 @@ export default function Loading20() {
     </div>
   );
 }
+`
