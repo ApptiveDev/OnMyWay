@@ -1,5 +1,6 @@
 package _team.onmyway.config;
 
+import _team.onmyway.repository.cookie.CookieAuthorizationRequestRepository;
 import _team.onmyway.security.OAuthFailureHandler;
 import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
@@ -25,6 +26,7 @@ public class SecurityConfig {
     private final OAuthSuccessHandler successHandler;
     private final OAuthFailureHandler failureHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CookieAuthorizationRequestRepository cookieRepository;
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,7 +34,12 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
-                                        "/**",
+                                        "/",
+                                        "/find-route",
+                                        "/index.html",
+                                        "/assets/**",
+                                        "/login",
+                                        "/error",
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/auth/**",
@@ -41,6 +48,7 @@ public class SecurityConfig {
                                         "/places/**",
                                         "/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
+                                .requestMatchers( "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -49,6 +57,9 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .oauth2Login(oauth -> oauth
+                        // oauth2를 이용할 때 로그인 시 사용할 로그인 페이지 지정(Custom)
+                        .loginPage("/login")
+                        .authorizationEndpoint(authEndpoint -> authEndpoint.authorizationRequestRepository(cookieRepository))
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuthUserService)) // 사용자 정보 이용(회원가입 등)
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
                         .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳
@@ -56,7 +67,6 @@ public class SecurityConfig {
 
         // JWT Filter 등록
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
