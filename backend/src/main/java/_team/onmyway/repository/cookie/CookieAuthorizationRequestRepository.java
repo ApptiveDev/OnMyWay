@@ -44,7 +44,7 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
         response.addCookie(authCookie);
 
         String redirectUirAfterLogin = request.getParameter(REDIRECT_URI);
-        log.info(redirectUirAfterLogin);
+        log.info(request.getRequestURI(), redirectUirAfterLogin);
 
         if (redirectUirAfterLogin == null || redirectUirAfterLogin.isBlank()) {
             redirectUirAfterLogin = DEFAULT_URI;
