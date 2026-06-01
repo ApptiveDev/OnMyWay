@@ -23,7 +23,6 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final UsersRepository usersRepository;
-    private final CookieAuthorizationRequestRepository cookieRepository;
 
     @Override
     @Transactional

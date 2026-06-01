@@ -11,7 +11,7 @@ export default function LoginPage() {
   const handleKakaoLogin = () => {
     const params = new URLSearchParams(window.location.search);
     const redirectUrl = params.get('redirect-url') || '/';
-    window.location.href = `http://localhost:8080/oauth2/authorization/kakao?redirect-url=${encodeURIComponent(redirectUrl)}`;
+    window.location.href = `/oauth2/authorization/kakao?redirect-url=${encodeURIComponent(redirectUrl)}`;
   };
   
   const handleLogin = (e) => {
