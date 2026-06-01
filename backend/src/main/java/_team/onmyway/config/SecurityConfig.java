@@ -104,7 +104,7 @@ public class SecurityConfig {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
-                String redirectUri = request.getParameter("redirect-uri");
+                String redirectUri = request.getParameter("redirect-url");
                 if (redirectUri != null) {
                     builder.additionalParameters(params -> params.put("custom_redirect_uri", redirectUri));
                 }

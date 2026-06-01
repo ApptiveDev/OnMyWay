@@ -16,7 +16,7 @@ import java.util.Base64;
 @Component
 public class CookieAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
     public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
-    public static final String REDIRECT_URI = "redirect-uri";
+    public static final String REDIRECT_URI = "redirect-url";
     public static final String DEFAULT_URI = "/"; // 기본 화면으로 돌아가기. 테스트 사이트에서는 루트로 바꿔야 함.
     private static final int COOKIE_EXPIRE_SECONDS = 180;
 
