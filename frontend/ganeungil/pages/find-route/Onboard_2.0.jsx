@@ -120,6 +120,9 @@ export default function Onboard20() {
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
+  const [scale, setScale] = useState(
+    () => Math.min(window.innerWidth / 1920, window.innerHeight / 1275)
+  );
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -173,6 +176,14 @@ setAllCategories(data.categories);
     window.addEventListener("online",  on);
     window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+
+  // ── 화면 크기 변경 시 scale 갱신
+  useEffect(() => {
+    const update = () =>
+      setScale(Math.min(window.innerWidth / 1920, window.innerHeight / 1275));
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   // ── 카카오맵 초기화 (SDK 로드 대기 후 실행)
@@ -345,7 +356,7 @@ setAllCategories(data.categories);
 
   return (
     <div
-      className="bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+      className="w-screen h-screen bg-[#faf6f0] text-[#2c2417] overflow-hidden"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       <style>{`
@@ -375,13 +386,13 @@ setAllCategories(data.categories);
       `}</style>
 
       {/* ── 메인 ── */}
-      <main className="absolute w-[1920px] h-[1275px] ">
+      <main className="relative w-full h-full">
 
         {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
-        <div className="absolute w-[1920px] h-[1155px] top-0 left-0">           
+        <div className="absolute inset-0">
           <div
             ref={mapContainerRef}
-            className="w-full h-[1155px] kakao-map-wrap"
+            className="w-full h-full kakao-map-wrap"
             style={{ transform: "translateZ(0)", willChange: "transform" }}
           />
         </div>
@@ -408,7 +419,16 @@ setAllCategories(data.categories);
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
         {selectedPlace && (
-          <div className="absolute top-[50px] left-[400px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
+          <div
+            className="absolute bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in"
+            style={{
+              top:             `${50 * scale}px`,
+              left:            `${400 * scale}px`,
+              width:           "240px",
+              transform:       `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          >
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
             
