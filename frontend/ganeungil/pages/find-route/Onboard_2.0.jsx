@@ -356,8 +356,8 @@ setAllCategories(data.categories);
 
   return (
     <div
-      className="w-full h-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-      style={{ fontFamily: "'Noto Serif KR', serif" }}
+      className="w-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+      style={{ height: `calc(100vh - ${120 * scale}px)`, fontFamily: "'Noto Serif KR', serif" }}
     >
       <style>{`
         @keyframes fadeOutDown {
