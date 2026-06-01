@@ -3,6 +3,7 @@ package _team.onmyway.repository.cookie;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.web.util.WebUtils;
 
 import java.util.Base64;
 
+@Slf4j
 @Component
 public class CookieAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
     public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
@@ -42,6 +44,7 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
         response.addCookie(authCookie);
 
         String redirectUirAfterLogin = request.getParameter(REDIRECT_URI);
+        log.info(redirectUirAfterLogin);
 
         if (redirectUirAfterLogin == null || redirectUirAfterLogin.isBlank()) {
             redirectUirAfterLogin = DEFAULT_URI;
