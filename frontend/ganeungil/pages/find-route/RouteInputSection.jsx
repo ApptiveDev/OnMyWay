@@ -48,7 +48,7 @@ export default function RouteInputSection({
                       onChange={e => setDeptText(e.target.value)}
                       onFocus={handleDeptFocus}
                       placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
-                      className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722]"
+                      className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722] [font-family:'Pretendard']"
                       autoFocus={deptFocused}
                     />
                   )}
@@ -74,7 +74,7 @@ export default function RouteInputSection({
                     onChange={e => setDestText(e.target.value)}
                     onFocus={handleDestFocus}
                     placeholder="어디로 가시나요?"
-                    className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722]"
+                    className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722] [font-family:'Pretendard']"
                     autoFocus={destFocused}
                   />
                 </div>
