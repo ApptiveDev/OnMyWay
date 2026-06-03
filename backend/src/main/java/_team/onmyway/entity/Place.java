@@ -5,10 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(indexes = {
@@ -53,4 +56,12 @@ public class Place {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "place") // 양방향 연결
+    private List<WorkingTime> workingTimes = new ArrayList<>();
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "place")
+    private List<Photos> photos = new ArrayList<>();
 }

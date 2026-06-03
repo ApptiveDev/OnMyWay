@@ -188,10 +188,7 @@ public class DataInitializer implements CommandLineRunner {
                     description = getValue(line, columnMap, "비고");
                 }
 
-                log.info(address+" "+name);
                 Place findPlace = placeMap.get(address+"_"+name);
-                log.info(findPlace.getName()+" "+findPlace.getAddress());
-
                 WorkingTime workingTime = WorkingTime.builder()
                         .dayOfWeek(dayweek)
                         .place(findPlace)
@@ -203,6 +200,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 openCloseEntries.add(workingTime);
             }
+            System.out.println(openCloseEntries.size());
             workingTimeRepository.saveAll(openCloseEntries);
         }
     }

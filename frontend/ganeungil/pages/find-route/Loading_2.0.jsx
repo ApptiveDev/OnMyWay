@@ -31,7 +31,7 @@ export default function Loading20() {
         {/* ── 로딩 스피너 (지도 중앙) ── */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           {/* 골든 링 스피너 */}
-          <div className="loading-spinner mb-6" style={{ width: 95, height: 95 }}>
+          <div className="mb-6 loading-spinner" style={{ width: 95, height: 95 }}>
             <svg viewBox="0 0 95 95" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle
                 cx="47.5"
@@ -68,12 +68,12 @@ export default function Loading20() {
 
         {/* ── 사이드바 스켈레톤 ── */}
         <div className="absolute top-[10px] left-[10px] w-[301px] h-[694px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] border border-[#f3f4f6] overflow-hidden z-10">
-          <div className="p-4 flex flex-col gap-3">
+          <div className="flex flex-col gap-3 p-4">
 
             {/* 출발지 버튼 */}
             <div className="bg-[rgba(245,240,232,0.6)] rounded-[14px] h-[60px] flex items-center px-3 gap-3">
               <div className="w-[15px] h-[15px] rounded-full bg-[#c8873a] shrink-0" />
-              <div className="flex flex-col gap-1 flex-1">
+              <div className="flex flex-col flex-1 gap-1">
                 <span className="text-[11.2px] font-light text-[#8b7e6a]">출발지</span>
                 <span className="text-[14px] font-light text-[#2c2417]">현재 위치</span>
               </div>
@@ -87,6 +87,7 @@ export default function Loading20() {
             </div>
 
             {/* 검색 입력창 */}
+            ``
             <div className="relative">
               <div className="bg-[#f5f0e8] rounded-[14px] h-[51px] flex items-center pl-[44px] pr-[40px]">
                 <span className="text-[15.2px] text-[rgba(139,126,106,0.5)]">어디로 가시나요?</span>
@@ -94,7 +95,7 @@ export default function Loading20() {
             </div>
 
             {/* 스켈레톤 바 목록 */}
-            <div className="flex flex-col gap-4 mt-4 px-1">
+            <div className="flex flex-col gap-4 px-1 mt-4">
               <div className="skeleton bg-[#f5f0e8] rounded-[14px] h-[27px] w-[143px]" />
               <div className="skeleton bg-[#f5f0e8] rounded-[14px] h-[27px] w-[229px]" style={{ animationDelay: "0.2s" }} />
               <div className="skeleton bg-[#f5f0e8] rounded-[14px] h-[27px] w-[66px]"  style={{ animationDelay: "0.4s" }} />
@@ -107,3 +108,4 @@ export default function Loading20() {
     </div>
   );
 }
+`
