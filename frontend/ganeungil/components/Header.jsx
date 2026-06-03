@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import iconSearch from "@/assets/Button_dialog.svg";
 import iconMenu   from "@/assets/header_search.svg";
@@ -11,20 +12,54 @@ const NAV_ITEMS = [
   { label: "둘러보기", path: "/explore"    },
 ];
 
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
+  const [scale, setScale] = useState(
+    () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
+  );
+
+  useEffect(() => {
+    const update = () =>
+      setScale(Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H));
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   return (
-    <header className="top-0 h-[120px] bg-[#FFFADD]">
-      <div className="flex items-center w-full px-[352px] pt-[57px]">
+    /*
+      헤더 배경은 항상 화면 전체 너비를 채움 (w-full)
+      높이만 scale에 따라 줄어듦
+    */
+    <header
+      className="top-0 w-full bg-[#FFFADD] overflow-hidden"
+      style={{ height: `${120 * scale}px` }}
+    >
+      {/*
+        내부 콘텐츠:
+        - transform: scale로 비율 유지
+        - width: (1/scale)*100% → scale로 줄어든 너비를 보정해 화면 가득 채움
+        - transformOrigin: top left → 왼쪽 상단 기준으로 축소
+      */}
+      <div
+        className="flex items-center px-[352px] pt-[57px]"
+        style={{
+          transform:       `scale(${scale})`,
+          transformOrigin: "top left",
+          width:           `${(1 / scale) * 100}%`,
+        }}
+      >
 
         {/* 로고 */}
         <button
           onClick={() => navigate("/")}
           className="flex items-center w-[186px] h-[43px]"
         >
-          <img src={LOGO_ICON} className="w-[186px] h-[43.23px]"/>
+          <img src={LOGO_ICON} className="w-[186px] h-[43.23px]" />
         </button>
 
         {/* 내비게이션 */}
