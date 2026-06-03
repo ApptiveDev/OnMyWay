@@ -7,7 +7,7 @@ export default function LoginButton() {
 
   const handleLoginClick = () => {
     const currentPath = window.location.pathname + window.location.search;
-    navigate(`/login?redirect-url=${encodeURIComponent(currentPath)}`);
+    navigate(`/login?redirect-uri=${encodeURIComponent(currentPath)}`);
   };
 
   return (

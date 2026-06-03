@@ -14,6 +14,7 @@ export default function LoginPage() {
     window.location.href = `http://localhost:8080/oauth2/authorization/kakao?redirect-url=${encodeURIComponent(redirectUrl)}`;
   };
   
+  
   const handleLogin = (e) => {
     e.preventDefault();
     // TODO: 이메일/비밀번호 로그인 API 연결
