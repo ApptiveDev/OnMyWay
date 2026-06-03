@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -105,10 +106,18 @@ public class RecommendationService {
                                             .flatMap(p ->
                                                     imageService.getImageURL(p)
                                                             .map(imageURL -> {
-                                                                WorkingTime workingTime = p.getWorkingTimes().get(day%7);
-                                                                return toPlaceRecommendationDTO(p, userLat, userLng,
-                                                                        workingTime.isClosed(), workingTime.getOpenTime(),
-                                                                        workingTime.getCloseTime(), imageURL);
+                                                                List<WorkingTime> workingTimes = p.getWorkingTimes();
+                                                                int index = day&7;
+
+                                                                if (workingTimes != null & !workingTimes.isEmpty() && index < workingTimes.size()) {
+                                                                    WorkingTime workingTime = workingTimes.get(index);
+                                                                    return toPlaceRecommendationDTO(p, userLat, userLng,
+                                                                            workingTime.isClosed(), workingTime.getOpenTime(),
+                                                                            workingTime.getCloseTime(), imageURL);
+                                                                } else {
+                                                                    return toPlaceRecommendationDTO(p, userLat, userLng, true,
+                                                                            null, null, imageURL);
+                                                                }
                                                             })
                                             )
                                             .collectList()
