@@ -4,6 +4,8 @@ import _team.onmyway.dto.MyPageDTO;
 import _team.onmyway.dto.PostDTO;
 import _team.onmyway.entity.Profile;
 import _team.onmyway.entity.Users;
+import _team.onmyway.exception.NotAuthenticationException;
+import _team.onmyway.exception.UserNotFoundException;
 import _team.onmyway.repository.FollowRepository;
 import _team.onmyway.repository.PostsRepository;
 import _team.onmyway.repository.UsersRepository;
@@ -26,17 +28,17 @@ public class MyPageService {
     private final PostsRepository postsRepository;
     private final FollowRepository followRepository;
 
-    public MyPageDTO Home() throws AuthenticationException {
+    public MyPageDTO Home() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthenticationException("인증되지 않았습니다. 로그인을 진행해 주세요.");
+            throw new NotAuthenticationException("인증된 사용자가 아닙니다. 로그인을 진행해 주세요.");
         }
 
         String userIdStr = (String) authentication.getPrincipal();
         Long userId = Long.parseLong(userIdStr);
         Users user = usersRepository.findById(userId).orElseThrow(
-                () -> new EntityNotFoundException("존재하지 않는 사용자입니다.")
+                () -> new UserNotFoundException("존재하지 않는 사용자입니다.")
         );
 
         Profile profile = getProfile(user);

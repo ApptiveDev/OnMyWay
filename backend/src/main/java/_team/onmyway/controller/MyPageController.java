@@ -15,7 +15,7 @@ public class MyPageController {
     private final MyPageService myPageService;
 
     @GetMapping("myPage")
-    public ResponseEntity<?> myPageHome() throws Exception {
+    public ResponseEntity<?> myPageHome() {
         MyPageDTO mypage = myPageService.Home();
         return new ResponseEntity<>(mypage, HttpStatus.OK);
     }
