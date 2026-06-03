@@ -19,6 +19,7 @@ import markerFight from "@/assets/map/iconfight.svg";
 import markerMeal  from "@/assets/map/iconmeal.svg";
 import markerSee   from "@/assets/map/iconsee.svg";
 import markerHansoom from "@/assets/map/icon_한숨.svg";
+import iconArrive2 from "@/assets/iconArrive2.svg";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -130,10 +131,50 @@ export default function Onboard20() {
   const circleRef       = useRef(null); // 500m 반경 Circle
   const userDotRef      = useRef(null); // 내 위치 CustomOverlay
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
+  const routeRecsOverlaysRef = useRef([]);  // 경로 추천 마커
   const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
 
-  const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
+  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
+
+  const handleDestSelect = (place) => {
+    handleDestinationSelect(place);
+    circleRef.current?.setMap(null);
+  };
+
+  const handleDestClear = () => {
+    clearDestMarker();
+    clearRoute();
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    if (circleRef.current && kakaoMapRef.current) circleRef.current.setMap(kakaoMapRef.current);
+  };
+
+  const handleRouteRecs = (places) => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    places.filter(p => p.lat && p.lng).forEach(place => {
+      const content = `
+        <div style="
+          width:40px;height:40px;
+          background-image:url('${iconArrive2}');
+          background-size:contain;
+          background-repeat:no-repeat;
+          background-position:center;
+          cursor:pointer;
+        "></div>
+      `;
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        content,
+        map,
+        yAnchor: 1,
+      });
+      routeRecsOverlaysRef.current.push(overlay);
+    });
+  };
 
   // ref 동기화
   useEffect(() => { recsRef.current = recs; }, [recs]);
@@ -411,10 +452,11 @@ setAllCategories(data.categories);
           onRecalibrate={handleRecalibrate}
           onRecsHide={handleRecsHide}
           onRecsShow={handleRecsShow}
-          onDestinationSelect={handleDestinationSelect}
-          onDestinationClear={clearDestMarker}
+          onDestinationSelect={handleDestSelect}
+          onDestinationClear={handleDestClear}
           userCoords={userCoords}
           onDrawRoute={displayRoute}
+          onRouteRecs={handleRouteRecs}
         />
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  

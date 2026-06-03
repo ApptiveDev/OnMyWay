@@ -71,11 +71,9 @@ export default function Header() {
                 key={path}
                 onClick={() => navigate(path)}
                 className={`text-center text-[20.74px] leading-normal tracking-[-0.622px] ${
-                  active
-                    ? "text-[#3e2722] font-semibold"
-                    : "text-[#3e2722] font-medium hover:opacity-40"
+                  active ? "text-[#3e2722] underline decoration-2 underline-offset-[12px]" : "text-[#3e2722] hover:opacity-40"
                 }`}
-                style={{ fontFamily: "Pretendard" }}
+                style={{ fontFamily: active ? "Pretendard-SemiBold" : "Pretendard-Medium" }}
               >
                 {label}
               </button>
@@ -87,16 +85,16 @@ export default function Header() {
         <div className="flex items-center gap-[8px] ml-auto">
           <button
             onClick={() => navigate("/login")}
-            className="text-[#858585] text-[14px] font-medium tracking-[-0.28px]"
-            style={{ fontFamily: "Pretendard" }}
+            className="text-[#858585] text-[14px] tracking-[-0.28px]"
+            style={{ fontFamily: "Pretendard-Medium" }}
           >
             로그인
           </button>
           <div className="w-[1px] h-[10px] bg-[#858585]" />
           <button
             onClick={() => navigate("/signup")}
-            className="text-[#858585] text-[14px] font-medium tracking-[-0.28px]"
-            style={{ fontFamily: "Pretendard" }}
+            className="text-[#858585] text-[14px] tracking-[-0.28px]"
+            style={{ fontFamily: "Pretendard-Medium" }}
           >
             회원가입
           </button>

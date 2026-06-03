@@ -66,5 +66,11 @@ export function useRoute(kakaoMapRef) {
     map.setBounds(bounds);
   };
 
-  return { handleDestinationSelect, clearDestMarker, displayRoute };
+  const clearRoute = () => {
+    if (polylineRef.current) { polylineRef.current.setMap(null); polylineRef.current = null; }
+    routeMarkersRef.current.forEach(m => m.setMap(null));
+    routeMarkersRef.current = [];
+  };
+
+  return { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute };
 }
