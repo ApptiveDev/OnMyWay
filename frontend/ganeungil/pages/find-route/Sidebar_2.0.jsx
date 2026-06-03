@@ -3,6 +3,12 @@ import RouteInputSection from "./RouteInputSection";
 import { useRouteSearch, ROUTE_MODES } from "../../hooks/useRouteSearch";
 
 import iconGPS        from "@/assets/icon-gps.svg";
+import iconLocation   from "@/assets/iconlocation.svg";
+import iconArrow      from "@/assets/icon-arrow.svg";
+import iconUnion      from "@/assets/iconUnion.svg";
+import iconLeisure    from "@/assets/icon-leisure.svg";
+import iconFind       from "@/assets/icon-find.svg";
+import iconClock      from "@/assets/icon-route.svg";
 import iconAll        from "@/assets/all.svg";
 import iconWhiteAll   from "@/assets/whiteall.svg";
 import iconSip        from "@/assets/sip.svg";
@@ -21,6 +27,12 @@ import imgPlace       from "@/assets/img-place.jpg";
 // 피그마 기준 프레임 크기
 const DESIGN_W = 1920;
 const DESIGN_H = 1275;
+
+const MODE_CONFIG = {
+  right:   { icon: iconUnion,   iconBg: "#FAE3CE", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+  slow:    { icon: iconLeisure, iconBg: "#E0E4D8", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+  findOut: { icon: iconUnion,   iconBg: "#FDFAEB", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+};
 
 const CATEGORIES = [
   { label: "전체",  icon: iconWhiteAll, iconActive: iconAll      },
@@ -91,7 +103,7 @@ export default function Sidebar20({
 
   const {
     showResults, isSearchMode, selectedMode,
-    searchResults, selectedResult, isSearching,
+    searchResults, selectedResult, isSearching, routeInfo,
     handleResultClick, handleModeChange,
   } = routeSearch;
 
@@ -155,7 +167,7 @@ export default function Sidebar20({
         >
 
           {/* ── 노란 상단 영역 ── */}
-          <div className="w-[492px] h-[407.19px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
+          <div className={`w-[492px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col ${showResults || selectedResult ? "h-auto" : "h-[407.19px]"}`}>
 
             <div className="flex flex-col gap-[37px] items-center px-[41px] pt-[41px] w-full">
 
@@ -200,7 +212,7 @@ export default function Sidebar20({
               </>
             )}
 
-            <div className="h-[46.19px] shrink-0" />
+            {!showResults && !selectedResult && <div className="h-[46.19px] shrink-0" />}
 
           </div>
 
@@ -209,20 +221,41 @@ export default function Sidebar20({
 
             {/* 경로 모드 탭 (목적지 선택 후 노출) */}
             {selectedResult && (
-              <div className="flex gap-1.5 px-4 py-3 border-b border-[#f3f4f6]">
-                {ROUTE_MODES.map((mode) => (
-                  <button
-                    key={mode.id}
-                    onClick={() => handleModeChange(mode.id)}
-                    className={`flex-1 py-2 text-[10.5px] font-medium rounded-xl transition-all ${
-                      selectedMode === mode.id
-                        ? "bg-[#c8873a] text-white shadow-sm"
-                        : "bg-white text-[#8b7e6a] border border-[#eee] hover:bg-[#faf6f0]"
-                    }`}
-                  >
-                    {mode.label}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-[10px] px-[27px] py-[17px]">
+                {ROUTE_MODES.map((mode) => {
+                  const cfg  = MODE_CONFIG[mode.id];
+                  const info = routeInfo[mode.id];
+                  const isActive = selectedMode === mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      onClick={() => handleModeChange(mode.id)}
+                      className={`w-full flex items-center gap-[22px] px-[27px] py-[22px] rounded-[20px] border-2 transition-all text-left ${cfg.cardClass}`}
+                      style={{ borderColor: isActive ? "#c8873a" : "#d9d9d9" }}
+                    >
+                      <div
+                        className="w-[44px] h-[44px] rounded-full flex items-center justify-center shrink-0"
+                        style={{ backgroundColor: cfg.iconBg }}
+                      >
+                        <img src={cfg.icon} alt="" className="w-[18px] h-[18px]" />
+                      </div>
+                      <p className="text-[20px] text-[#3e2722] whitespace-nowrap shrink-0" style={{ fontFamily: "MaruBuriOTF" }}>
+                        {mode.label}
+                      </p>
+                      {info && (
+                        <div className="flex items-center gap-[7px] ml-auto shrink-0">
+                          <img src={iconClock} alt="" className="w-[12px] h-[12px]" />
+                          <span className="text-[14px] font-medium text-[#8b7e6a] whitespace-nowrap" style={{ fontFamily: "Pretendard" }}>
+                            {info.time}분
+                          </span>
+                          <span className="text-[14px] font-medium text-[#8b7e6a] whitespace-nowrap" style={{ fontFamily: "Pretendard" }}>
+                            {info.distance}km
+                          </span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             )}
 
@@ -238,19 +271,17 @@ export default function Sidebar20({
                     <button
                       key={result.id}
                       onClick={() => handleResultClick(result)}
-                      className={`w-full flex items-center gap-3 px-4 py-[10px] text-left transition-colors ${
+                      className={`w-full flex items-center gap-[22px] px-[27px] py-[27px] text-left rounded-[20px] transition-colors ${
                         selectedResult?.id === result.id
-                          ? "bg-[rgba(232,195,106,0.2)] rounded-[12px]"
-                          : "border-b border-[#f9fafb] hover:bg-[#faf6f0]"
+                          ? "bg-[rgba(255,237,161,0.5)]"
+                          : "hover:bg-[rgba(255,237,161,0.3)]"
                       }`}
                     >
-                      <div className="w-7 h-7 rounded-[10px] bg-[rgba(200,135,58,0.1)] flex items-center justify-center shrink-0">
-                        <img src={iconGPS} alt="" className="w-[13px] h-[13px]" />
+                      <div className="w-[44px] h-[44px] rounded-full bg-[#fae3ce] flex items-center justify-center shrink-0">
+                        <img src={iconLocation} alt="" className="w-[18px] h-[18px]" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[18px] font-medium text-[#2c2417] leading-[20.4px] truncate">{result.place_name}</p>
-                        <p className="text-[15px] font-light text-[#8b7e6a] leading-[16.8px] truncate">{result.road_address_name || result.address_name}</p>
-                      </div>
+                      <p className="text-[20px] text-[#3e2722] whitespace-nowrap shrink-0" style={{ fontFamily: "MaruBuriOTF" }}>{result.place_name}</p>
+                      <p className="text-[14px] font-medium text-[#8b7e6a] truncate" style={{ fontFamily: "Pretendard" }}>{result.road_address_name || result.address_name}</p>
                     </button>
                   ))
                 )}

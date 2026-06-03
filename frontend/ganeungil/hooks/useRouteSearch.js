@@ -2,9 +2,9 @@ import { useState, useRef } from "react";
 import api from "../api/api";
 
 export const ROUTE_MODES = [
-  { id: "right",   label: "바른길",     endpoint: "/route/right" },
-  { id: "slow",    label: "느린길",     endpoint: "/route/slow" },
-  { id: "findOut", label: "발견하는길", endpoint: "/route/findOut" },
+  { id: "right",   label: "바른 길",     endpoint: "/route/right" },
+  { id: "slow",    label: "여유로운 길", endpoint: "/route/slow" },
+  { id: "findOut", label: "발견하는 길", endpoint: "/route/findOut" },
 ];
 
 export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRecsHide, onRecsShow, onDestinationClear }) {
@@ -16,6 +16,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const [selectedResult, setSelectedResult] = useState(null);
   const [isSearching, setIsSearching]       = useState(false);
   const [selectedMode, setSelectedMode]     = useState("slow");
+  const [routeInfo, setRouteInfo]           = useState({});
 
   const destInputRef = useRef(null);
   const deptInputRef = useRef(null);
@@ -64,6 +65,16 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
       console.log("[경로] features:", features?.length, "개");
       if (features && Array.isArray(features)) {
         onDrawRoute?.(features);
+        const summary = features[0]?.properties;
+        if (summary?.totalTime != null) {
+          setRouteInfo(prev => ({
+            ...prev,
+            [modeId]: {
+              time: Math.round(summary.totalTime / 60),
+              distance: (summary.totalDistance / 1000).toFixed(1),
+            },
+          }));
+        }
       } else {
         console.warn("[경로] features 없음. 응답 구조:", JSON.stringify(response.data).slice(0, 200));
       }
@@ -74,6 +85,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
 
   const handleResultClick = async (result) => {
     setSelectedResult(result);
+    setSearchResults([]);
     setDestText(result.place_name);
     onDestinationSelect?.(result);
     if (!userCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }
@@ -88,7 +100,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   return {
     destText, setDestText, destFocused,
     deptText, setDeptText, deptFocused,
-    searchResults, selectedResult, isSearching, selectedMode,
+    searchResults, selectedResult, isSearching, selectedMode, routeInfo,
     destInputRef, deptInputRef,
     isSearchMode, showResults,
     handleDestFocus, handleDeptFocus, handleCancel,

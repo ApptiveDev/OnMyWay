@@ -40,15 +40,6 @@ export function useRoute(kakaoMapRef) {
     });
   };
 
-  const createMarkerHTML = (type) => {
-    let color = "#c8873a";
-    let label = "";
-    if (type === "SP") label = "출발";
-    else if (type === "EP") label = "도착";
-    else if (type.startsWith("PP")) { color = "#2b8237"; label = "경유"; }
-    return `<div style="background:${color}; color:white; padding:4px 8px; border-radius:12px; font-size:10px; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.2); margin-bottom:10px;">${label}</div>`;
-  };
-
   const displayRoute = (features) => {
     const map = kakaoMapRef.current;
     if (!map || !features) return;
@@ -58,7 +49,6 @@ export function useRoute(kakaoMapRef) {
     routeMarkersRef.current = [];
 
     const path = [];
-    const newMarkers = [];
 
     features.forEach((feature) => {
       if (feature.geometry.type === "LineString") {
@@ -66,31 +56,17 @@ export function useRoute(kakaoMapRef) {
           path.push(new window.kakao.maps.LatLng(coord[1], coord[0]));
         });
       }
-      if (feature.geometry.type === "Point") {
-        const { pointType } = feature.properties;
-        const coords = feature.geometry.coordinates;
-        const pos = new window.kakao.maps.LatLng(coords[1], coords[0]);
-        if (pointType === "SP" || pointType === "EP" || pointType.startsWith("PP")) {
-          const marker = new window.kakao.maps.CustomOverlay({
-            position: pos,
-            content: createMarkerHTML(pointType),
-            yAnchor: 1,
-          });
-          marker.setMap(map);
-          newMarkers.push(marker);
-        }
-      }
     });
 
     const polyline = new window.kakao.maps.Polyline({
       path,
       strokeWeight: 5,
-      strokeColor: "#c8873a",
+      strokeColor: "#7BC4A0",
       strokeOpacity: 0.8,
     });
     polyline.setMap(map);
     polylineRef.current = polyline;
-    routeMarkersRef.current = newMarkers;
+    routeMarkersRef.current = [];
 
     const bounds = new window.kakao.maps.LatLngBounds();
     path.forEach(pos => bounds.extend(pos));
