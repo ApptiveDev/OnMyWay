@@ -13,13 +13,13 @@ import iconShop  from "@/assets/icon-shop.svg";
 import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
 
-import markerSip   from "@/assets/map/iconsip.svg";
-import markerBite  from "@/assets/map/iconbite.svg";
-import markerFight from "@/assets/map/iconfight.svg";
-import markerMeal  from "@/assets/map/iconmeal.svg";
-import markerSee   from "@/assets/map/iconsee.svg";
-import markerHansoom from "@/assets/map/icon_한숨.svg";
-import iconArrive2 from "@/assets/iconArrive2.svg";
+import markerSip   from "@/assets/map/iconsip.svg?url";
+import markerBite  from "@/assets/map/iconbite.svg?url";
+import markerFight from "@/assets/map/iconfight.svg?url";
+import markerMeal  from "@/assets/map/iconmeal.svg?url";
+import markerSee   from "@/assets/map/iconsee.svg?url";
+import markerHansoom from "@/assets/map/icon_한숨.svg?url";
+import iconArrive2 from "@/assets/iconArrive2.svg?url";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -157,20 +157,14 @@ export default function Onboard20() {
     routeRecsOverlaysRef.current = [];
     places.filter(p => p.lat && p.lng).forEach(place => {
       const content = `
-        <div style="
-          width:40px;height:40px;
-          background-image:url('${iconArrive2}');
-          background-size:contain;
-          background-repeat:no-repeat;
-          background-position:center;
-          cursor:pointer;
-        "></div>
+        <div style='width:40px;height:40px;background-image:url("${iconArrive2}");background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;'></div>
       `;
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(place.lat, place.lng),
         content,
         map,
         yAnchor: 1,
+        zIndex: 3,
       });
       routeRecsOverlaysRef.current.push(overlay);
     });
@@ -327,14 +321,7 @@ setAllCategories(data.categories);
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style="
-            width:40px;height:40px;
-            background-image:url('${iconUrl}');
-            background-size:contain;
-            background-repeat:no-repeat;
-            background-position:center;
-            cursor:pointer;transition:transform 0.15s;
-          "
+          style='width:40px;height:40px;background-image:url("${iconUrl}");background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;transition:transform 0.15s;'
           onmouseover="this.style.transform='scale(1.2)'"
           onmouseout="this.style.transform='scale(1)'"
         ></div>
@@ -344,6 +331,7 @@ setAllCategories(data.categories);
         content,
         map,
         yAnchor: 1,
+        zIndex: 3,
       });
       overlaysRef.current.push(overlay);
     });
