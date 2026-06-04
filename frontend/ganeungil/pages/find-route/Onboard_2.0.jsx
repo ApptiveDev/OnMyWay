@@ -325,6 +325,7 @@ setAllCategories(data.categories);
       console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
+      console.log(iconUrl)
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
