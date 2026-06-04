@@ -324,7 +324,7 @@ setAllCategories(data.categories);
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style='width:40px;height:40px;background-image:url("${iconUrl}");background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;transition:transform 0.15s;'
+          style='width:40px;height:40px;background-image:url(${iconUrl});background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;transition:transform 0.15s;'
           onmouseover="this.style.transform='scale(1.2)'"
           onmouseout="this.style.transform='scale(1)'"
         ></div>
