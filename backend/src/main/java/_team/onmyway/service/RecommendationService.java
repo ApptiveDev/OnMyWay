@@ -258,17 +258,29 @@ public class RecommendationService {
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
-                    WorkingTime workingTime = placeWorkingTime.get(day%7);
+                    if (placeWorkingTime.isEmpty()) {
+                        return imageService.getImageURL(place)
+                                .map(imageURL -> toPlaceRecommendationDTO(
+                                        place, lat, lng,
+                                        true,
+                                        null,
+                                        null,
+                                        imageURL
+                                ));
+                    }
+                    else {
+                        WorkingTime workingTime = placeWorkingTime.get(day%7);
 
-                    // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
-                    return imageService.getImageURL(place)
-                            .map(imageURL -> toPlaceRecommendationDTO(
-                                    place, lat, lng,
-                                    workingTime.isClosed(),
-                                    workingTime.getOpenTime(),
-                                    workingTime.getCloseTime(),
-                                    imageURL
-                            ));
+                        // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
+                        return imageService.getImageURL(place)
+                                .map(imageURL -> toPlaceRecommendationDTO(
+                                        place, lat, lng,
+                                        workingTime.isClosed(),
+                                        workingTime.getOpenTime(),
+                                        workingTime.getCloseTime(),
+                                        imageURL
+                                ));
+                    }
                 })
                 .collectList() // 3. 비동기로 생성된 DTO들을 다시 List로 모음
                 .map(placeInfos -> {
