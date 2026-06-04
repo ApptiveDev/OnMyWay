@@ -326,12 +326,16 @@ setAllCategories(data.categories);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
       console.log(iconUrl)
+      const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
+          ? iconUrl.replace(/#/g, '%23') // 최솟값: # 문자가 CSS 주소창을 깨는 걸 방지
+          : iconUrl;
+
       const content = `
         <div
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
           style="
             width:40px;height:40px;
-            background-image:url('${iconUrl}');
+            background-image:url('${safeIconUrl}');
             background-size:contain;
             background-repeat:no-repeat;
             background-position:center;
