@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import Sidebar20 from "./Sidebar_2.0";
+import Loading20 from "./Loading_2.0";
 import { useRoute } from "../../hooks/useRoute";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
@@ -140,6 +141,8 @@ export default function Onboard20() {
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [scale, setScale] = useState(
     () => Math.min(window.innerWidth / 1920, window.innerHeight / 1275)
   );
@@ -190,6 +193,7 @@ export default function Onboard20() {
           const pickList = toPlaceList(picks);
           setRecs(pickList);
           setFeaturedRecs(pickList);
+          setIsInitialLoading(false);
         })
         .catch(console.error);
     };
@@ -208,6 +212,7 @@ export default function Onboard20() {
             const pickList = toPlaceList(picks);
             setRecs(pickList);
             setFeaturedRecs(pickList);
+            setIsInitialLoading(false);
           })
           .catch(console.error);
       },
@@ -473,6 +478,7 @@ export default function Onboard20() {
           onDestinationClear={clearDestMarker}
           userCoords={userCoords}
           onDrawRoute={handleDrawRoute}
+          onRouteLoadingChange={setIsLoadingRoute}
         />
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
@@ -529,7 +535,13 @@ export default function Onboard20() {
           </div>
         )}
 
-        
+        {/* ── 로딩 오버레이 (초기 진입 or 경로 탐색 중) ── */}
+        {(isInitialLoading || isLoadingRoute) && (
+          <div className="absolute inset-0 z-30">
+            <Loading20 />
+          </div>
+        )}
+
       </main>
     </div>
   );

@@ -7,7 +7,7 @@ export const ROUTE_MODES = [
   { id: "right",   label: "발견하는 길", endpoint: "/route/findOut" },
 ];
 
-export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRecsHide, onRecsShow, onDestinationClear }) {
+export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRecsHide, onRecsShow, onDestinationClear, onRouteLoadingChange }) {
   const [destText, setDestText]               = useState("");
   const [destFocused, setDestFocused]         = useState(false);
   const [deptText, setDeptText]               = useState("");
@@ -83,12 +83,16 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
 
   // 출발지 결과 선택
   const handleDeptResultClick = (result) => {
+    const newCoords = { lat: parseFloat(result.y), lng: parseFloat(result.x) };
     setDeptText(result.place_name);
-    setCustomDeptCoords({ lat: parseFloat(result.y), lng: parseFloat(result.x) });
+    setCustomDeptCoords(newCoords);
     setDeptSearchResults([]);
     setDeptFocused(false);
-    // 출발지 변경 시 경로 캐시 초기화
     setRouteStats({}); setRouteFeatures({}); setExploredMode(null);
+    // 목적지가 이미 선택된 상태면 새 출발지로 경로 자동 재탐색
+    if (selectedResult) {
+      Promise.all(ROUTE_MODES.map(m => fetchOne(m.id, selectedResult, newCoords)));
+    }
   };
 
   // 출발지 초기화 (현재위치 / 부산대정문으로 복귀)
@@ -98,6 +102,10 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     setDeptSearchResults([]);
     setDeptFocused(false);
     setRouteStats({}); setRouteFeatures({}); setExploredMode(null);
+    // 목적지가 이미 선택된 상태면 기본 출발지로 경로 자동 재탐색
+    if (selectedResult && userCoords) {
+      Promise.all(ROUTE_MODES.map(m => fetchOne(m.id, selectedResult, userCoords)));
+    }
   };
 
   const handleDestSubmit = (e) => {
@@ -114,9 +122,9 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
 
   const handleDeptSubmit = (e) => { e?.preventDefault(); };
 
-  // 단일 모드 fetch (출발지: customDeptCoords 우선, 없으면 userCoords)
-  const fetchOne = async (modeId, result) => {
-    const startCoords = customDeptCoords ?? userCoords;
+  // 단일 모드 fetch (startCoordsOverride: 출발지 변경 직후 state 반영 전 명시적으로 전달)
+  const fetchOne = async (modeId, result, startCoordsOverride) => {
+    const startCoords = startCoordsOverride ?? customDeptCoords ?? userCoords;
     if (!startCoords || !result) return null;
     const mode = ROUTE_MODES.find(m => m.id === modeId);
     try {
@@ -164,15 +172,21 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const handleExplore = () => {
     if (!selectedResult) return;
     if (exploredMode === selectedMode) {
-      fetchOne(selectedMode, selectedResult).then(f => f && onDrawRoute?.(f, selectedMode));
+      onRouteLoadingChange?.(true);
+      fetchOne(selectedMode, selectedResult).then(f => {
+        if (f) onDrawRoute?.(f, selectedMode);
+        onRouteLoadingChange?.(false);
+      });
     } else {
       const cached = routeFeatures[selectedMode];
       if (cached) {
         onDrawRoute?.(cached, selectedMode);
         setExploredMode(selectedMode);
       } else {
+        onRouteLoadingChange?.(true);
         fetchOne(selectedMode, selectedResult).then(f => {
           if (f) { onDrawRoute?.(f, selectedMode); setExploredMode(selectedMode); }
+          onRouteLoadingChange?.(false);
         });
       }
     }

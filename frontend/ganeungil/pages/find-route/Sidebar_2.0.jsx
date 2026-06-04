@@ -76,6 +76,7 @@ export default function Sidebar20({
   onDestinationClear,
   userCoords,
   onDrawRoute,
+  onRouteLoadingChange,
 }) {
   const [scale, setScale] = useState(
     () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
@@ -95,6 +96,7 @@ export default function Sidebar20({
     onRecsHide,
     onRecsShow,
     onDestinationClear,
+    onRouteLoadingChange,
   });
 
   const {
