@@ -340,6 +340,8 @@ setAllCategories(data.categories);
             background-repeat:no-repeat;
             background-position:center;
             cursor:pointer;transition:transform 0.15s;
+            position: absolute;
+            z-index: 999;
           "
           onmouseover="this.style.transform='scale(1.2)'"
           onmouseout="this.style.transform='scale(1)'"
