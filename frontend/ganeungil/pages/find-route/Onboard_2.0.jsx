@@ -322,6 +322,7 @@ setAllCategories(data.categories);
         lng = place.lng + spiralOffsets[offsetIdx][1];
       }
       placed.push({ lat, lng });
+      console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
       const content = `
