@@ -5,11 +5,20 @@ export default function RouteInputSection({
   locStatus,
   destText, setDestText, destFocused,
   deptText, setDeptText, deptFocused,
+  customDeptCoords,
   destInputRef, deptInputRef,
   handleDestFocus, handleDeptFocus, handleCancel,
   handleDestSubmit, handleDeptSubmit,
+  handleDeptClear,
 }) {
   const granted = locStatus === "granted";
+  const defaultDeptLabel =
+    locStatus === "granted" ? "현재 위치" :
+    locStatus === "pending"  ? "위치 확인 중…" :
+    "부산대학교 정문";
+
+  // 출발지에 커스텀 값이 있거나 포커스 중일 때 X 버튼 노출
+  const showDeptClear = !!customDeptCoords || (deptFocused && !!deptText);
 
   return (
     <div className="flex gap-[18px] items-center w-full">
@@ -28,17 +37,17 @@ export default function RouteInputSection({
           {/* 출발지 */}
           <div className="flex flex-col items-start p-[8px] w-full">
             <form onSubmit={handleDeptSubmit} className="w-full">
-              <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center gap-[15.068px] pl-[37.67px] rounded-[37.669px] ${
+              <div className={`bg-[#fffbec] border-[1.883px] border-solid h-[65px] flex items-center gap-[15.068px] pl-[37.67px] pr-[16px] rounded-[37.669px] ${
                 deptFocused ? "border-[rgba(200,135,58,0.6)] shadow-sm" : "border-[#d9d9d9]"
               }`}>
                 <div className="flex-1 min-w-0">
-                  {granted && !deptFocused ? (
+                  {(locStatus === "granted" || locStatus === "denied") && !deptFocused && !deptText ? (
                     <button
                       type="button"
-                      className="font-['Pretendard'] text-[20px] font-normal leading-[133.4%] tracking-[-0.54px] text-[#3e2722] text-left w-full"
+                      className="w-full text-[20px] tracking-[-0.54px] font-normal leading-tight text-[#3e2722] text-left bg-transparent"
                       onClick={handleDeptFocus}
                     >
-                      부산대학교
+                      {defaultDeptLabel}
                     </button>
                   ) : (
                     <input
@@ -47,14 +56,20 @@ export default function RouteInputSection({
                       value={deptText}
                       onChange={e => setDeptText(e.target.value)}
                       onFocus={handleDeptFocus}
-                      placeholder={granted ? "현재 위치" : locStatus === "pending" ? "위치 확인 중…" : "출발지를 입력하세요"}
+                      placeholder={defaultDeptLabel}
                       className="w-full text-[20px] tracking-[-0.54px] font-normal bg-transparent outline-none leading-tight placeholder:text-[#afafaf] text-[#3e2722]"
                       autoFocus={deptFocused}
                     />
                   )}
                 </div>
-                {deptFocused && deptText && (
-                  <button type="button" onClick={() => setDeptText("")} className="shrink-0 text-[#8b7e6a] text-[11px] hover:text-[#2c2417]">✕</button>
+                {showDeptClear && (
+                  <button
+                    type="button"
+                    onClick={handleDeptClear}
+                    className="shrink-0 hover:opacity-70 transition-opacity"
+                  >
+                    <img src={iconex} alt="초기화" className="w-[18px] h-[16px]" />
+                  </button>
                 )}
               </div>
             </form>
@@ -83,9 +98,6 @@ export default function RouteInputSection({
                   <button type="button" onClick={handleCancel} className="shrink-0 ml-2 hover:opacity-70 transition-opacity">
                     <img src={iconex} alt="취소" className="w-[20.221px] h-[18.184px]" />
                   </button>
-                )}
-                {destText && (
-                  <button type="submit" className="ml-2 text-[13px] font-medium text-[#c8873a] bg-[rgba(200,135,58,0.1)] px-2.5 py-1 rounded-full shrink-0">검색</button>
                 )}
               </div>
             </form>

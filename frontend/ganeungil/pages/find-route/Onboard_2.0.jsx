@@ -18,7 +18,6 @@ import markerBite  from "@/assets/map/iconbite.svg";
 import markerFight from "@/assets/map/iconfight.svg";
 import markerMeal  from "@/assets/map/iconmeal.svg";
 import markerSee   from "@/assets/map/iconsee.svg";
-import markerHansoom from "@/assets/map/icon_한숨.svg";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -26,7 +25,6 @@ const MARKER_ICON = {
   "한판":  markerFight,
   "한끼":  markerMeal,
   "한눈":  markerSee,
-  "한숨":  markerHansoom,
 };
 
 const CATEGORY_LABEL_TO_ID = {
@@ -73,26 +71,47 @@ function toPlaceList(raw, startId = 0) {
   }));
 }
 
+// 한숨(categoryId:3) 장소를 한눈(categoryId:5)으로 병합
+function normalizeCategories(categories) {
+  const hansoom = categories.find((c) => c.categoryId === 3);
+  if (!hansoom) return categories;
+  return categories
+    .filter((c) => c.categoryId !== 3)
+    .map((c) => {
+      if (c.categoryId !== 5) return c;
+      return {
+        ...c,
+        places: [
+          ...(c.places ?? []).map((p) => ({ ...p, category: "한눈" })),
+          ...(hansoom.places ?? []).map((p) => ({ ...p, category: "한눈" })),
+        ],
+      };
+    });
+}
+
+// 각 카테고리에서 랜덤으로 1개씩 뽑기
+function pickRandom(categories) {
+  return categories
+    .map((c) => {
+      const places = c.places ?? [];
+      if (!places.length) return null;
+      return places[Math.floor(Math.random() * places.length)];
+    })
+    .filter(Boolean);
+}
+
 // 사이드바용: 카테고리 전체 places
 function mapToRecs(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
-  const raw =
-    categoryLabel === "전체"
-      ? categories.flatMap((c) => c.places ?? [])
-      : (categories.find((c) => c.categoryId === targetId)?.places ?? []);
+  const raw = categories.find((c) => c.categoryId === targetId)?.places ?? [];
   return toPlaceList(raw);
 }
 
 // 지도 마커용: featured (없으면 places[0] 폴백)
 function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
-  const raw =
-    categoryLabel === "전체"
-      ? categories.flatMap((c) => c.featured ?? c.places?.[0] ?? [])
-      : (() => {
-          const c = categories.find((c) => c.categoryId === targetId);
-          return c?.featured ?? c?.places?.[0] ?? [];
-        })();
+  const c = categories.find((c) => c.categoryId === targetId);
+  const raw = c?.featured ?? c?.places?.[0] ?? [];
   return toPlaceList(raw);
 }
 
@@ -113,6 +132,7 @@ export default function Onboard20() {
   const [locStatus, setLocStatus]     = useState("pending"); // pending | granted | denied
   const [userCoords, setUserCoords]   = useState(null);      // { lat, lng }
   const [allCategories, setAllCategories] = useState([]);    // API 전체 응답
+  const [randomPicks, setRandomPicks]   = useState([]);      // 전체 탭: 카테고리별 랜덤 1개
   const [recs, setRecs]               = useState([]);        // 사이드바: 전체 places
   const [featuredRecs, setFeaturedRecs] = useState([]);      // 지도 마커: featured만
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -135,6 +155,13 @@ export default function Onboard20() {
 
   const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
 
+  // 사이드바가 열려 있을 때 경로가 사이드바에 가리지 않도록 왼쪽 패딩 확보
+  // 사이드바 right edge = (36 + 492) * scale = 528 * scale px
+  const handleDrawRoute = (features, modeId) => {
+    const leftPad = sidebarOpen ? Math.round((36 + 492) * scale) + 40 : 60;
+    displayRoute(features, modeId, { top: 60, right: 60, bottom: 80, left: leftPad });
+  };
+
   // ref 동기화
   useEffect(() => { recsRef.current = recs; }, [recs]);
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
@@ -151,7 +178,22 @@ export default function Onboard20() {
 
   // ── 위치 권한 요청 (네이티브 UI)
   useEffect(() => {
-    if (!navigator.geolocation) { setLocStatus("denied"); return; }
+    const denied = () => {
+      setLocStatus("denied");
+      setUserCoords(PUSAN_UNIV);
+      loadRecommendations(PUSAN_UNIV.lat, PUSAN_UNIV.lng)
+        .then((data) => {
+          const cats = normalizeCategories(data.categories);
+          const picks = pickRandom(cats);
+          setAllCategories(cats);
+          setRandomPicks(picks);
+          const pickList = toPlaceList(picks);
+          setRecs(pickList);
+          setFeaturedRecs(pickList);
+        })
+        .catch(console.error);
+    };
+    if (!navigator.geolocation) { denied(); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -159,13 +201,17 @@ export default function Onboard20() {
         setLocStatus("granted");
         loadRecommendations(coords.lat, coords.lng)
           .then((data) => {
-setAllCategories(data.categories);
-            setRecs(mapToRecs(data.categories, "전체"));
-            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
+            const cats = normalizeCategories(data.categories);
+            const picks = pickRandom(cats);
+            setAllCategories(cats);
+            setRandomPicks(picks);
+            const pickList = toPlaceList(picks);
+            setRecs(pickList);
+            setFeaturedRecs(pickList);
           })
           .catch(console.error);
       },
-      () => setLocStatus("denied")
+      denied
     );
   }, []);
 
@@ -218,11 +264,7 @@ setAllCategories(data.categories);
     if (circleRef.current)  { circleRef.current.setMap(null);  circleRef.current = null; }
     if (userDotRef.current) { userDotRef.current.setMap(null); userDotRef.current = null; }
 
-    if (locStatus === "denied") {
-      map.setCenter(new window.kakao.maps.LatLng(PUSAN_UNIV.lat, PUSAN_UNIV.lng));
-      return;
-    }
-    if (locStatus !== "granted" || !userCoords) return;
+    if (!userCoords) return;
 
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
@@ -256,7 +298,7 @@ setAllCategories(data.categories);
     overlaysRef.current.forEach(o => o.setMap(null));
     overlaysRef.current = [];
 
-    if (recsState === "hidden" || locStatus !== "granted") return;
+    if (recsState === "hidden" || !userCoords) return;
 
     // 겹치는 마커 분리: 20m(~0.00018°) 이내 좌표는 나선형으로 오프셋
     const SPREAD = 0.00018;
@@ -313,7 +355,14 @@ setAllCategories(data.categories);
     if (label === activeCategory) return;
     setActiveCategory(label);
     setSelectedPlace(null);
-    setRecs(mapToRecs(allCategories, label));
+    if (label === "전체") {
+      const pickList = toPlaceList(randomPicks);
+      setRecs(pickList);
+      setFeaturedRecs(pickList);
+    } else {
+      setRecs(mapToRecs(allCategories, label));
+      setFeaturedRecs(mapToFeatured(allCategories, label));
+    }
   };
 
   const handleRecsHide = () => {
@@ -339,9 +388,18 @@ setAllCategories(data.categories);
         setSelectedPlace(null);
         loadRecommendations(coords.lat, coords.lng)
           .then((data) => {
-            setAllCategories(data.categories);
-            setRecs(mapToRecs(data.categories, activeCategory));
-            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
+            const cats = normalizeCategories(data.categories);
+            const picks = pickRandom(cats);
+            setAllCategories(cats);
+            setRandomPicks(picks);
+            const pickList = toPlaceList(picks);
+            if (activeCategory === "전체") {
+              setRecs(pickList);
+              setFeaturedRecs(pickList);
+            } else {
+              setRecs(mapToRecs(data.categories, activeCategory));
+              setFeaturedRecs(mapToFeatured(data.categories, activeCategory));
+            }
           })
           .catch(console.error);
       },
@@ -349,7 +407,7 @@ setAllCategories(data.categories);
     );
   };
 
-  const granted      = locStatus === "granted";
+  const granted      = locStatus === "granted" || locStatus === "denied";
   const showOverlay  = granted && recsState !== "hidden";
   const overlayFading = recsState === "fading";
 
@@ -414,7 +472,7 @@ setAllCategories(data.categories);
           onDestinationSelect={handleDestinationSelect}
           onDestinationClear={clearDestMarker}
           userCoords={userCoords}
-          onDrawRoute={displayRoute}
+          onDrawRoute={handleDrawRoute}
         />
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
