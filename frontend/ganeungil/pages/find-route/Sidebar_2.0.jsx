@@ -219,7 +219,7 @@ export default function Sidebar20({
           {/* ── 흰색 하단 영역 ── */}
           <div className="flex-1 flex flex-col overflow-hidden">
 
-            {selectedResult ? (
+            {selectedResult && !showDeptResults ? (
               /* 목적지 선택 후: 경로 카드 리스트 + 탐색하기 버튼 */
               <>
                 <div className="flex-1 overflow-y-auto flex flex-col gap-[12px] px-[20px] pt-[20px] pb-[12px]">
