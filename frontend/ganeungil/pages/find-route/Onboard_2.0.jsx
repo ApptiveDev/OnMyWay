@@ -330,7 +330,7 @@ setAllCategories(data.categories);
           onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
           style="
             width:40px;height:40px;
-            background-image:url('${iconUrl}');
+            background-color: red;
             background-size:contain;
             background-repeat:no-repeat;
             background-position:center;
