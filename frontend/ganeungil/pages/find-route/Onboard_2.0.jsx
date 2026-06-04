@@ -321,17 +321,42 @@ setAllCategories(data.categories);
       const iconUrl = MARKER_ICON[place.category] || markerSip;
       console.log(iconUrl)
 
-      const content = `
-        <div
-          onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style='width:40px;height:40px;background-image:url(${iconUrl});background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;transition:transform 0.15s;'
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'"
-        ></div>
-      `;
+      const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
+          ? iconUrl.replace(/#/g, '%23')
+          : iconUrl;
+
+      // 🌟 2. HTML 문자열 대신 실제 DOM 엘리먼트를 자바스크립트로 직접 생성
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.display = 'block';
+      container.style.backgroundImage = `url("${safeIconUrl}")`; // 쌍따옴표로 안전하게 감싸기
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      container.style.transition = 'transform 0.15s';
+
+      // 🌟 3. 미리 선언해 둔 인라인 마우스 이벤트 바인딩
+      container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
+      container.onmouseout = () => { container.style.transform = 'scale(1)'; };
+      container.onclick = () => {
+        if (window.__onMarkerClick) {
+          window.__onMarkerClick(place.id);
+        }
+      };
+
+      // const content = `
+      //   <div
+      //     onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
+      //     style='width:40px;height:40px;background-image:url(${iconUrl});background-size:contain;background-repeat:no-repeat;background-position:center;cursor:pointer;transition:transform 0.15s;'
+      //     onmouseover="this.style.transform='scale(1.2)'"
+      //     onmouseout="this.style.transform='scale(1)'"
+      //   ></div>
+      // `;
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(lat, lng),
-        content,
+        content:container,
         map,
         yAnchor: 1,
         zIndex: 3,
