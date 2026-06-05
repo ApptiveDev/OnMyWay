@@ -33,9 +33,9 @@ public class ImageService {
     }
 
     public Mono<String> getImageURL(Place p) {
-        List<Photos> dbPhotos = p.getPhotos();
-        if (dbPhotos.size() > 0) {
-            return Mono.just(dbPhotos.get(0).getPhotoURL());
+        boolean hasPhoto = photosRepository.existsById(p.getId());
+        if (hasPhoto) {
+            return Mono.just(photosRepository.findFirstByPlaceId(p.getId()).get().getPhotoURL());
         } else {
             return webClient.get()
                     .uri(uri -> uri
