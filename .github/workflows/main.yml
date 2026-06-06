@@ -52,7 +52,7 @@ jobs:
           sudo docker run -d \
             --name operate-onmyway \
             -p 8080:8080 \
-            --env-file .env.dev \
+            --env-file .env \
             ${{ secrets.DOCKERHUB_USERNAME }}/onmyway:operation
           
           # 6. 사용하지 않는 구버전 이미지 청소
