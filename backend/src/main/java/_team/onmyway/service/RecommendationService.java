@@ -249,19 +249,15 @@ public class RecommendationService {
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
-                    WorkingTime workingTime = !placeWorkingTime.isEmpty() ? placeWorkingTime.get(day) : null;
-
-                    final boolean isOpen = workingTime==null ? true : workingTime.isClosed();
-                    final LocalTime open = workingTime==null ? LocalTime.of(0,0) : workingTime.getOpenTime();
-                    final LocalTime close = workingTime==null ? LocalTime.of(0,0) : workingTime.getCloseTime();
+                    WorkingTime workingTime = placeWorkingTime.get(day);
 
                     // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
                     return imageService.getImageURL(place)
                             .map(imageURL -> toPlaceRecommendationDTO(
                                     place, lat, lng,
-                                    isOpen,
-                                    open,
-                                    close,
+                                    workingTime.isClosed(),
+                                    workingTime.getOpenTime(),
+                                    workingTime.getCloseTime(),
                                     imageURL
                             ));
                 })

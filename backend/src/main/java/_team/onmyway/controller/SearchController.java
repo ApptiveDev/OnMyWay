@@ -1,7 +1,6 @@
 package _team.onmyway.controller;
 
 import _team.onmyway.dto.PointDTO;
-import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,11 +17,8 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/places/search")
-    public ResponseEntity<Mono<List<PointDTO>>> searchPlace(@RequestParam String query,
-                                                            @RequestParam Double lat,
-                                                            @RequestParam Double lon) {
-        PositionDTO point = new PositionDTO(lat, lon);
-        Mono<List<PointDTO>> places = searchService.searchPlaces(query, point);
+    public ResponseEntity<Mono<List<PointDTO>>> searchPlace(@RequestParam String query) {
+        Mono<List<PointDTO>> places = searchService.searchPlaces(query);
         return ResponseEntity.ok(places);
     }
 }
