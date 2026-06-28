@@ -30,10 +30,11 @@ public class ImageService {
         if (dbPhotos.size() > 0) {
             return Mono.just(dbPhotos.get(0).getPhotoURL());
         } else {
+            String distinct = p.getAddress().split(" ")[2];
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",p.getName()+" 외관")
+                            .queryParam("query","부산 "+distinct+" "+p.getName())
                             .queryParam("sort","sim")
                             .build())
                     .retrieve()

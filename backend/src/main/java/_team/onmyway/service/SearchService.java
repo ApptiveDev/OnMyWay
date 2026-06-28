@@ -1,6 +1,7 @@
 package _team.onmyway.service;
 
 import _team.onmyway.dto.PointDTO;
+import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.exception.NoPlacesException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,7 +20,7 @@ public class SearchService {
     @Value("${KAKAO_CLIENT_ID}")
     private String apiKey;
 
-    public Mono<List<PointDTO>> searchPlaces(String query) {
+    public Mono<List<PointDTO>> searchPlaces(String query, PositionDTO point) {
         ObjectMapper mapper = new ObjectMapper();
 
         WebClient webClient = WebClient.builder() // 카카오 API로 출발지/목적지 검색
@@ -30,6 +31,9 @@ public class SearchService {
         Mono<String> resp = webClient.get()
                 .uri(uribuilder -> uribuilder
                         .queryParam("query", query) // 검색어 추가
+                        .queryParam("x", point.getLon())
+                        .queryParam("y", point.getLat())
+                        // .queryParam("sort", "distance")
                         .build())
                 .retrieve()
                 .bodyToMono(String.class);
@@ -61,6 +65,9 @@ public class SearchService {
                 if (nearbyPlaces.size() < 3) allPlaces.addAll(nearbyPlaces);
                 else allPlaces.addAll(nearbyPlaces.subList(0, 2));
 
+                allPlaces.sort((a, b)
+                        ->Double.compare(Distance(a.getLatitude(), a.getLongitude(), point.getLat(), point.getLon())
+                        , Distance(b.getLatitude(), b.getLongitude(), point.getLat(), point.getLon())));
                 return allPlaces;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -68,5 +75,15 @@ public class SearchService {
             }
         });
         return document;
+    }
+
+    private Double Distance(Double lat1, Double lng1, Double lat2, Double lng2) {
+        final double R = 6371;
+        double dlat = Math.toRadians(lat2 - lat1);
+        double dlng = Math.toRadians(lng2 - lng1);
+
+        double angle = Math.sin(dlat/2)*Math.sin(dlat/2)+Math.cos(Math.toRadians(lat1))*Math.cos(Math.toRadians(lat2))*Math.sin(dlng/2)*Math.sin(dlng/2);
+
+        return R * Math.asin(Math.sqrt(angle));
     }
 }
