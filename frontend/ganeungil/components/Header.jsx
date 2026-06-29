@@ -1,55 +1,84 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import iconLogin from "@/assets/icon-login-new.svg";
-import iconMenu  from "@/assets/icon-menu-new.svg";
+import iconSearch from "@/assets/Button_dialog.svg";
+import iconMenu   from "@/assets/header_search.svg";
+
+// Figma 로고 아이콘 (7일 후 만료 → 로컬 파일로 교체 필요)
+import LOGO_ICON from "@/assets/Frame 16.svg";
+
+const NAV_ITEMS = [
+  { label: "길찾기",  path: "/find-route" },
+  { label: "탐색하기", path: "/discover"   },
+  { label: "둘러보기", path: "/explore"    },
+];
 
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const navItem = (label, path) => {
-    const active = pathname === path;
-    return (
-      <button
-        onClick={() => navigate(path)}
-        className={`px-4 py-2 rounded-full text-sm transition-colors ${
-          active
-            ? "bg-[rgba(200,135,58,0.1)] text-[#c8873a] font-medium"
-            : "text-[#8b7e6a] hover:text-[#2c2417]"
-        }`}
-      >
-        {label}
-      </button>
-    );
-  };
-
   return (
-    <header className="sticky top-0 z-50 bg-[rgba(250,246,240,0.8)] backdrop-blur-sm border-b border-[rgba(44,36,23,0.06)]">
-      <div className="max-w-[1101px] mx-auto px-10 h-14 flex items-center justify-between">
+    <header className="top-0 h-[120px] bg-[#FFFADD]">
+      <div className="flex items-center w-full px-[352px] pt-[57px]">
+
+        {/* 로고 */}
         <button
           onClick={() => navigate("/")}
-          className="text-[#c8873a] font-semibold text-[19.2px] tracking-[1.92px]"
-          style={{ fontFamily: "'Noto Serif KR', serif" }}
+          className="flex items-center w-[186px] h-[43px]"
         >
-          가는길
+          <img src={LOGO_ICON} className="w-[186px] h-[43.23px]"/>
         </button>
 
-        <nav className="flex items-center gap-1">
-          {navItem("길찾기", "/find-route")}
-          {navItem("둘러보기", "/explore")}
+        {/* 내비게이션 */}
+        <nav className="flex items-center gap-[44.44px] ml-[53.33px]">
+          {NAV_ITEMS.map(({ label, path }) => {
+            const active = pathname === path;
+            return (
+              <button
+                key={path}
+                onClick={() => navigate(path)}
+                className={`text-center text-[20.74px] leading-normal tracking-[-0.622px] ${
+                  active
+                    ? "text-[#3e2722] font-semibold"
+                    : "text-[#3e2722] font-medium hover:opacity-40"
+                }`}
+                style={{ fontFamily: "Pretendard" }}
+              >
+                {label}
+              </button>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-2">
+        {/* 우측: 로그인/회원가입 + 아이콘 */}
+        <div className="flex items-center gap-[8px] ml-auto">
           <button
-            onClick={() => navigate("/login")}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-[#8b7e6a] text-[13.6px] hover:text-[#2c2417] transition-colors"
+            onClick={() => {
+              const currentPath = encodeURIComponent(pathname)
+              navigate(`/login?redirect-url=${currentPath}`)
+            }}
+            className="text-[#858585] text-[14px] font-medium tracking-[-0.28px]"
+            style={{ fontFamily: "Pretendard" }}
           >
-            <img src={iconLogin} alt="" className="w-[15px] h-[15px]" />
             로그인
           </button>
-          <button className="w-10 h-10 rounded-full bg-[rgba(240,232,218,0.5)] flex items-center justify-center hover:bg-[rgba(240,232,218,0.8)] transition-colors">
-            <img src={iconMenu} alt="메뉴" className="w-[18px] h-[18px]" />
+          <div className="w-[1px] h-[10px] bg-[#858585]" />
+          <button
+            onClick={() => navigate("/signup")}
+            className="text-[#858585] text-[14px] font-medium tracking-[-0.28px]"
+            style={{ fontFamily: "Pretendard" }}
+          >
+            회원가입
           </button>
+
+          <div className="flex items-center gap-[16px] ml-[45px]">
+            <button className="w-[24px] h-[24px]">
+              <img src={iconSearch} alt="검색" className="w-[24px] h-[24px]" />
+            </button>
+            <button className="w-[24px] h-[24px]">
+              <img src={iconMenu} alt="메뉴" className="w-[24px] h-[24px]" />
+            </button>
+          </div>
         </div>
+
       </div>
     </header>
   );

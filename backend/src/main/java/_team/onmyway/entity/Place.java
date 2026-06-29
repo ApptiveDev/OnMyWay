@@ -59,11 +59,9 @@ public class Place {
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "place") // 양방향 연결
-    @Builder.Default
     private List<WorkingTime> workingTimes = new ArrayList<>();
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "place")
-    @Builder.Default // Builder에서 기본값을 채워주는 어노테이션
     private List<Photos> photos = new ArrayList<>();
 }

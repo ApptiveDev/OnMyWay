@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { getCurrentPosition, fetchRecommendations } from "../../api/recommend";
 import imgBg      from "@/assets/explore/bg.svg";
 import imgTree1   from "@/assets/explore/tree1.svg";
 import imgTree2   from "@/assets/explore/tree2.svg";

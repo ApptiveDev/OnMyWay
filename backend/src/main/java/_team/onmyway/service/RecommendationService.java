@@ -19,6 +19,7 @@ import reactor.core.scheduler.Schedulers;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -120,30 +121,6 @@ public class RecommendationService {
                 )
                 .collectList()
                 .map(categoryDTOs -> new AllCategoryRecommendationsDTO(categoryDTOs));
-
-//        List<CategoryRecommendationDTO> categoryDTOs = SUPPORTED_CATEGORY_IDS.stream()
-//                .map(categoryId -> {
-//                    ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElseThrow();
-//                    List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
-//
-//                    Collections.shuffle(categoryPlaces);
-//                    int day = LocalDate.now().getDayOfWeek().getValue();
-//                    List<PlaceRecommendationDTO> placeInfos = categoryPlaces.stream()
-//                            .limit(DEFAULT_LIMIT_PER_CATEGORY)
-//                            .map(p -> {
-//                                List<WorkingTime> placeWorkingTime = p.getWorkingTimes();
-//                                WorkingTime workingTime = placeWorkingTime.get(day);
-//                                String imageURL = imageService.getImageURL(p);
-//                                return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime(), imageURL);
-//                            })
-//                            .toList();
-//
-//                    PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
-//                    return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
-//                })
-//                .toList();
-//
-//        return new AllCategoryRecommendationsDTO(categoryDTOs);
     }
 
     private boolean isPlaceNearAnySamplePoint(Place place, List<PositionDTO> samples, double radiusMeters) {
@@ -324,7 +301,9 @@ public class RecommendationService {
     }
 
     private boolean isOpen(boolean isClosed, LocalTime open, LocalTime close) {
-        LocalTime now = LocalTime.now();
+        ZoneId koreaZone = ZoneId.of("Asia/Seoul");
+        LocalTime now = LocalTime.now(koreaZone);
+
         if (isClosed) {
             return false;
         } else if (open == null || close == null) {

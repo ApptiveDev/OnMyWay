@@ -40,6 +40,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         usersRepository.save(user);
 
         // 쿠키에 담기 (HttpOnly + Secure)
+        // access Token으로 변경?
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)       // 변경

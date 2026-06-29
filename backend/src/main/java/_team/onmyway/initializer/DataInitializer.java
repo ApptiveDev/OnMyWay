@@ -201,7 +201,6 @@ public class DataInitializer implements CommandLineRunner {
 
                 openCloseEntries.add(workingTime);
             }
-            System.out.println(openCloseEntries.size());
             workingTimeRepository.saveAll(openCloseEntries);
         }
     }
