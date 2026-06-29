@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
+                                        "/**",
                                         "/",
                                         "/find-route",
                                         "/index.html",
