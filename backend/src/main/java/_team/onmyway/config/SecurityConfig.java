@@ -5,14 +5,7 @@ import _team.onmyway.security.OAuthFailureHandler;
 import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
 import _team.onmyway.service.CustomOAuthUserService;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -28,8 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
-
-    private final ClientRegistrationRepository clientRegistrationRepository;
+    
     private final CustomOAuthUserService customOAuthUserService;
     private final OAuthSuccessHandler successHandler;
     private final OAuthFailureHandler failureHandler;
@@ -67,9 +59,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth -> oauth
                         // oauth2를 이용할 때 로그인 시 사용할 로그인 페이지 지정(Custom)
                         .loginPage("/login")
-                        .authorizationEndpoint(authEndpoint -> authEndpoint
-                                .baseUri("/oauth2/authorization")
-                                .authorizationRequestRepository(cookieRepository))
+                        .authorizationEndpoint(authEndpoint -> authEndpoint.authorizationRequestRepository(cookieRepository))
                         .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.userService(customOAuthUserService)) // 사용자 정보 이용(회원가입 등)
                         .successHandler(successHandler) // 로그인 완료 시 이동할 곳
                         .failureHandler(failureHandler) // 로그인 실패 시 이동할 곳
@@ -94,22 +84,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-    }
-
-    private OAuth2AuthorizationRequestResolver customOAuth2AuthorizationRequestResolver() {
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-
-        resolver.setAuthorizationRequestCustomizer(builder -> {
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes != null) {
-                HttpServletRequest request = attributes.getRequest();
-                String redirectUri = request.getParameter("redirect-url");
-                if (redirectUri != null) {
-                    builder.additionalParameters(params -> params.put("custom_redirect_uri", redirectUri));
-                }
-            }
-        });
-        return resolver;
     }
 }

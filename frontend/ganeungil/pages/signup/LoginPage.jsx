@@ -9,9 +9,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleKakaoLogin = () => {
-    const params = new URLSearchParams(window.location.search);
-    const redirectUrl = params.get('redirect-url') || '/';
-    window.location.href = `/oauth2/authorization/kakao?redirect-url=${encodeURIComponent(redirectUrl)}`;
+  const params = new URLSearchParams(window.location.search);
+  const redirectUri = params.get('redirect_uri') || '/';
+  window.location.href = `/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirectUri)}`;
   };
   
   const handleLogin = (e) => {
@@ -28,11 +28,11 @@ export default function LoginPage() {
 
         {/* 로고 */}
         <div className="flex items-center gap-2 mb-6">
-          <img src={LOGO_ICON} alt="가는길" className="h-[40px]" />
+          <img src={LOGO_ICON} alt="가는길" className="h-[min(40px,5.2vw)]" />
         </div>
 
         {/* 메인 컨테이너 800px */}
-        <div className="flex w-[300px] h-[350px] flex-col items-center">
+        <div className="flex w-[min(300px,80vw)] flex-col items-center">
 
           {/* 타이틀 */}
           <h1
@@ -56,7 +56,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일"
-              className="w-full bg-[#fffbec] border border-[#d9d9d9] rounded-[20px] px-[20px] py-[9px] text-[10px] text-[#3e2722] placeholder:text-[#afafaf] outline-none focus:border-[#ed7a13] transition-colors tracking-[-0.378px]"
+              className="w-full bg-[#fffbec] border border-[#d9d9d9] rounded-full px-[min(20px,2.6vw)] py-[min(9px,1.2vw)] text-[10px] text-[#3e2722] placeholder:text-[#afafaf] outline-none focus:border-[#ed7a13] transition-colors tracking-[-0.378px]"
               style={{ fontFamily: "'Pretendard', sans-serif" }}
             />
 
@@ -67,13 +67,13 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="비밀번호"
-                className="w-full bg-[#fffbec] border border-[#d9d9d9] rounded-[20px] px-[20px] pr-[48px] py-[9px] text-[10px] text-[#3e2722] placeholder:text-[#afafaf] outline-none focus:border-[#ed7a13] transition-colors tracking-[-0.378px]"
+                className="w-full bg-[#fffbec] border border-[#d9d9d9] rounded-full px-[min(20px,2.6vw)] pr-[min(48px,6.3vw)] py-[min(9px,1.2vw)] text-[10px] text-[#3e2722] placeholder:text-[#afafaf] outline-none focus:border-[#ed7a13] transition-colors tracking-[-0.378px]"
                 style={{ fontFamily: "'Pretendard', sans-serif" }}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-[18px] top-1/2 -translate-y-1/2 text-[#afafaf] hover:text-[#3e2722] transition-colors"
+                className="absolute right-[min(18px,2.3vw)] top-1/2 -translate-y-1/2 text-[#afafaf] hover:text-[#3e2722] transition-colors"
               >
                 {showPassword ? (
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -93,7 +93,7 @@ export default function LoginPage() {
             {/* 로그인 버튼 */}
             <button
               type="submit"
-              className="w-full h-[40px] bg-[#ed7a13] rounded-full text-white text-[10px] font-medium tracking-[-0.5px] hover:bg-[#d96e10] transition-colors mt-1"
+              className="w-full h-[min(40px,5.2vw)] bg-[#ed7a13] rounded-full text-white text-[10px] font-medium tracking-[-0.5px] hover:bg-[#d96e10] transition-colors mt-1"
               style={{ fontFamily: "'Pretendard', sans-serif" }}
             >
               로그인
@@ -122,7 +122,7 @@ export default function LoginPage() {
           {/* 카카오 로그인 */}
           <button
             onClick={handleKakaoLogin}
-            className="w-full h-[40px] bg-[#ed7a13] rounded-full text-white text-[10px] font-medium tracking-[-0.5px] hover:bg-[#d96e10] transition-colors"
+            className="w-full h-[min(40px,5.2vw)] bg-[#ed7a13] rounded-full text-white text-[10px] font-medium tracking-[-0.5px] hover:bg-[#d96e10] transition-colors"
             style={{ fontFamily: "'Pretendard', sans-serif" }}
           >
             카카오로 로그인

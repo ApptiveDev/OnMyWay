@@ -13,12 +13,13 @@ import iconShop  from "@/assets/icon-shop.svg";
 import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
 
-import markerSip   from "@/assets/map/iconsip.svg";
-import markerBite  from "@/assets/map/iconbite.svg";
-import markerFight from "@/assets/map/iconfight.svg";
-import markerMeal  from "@/assets/map/iconmeal.svg";
-import markerSee   from "@/assets/map/iconsee.svg";
-import markerHansoom from "@/assets/map/icon_한숨.svg";
+import markerSip   from "@/assets/map/iconsip.svg?url";
+import markerBite  from "@/assets/map/iconbite.svg?url";
+import markerFight from "@/assets/map/iconfight.svg?url";
+import markerMeal  from "@/assets/map/iconmeal.svg?url";
+import markerSee   from "@/assets/map/iconsee.svg?url";
+import markerHansoom from "@/assets/map/icon_한숨.svg?url";
+import iconArrive2 from "@/assets/iconArrive2.svg?url";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -120,6 +121,9 @@ export default function Onboard20() {
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
+  const [scale, setScale] = useState(
+    () => Math.min(window.innerWidth / 1920, window.innerHeight / 1275)
+  );
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -127,10 +131,52 @@ export default function Onboard20() {
   const circleRef       = useRef(null); // 500m 반경 Circle
   const userDotRef      = useRef(null); // 내 위치 CustomOverlay
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
+  const routeRecsOverlaysRef = useRef([]);  // 경로 추천 마커
   const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
 
-  const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
+  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
+
+  const handleDestSelect = (place) => {
+    handleDestinationSelect(place);
+    circleRef.current?.setMap(null);
+  };
+
+  const handleDestClear = () => {
+    clearDestMarker();
+    clearRoute();
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    if (circleRef.current && kakaoMapRef.current) circleRef.current.setMap(kakaoMapRef.current);
+  };
+
+  const handleRouteRecs = (places) => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    places.filter(p => p.lat && p.lng).forEach(place => {
+      const safeUrl = iconArrive2.startsWith('data:image/svg+xml')
+        ? iconArrive2.replace(/#/g, '%23')
+        : iconArrive2;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        content: container,
+        map,
+        yAnchor: 1,
+        zIndex: 3,
+      });
+      routeRecsOverlaysRef.current.push(overlay);
+    });
+  };
 
   // ref 동기화
   useEffect(() => { recsRef.current = recs; }, [recs]);
@@ -173,6 +219,14 @@ setAllCategories(data.categories);
     window.addEventListener("online",  on);
     window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
+  }, []);
+
+  // ── 화면 크기 변경 시 scale 갱신
+  useEffect(() => {
+    const update = () =>
+      setScale(Math.min(window.innerWidth / 1920, window.innerHeight / 1275));
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   // ── 카카오맵 초기화 (SDK 로드 대기 후 실행)
@@ -270,28 +324,34 @@ setAllCategories(data.categories);
         lng = place.lng + spiralOffsets[offsetIdx][1];
       }
       placed.push({ lat, lng });
+      console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
-      const content = `
-        <div
-          onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style="
-            width:40px;height:40px;
-            background-image:url('${iconUrl}');
-            background-size:contain;
-            background-repeat:no-repeat;
-            background-position:center;
-            cursor:pointer;transition:transform 0.15s;
-          "
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'"
-        ></div>
-      `;
+      const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
+        ? iconUrl.replace(/#/g, '%23')
+        : iconUrl;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeIconUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      container.style.transition = 'transform 0.15s';
+      container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
+      container.onmouseout = () => { container.style.transform = 'scale(1)'; };
+      container.onclick = () => {
+        if (window.__onMarkerClick) {
+          window.__onMarkerClick(place.id);
+        }
+      };
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(lat, lng),
-        content,
+        content: container,
         map,
         yAnchor: 1,
+        zIndex: 3,
       });
       overlaysRef.current.push(overlay);
     });
@@ -345,8 +405,8 @@ setAllCategories(data.categories);
 
   return (
     <div
-      className="bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-      style={{ fontFamily: "'Noto Serif KR', serif" }}
+      className="w-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+      style={{ height: `calc(100vh - ${120 * scale}px)`, fontFamily: "'Noto Serif KR', serif" }}
     >
       <style>{`
         @keyframes fadeOutDown {
@@ -375,13 +435,13 @@ setAllCategories(data.categories);
       `}</style>
 
       {/* ── 메인 ── */}
-      <main className="absolute w-[1920px] h-[1275px] ">
+      <main className="relative w-full h-full">
 
         {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
-        <div className="absolute w-[1920px] h-[1155px] top-0 left-0">           
+        <div className="absolute inset-0">
           <div
             ref={mapContainerRef}
-            className="w-full h-[1155px] kakao-map-wrap"
+            className="w-full h-full kakao-map-wrap"
             style={{ transform: "translateZ(0)", willChange: "transform" }}
           />
         </div>
@@ -400,15 +460,25 @@ setAllCategories(data.categories);
           onRecalibrate={handleRecalibrate}
           onRecsHide={handleRecsHide}
           onRecsShow={handleRecsShow}
-          onDestinationSelect={handleDestinationSelect}
-          onDestinationClear={clearDestMarker}
+          onDestinationSelect={handleDestSelect}
+          onDestinationClear={handleDestClear}
           userCoords={userCoords}
           onDrawRoute={displayRoute}
+          onRouteRecs={handleRouteRecs}
         />
 
         {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
         {selectedPlace && (
-          <div className="absolute top-[50px] left-[400px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
+          <div
+            className="absolute bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in"
+            style={{
+              top:             `${50 * scale}px`,
+              left:            `${400 * scale}px`,
+              width:           "240px",
+              transform:       `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          >
             <div className="relative">
               <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
             

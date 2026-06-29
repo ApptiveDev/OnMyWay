@@ -19,7 +19,7 @@ export default function OnboardNew() {
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       {/* ── 히어로 섹션 ── */}
-      <section className="relative h-[656px] overflow-hidden">
+      <section className="relative h-[34vw] overflow-hidden">
         <img
           src={imgHero}
           alt="골목길 배경"
@@ -39,7 +39,7 @@ export default function OnboardNew() {
             단순히 지나가는 공간이 아닌, 새로운 취향을 만나는 통로로.
           </p>
 
-          <div className="flex gap-3 w-[384px]">
+          <div className="flex gap-3 w-[20vw]">
             <FindRouteButton />
             <ExploreButton />
           </div>
@@ -121,7 +121,7 @@ export default function OnboardNew() {
 
         <div className="grid grid-cols-[3fr_2fr] gap-5">
           {/* 큰 카드 (왼쪽) */}
-          <div className="relative overflow-hidden rounded-2xl h-[404px] group cursor-pointer">
+          <div className="relative overflow-hidden rounded-2xl h-[21vw] group cursor-pointer">
             <img
               src={imgStory1}
               alt="망원동의 숨은 골목 산책"

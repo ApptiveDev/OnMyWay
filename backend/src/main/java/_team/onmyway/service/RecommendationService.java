@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -33,7 +34,6 @@ public class RecommendationService {
     private final ServiceCategoryRepository serviceCategoryRepository;
     private final GeoDistanceService geoDistanceService;
     private final ImageService imageService;
-    private final WorkingTimeRepository workingTimeRepository;
 
     private static final double RADIUS_METERS = 250.0;
     private static final int DEFAULT_LIMIT_PER_CATEGORY = 7;
@@ -106,10 +106,18 @@ public class RecommendationService {
                                             .flatMap(p ->
                                                     imageService.getImageURL(p)
                                                             .map(imageURL -> {
-                                                                WorkingTime workingTime = p.getWorkingTimes().get(day);
-                                                                return toPlaceRecommendationDTO(p, userLat, userLng,
-                                                                        workingTime.isClosed(), workingTime.getOpenTime(),
-                                                                        workingTime.getCloseTime(), imageURL);
+                                                                List<WorkingTime> workingTimes = p.getWorkingTimes();
+                                                                int index = day&7;
+
+                                                                if (workingTimes != null & !workingTimes.isEmpty() && index < workingTimes.size()) {
+                                                                    WorkingTime workingTime = workingTimes.get(index);
+                                                                    return toPlaceRecommendationDTO(p, userLat, userLng,
+                                                                            workingTime.isClosed(), workingTime.getOpenTime(),
+                                                                            workingTime.getCloseTime(), imageURL);
+                                                                } else {
+                                                                    return toPlaceRecommendationDTO(p, userLat, userLng, true,
+                                                                            null, null, imageURL);
+                                                                }
                                                             })
                                             )
                                             .collectList()
@@ -226,17 +234,29 @@ public class RecommendationService {
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
-                    WorkingTime workingTime = placeWorkingTime.get(day);
+                    if (placeWorkingTime.isEmpty()) {
+                        return imageService.getImageURL(place)
+                                .map(imageURL -> toPlaceRecommendationDTO(
+                                        place, lat, lng,
+                                        true,
+                                        null,
+                                        null,
+                                        imageURL
+                                ));
+                    }
+                    else {
+                        WorkingTime workingTime = placeWorkingTime.get(day%7);
 
-                    // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
-                    return imageService.getImageURL(place)
-                            .map(imageURL -> toPlaceRecommendationDTO(
-                                    place, lat, lng,
-                                    workingTime.isClosed(),
-                                    workingTime.getOpenTime(),
-                                    workingTime.getCloseTime(),
-                                    imageURL
-                            ));
+                        // 2. imageService.getImageURL(place)가 Mono<String>을 반환한다고 가정
+                        return imageService.getImageURL(place)
+                                .map(imageURL -> toPlaceRecommendationDTO(
+                                        place, lat, lng,
+                                        workingTime.isClosed(),
+                                        workingTime.getOpenTime(),
+                                        workingTime.getCloseTime(),
+                                        imageURL
+                                ));
+                    }
                 })
                 .collectList() // 3. 비동기로 생성된 DTO들을 다시 List로 모음
                 .map(placeInfos -> {
