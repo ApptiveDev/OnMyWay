@@ -1,10 +1,12 @@
 package _team.onmyway.service;
 
 import _team.onmyway.dto.PointDTO;
+import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.exception.NoPlacesException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -15,11 +17,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SearchService {
+
+    private final DistanceService distanceService;
+
     @Value("${KAKAO_CLIENT_ID}")
     private String apiKey;
 
-    public Mono<List<PointDTO>> searchPlaces(String query) {
+    public Mono<List<PointDTO>> searchPlaces(String query, PositionDTO position) {
         ObjectMapper mapper = new ObjectMapper();
 
         WebClient webClient = WebClient.builder() // 카카오 API로 출발지/목적지 검색
@@ -30,6 +36,8 @@ public class SearchService {
         Mono<String> resp = webClient.get()
                 .uri(uribuilder -> uribuilder
                         .queryParam("query", query) // 검색어 추가
+                        .queryParam("x", position.getLon())
+                        .queryParam("y", position.getLat())
                         .build())
                 .retrieve()
                 .bodyToMono(String.class);
@@ -61,6 +69,10 @@ public class SearchService {
                 if (nearbyPlaces.size() < 3) allPlaces.addAll(nearbyPlaces);
                 else allPlaces.addAll(nearbyPlaces.subList(0, 2));
 
+                allPlaces.sort((a,b) -> Double.compare(
+                        distanceService.distance(a.getLatitude(), a.getLongitude(), position.getLat(), position.getLon()),
+                        distanceService.distance(b.getLatitude(), b.getLongitude(), position.getLat(), position.getLon())
+                ));
                 return allPlaces;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
@@ -69,4 +81,6 @@ public class SearchService {
         });
         return document;
     }
+
+
 }

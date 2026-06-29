@@ -87,7 +87,7 @@ public class RecommendationService {
         Map<Long, List<Place>> groupedByCategoryId = filteredPlaces.stream()
                 .collect(Collectors.groupingBy(p -> p.getServiceCategory().getId()));
 
-        int day = LocalDate.now().getDayOfWeek().getValue();
+        int day = LocalDate.now().getDayOfWeek().getValue()%7;
 
         return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
                 .flatMap(categoryId ->
@@ -129,30 +129,6 @@ public class RecommendationService {
                 )
                 .collectList()
                 .map(categoryDTOs -> new AllCategoryRecommendationsDTO(categoryDTOs));
-
-//        List<CategoryRecommendationDTO> categoryDTOs = SUPPORTED_CATEGORY_IDS.stream()
-//                .map(categoryId -> {
-//                    ServiceCategory category = serviceCategoryRepository.findById(categoryId).orElseThrow();
-//                    List<Place> categoryPlaces = new ArrayList<>(groupedByCategoryId.getOrDefault(categoryId, Collections.emptyList()));
-//
-//                    Collections.shuffle(categoryPlaces);
-//                    int day = LocalDate.now().getDayOfWeek().getValue();
-//                    List<PlaceRecommendationDTO> placeInfos = categoryPlaces.stream()
-//                            .limit(DEFAULT_LIMIT_PER_CATEGORY)
-//                            .map(p -> {
-//                                List<WorkingTime> placeWorkingTime = p.getWorkingTimes();
-//                                WorkingTime workingTime = placeWorkingTime.get(day);
-//                                String imageURL = imageService.getImageURL(p);
-//                                return toPlaceRecommendationDTO(p, userLat, userLng, workingTime.isClosed(), workingTime.getOpenTime(), workingTime.getCloseTime(), imageURL);
-//                            })
-//                            .toList();
-//
-//                    PlaceRecommendationDTO featured = placeInfos.isEmpty() ? null : placeInfos.get(0);
-//                    return new CategoryRecommendationDTO(categoryId, category.getName(), placeInfos, featured);
-//                })
-//                .toList();
-//
-//        return new AllCategoryRecommendationsDTO(categoryDTOs);
     }
 
     private boolean isPlaceNearAnySamplePoint(Place place, List<PositionDTO> samples, double radiusMeters) {
@@ -254,7 +230,7 @@ public class RecommendationService {
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
 
-        int day = LocalDate.now().getDayOfWeek().getValue();
+        int day = LocalDate.now().getDayOfWeek().getValue()%7;
         return Flux.fromIterable(places)
                 .flatMap(place -> {
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
