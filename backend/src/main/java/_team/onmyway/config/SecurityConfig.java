@@ -17,7 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -34,7 +34,6 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                                 .requestMatchers(
-                                        "/**",
                                         "/",
                                         "/find-route",
                                         "/index.html",
