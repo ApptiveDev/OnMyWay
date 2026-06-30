@@ -2,6 +2,7 @@ package _team.onmyway.controller;
 
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RouteResponseDTO;
+import _team.onmyway.service.RecommendationService;
 import _team.onmyway.service.RouteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import reactor.core.publisher.Mono;
 import java.util.List;
 import java.util.function.Function;
 
@@ -21,6 +22,7 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class RouteController {
     private final RouteService routeService;
+    private final RecommendationService recommendationService;
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")
