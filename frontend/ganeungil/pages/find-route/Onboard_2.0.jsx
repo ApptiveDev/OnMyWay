@@ -14,11 +14,13 @@ import iconShop  from "@/assets/icon-shop.svg";
 import iconView  from "@/assets/icon-view.svg";
 import iconHeart from "@/assets/icon-heart.svg";
 
-import markerSip   from "@/assets/map/iconsip.svg";
-import markerBite  from "@/assets/map/iconbite.svg";
-import markerFight from "@/assets/map/iconfight.svg";
-import markerMeal  from "@/assets/map/iconmeal.svg";
-import markerSee   from "@/assets/map/iconsee.svg";
+import markerSip   from "@/assets/map/iconsip.svg?url";
+import markerBite  from "@/assets/map/iconbite.svg?url";
+import markerFight from "@/assets/map/iconfight.svg?url";
+import markerMeal  from "@/assets/map/iconmeal.svg?url";
+import markerSee   from "@/assets/map/iconsee.svg?url";
+import markerHansoom from "@/assets/map/icon_한숨.svg?url";
+import iconArrive2 from "@/assets/iconArrive2.svg?url";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -153,10 +155,52 @@ export default function Onboard20() {
   const circleRef       = useRef(null); // 500m 반경 Circle
   const userDotRef      = useRef(null); // 내 위치 CustomOverlay
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
+  const routeRecsOverlaysRef = useRef([]);  // 경로 추천 마커
   const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
 
-  const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
+  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
+
+  const handleDestSelect = (place) => {
+    handleDestinationSelect(place);
+    circleRef.current?.setMap(null);
+  };
+
+  const handleDestClear = () => {
+    clearDestMarker();
+    clearRoute();
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    if (circleRef.current && kakaoMapRef.current) circleRef.current.setMap(kakaoMapRef.current);
+  };
+
+  const handleRouteRecs = (places) => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    places.filter(p => p.lat && p.lng).forEach(place => {
+      const safeUrl = iconArrive2.startsWith('data:image/svg+xml')
+        ? iconArrive2.replace(/#/g, '%23')
+        : iconArrive2;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        content: container,
+        map,
+        yAnchor: 1,
+        zIndex: 3,
+      });
+      routeRecsOverlaysRef.current.push(overlay);
+    });
+  };
 
   // 사이드바가 열려 있을 때 경로가 사이드바에 가리지 않도록 왼쪽 패딩 확보
   // 사이드바 right edge = (36 + 492) * scale = 528 * scale px
@@ -328,28 +372,34 @@ export default function Onboard20() {
         lng = place.lng + spiralOffsets[offsetIdx][1];
       }
       placed.push({ lat, lng });
+      console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
-      const content = `
-        <div
-          onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style="
-            width:40px;height:40px;
-            background-image:url('${iconUrl}');
-            background-size:contain;
-            background-repeat:no-repeat;
-            background-position:center;
-            cursor:pointer;transition:transform 0.15s;
-          "
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'"
-        ></div>
-      `;
+      const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
+        ? iconUrl.replace(/#/g, '%23')
+        : iconUrl;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeIconUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      container.style.transition = 'transform 0.15s';
+      container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
+      container.onmouseout = () => { container.style.transform = 'scale(1)'; };
+      container.onclick = () => {
+        if (window.__onMarkerClick) {
+          window.__onMarkerClick(place.id);
+        }
+      };
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(lat, lng),
-        content,
+        content: container,
         map,
         yAnchor: 1,
+        zIndex: 3,
       });
       overlaysRef.current.push(overlay);
     });
@@ -474,8 +524,8 @@ export default function Onboard20() {
           onRecalibrate={handleRecalibrate}
           onRecsHide={handleRecsHide}
           onRecsShow={handleRecsShow}
-          onDestinationSelect={handleDestinationSelect}
-          onDestinationClear={clearDestMarker}
+          onDestinationSelect={handleDestSelect}
+          onDestinationClear={handleDestClear}
           userCoords={userCoords}
           onDrawRoute={handleDrawRoute}
           onRouteLoadingChange={setIsLoadingRoute}

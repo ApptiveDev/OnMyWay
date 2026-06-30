@@ -2,7 +2,9 @@ package _team.onmyway.security;
 
 import _team.onmyway.entity.Users;
 import _team.onmyway.repository.UsersRepository;
+import _team.onmyway.repository.cookie.CookieAuthorizationRequestRepository;
 import _team.onmyway.service.JwtService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -11,6 +13,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.WebUtils;
 
 import java.io.IOException;
 
@@ -20,6 +23,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     private final JwtService jwtService;
     private final UsersRepository usersRepository;
+    private final CookieAuthorizationRequestRepository cookieRepository;
 
     @Override
     @Transactional
@@ -36,6 +40,7 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         usersRepository.save(user);
 
         // 쿠키에 담기 (HttpOnly + Secure)
+        // access Token으로 변경?
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true)
                 .secure(false)       // 변경
@@ -44,9 +49,12 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
                 .maxAge(jwtService.getRefreshTokenExpirationMs() / 1000)
                 .build();
 
+        Cookie redirectCookie = WebUtils.getCookie(request, CookieAuthorizationRequestRepository.REDIRECT_URI);
+        String redirectURI = redirectCookie != null ? redirectCookie.getValue() : "/";
+
         response.addHeader("Set-Cookie", cookie.toString());
 
-        response.sendRedirect("http://localhost:8080/swagger-ui/index.html");
+        response.sendRedirect(redirectURI);
         // 맞춰야 할 부분 1(로그인 후 리다이렉트는 어디로)
     }
 }

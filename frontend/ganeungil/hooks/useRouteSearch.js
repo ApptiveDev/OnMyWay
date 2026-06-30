@@ -1,6 +1,39 @@
 import { useState, useRef, useEffect } from "react";
 import api from "../api/api";
 
+// 점 → 선분(segment) 최단거리 (미터). 좌표계: equirectangular 근사
+function distPointToSegment(pLat, pLng, aLat, aLng, bLat, bLng) {
+  const R = 6371000;
+  const cosLat = Math.cos(pLat * Math.PI / 180);
+  const toM = (dLat, dLng) => [dLat * R * Math.PI / 180, dLng * cosLat * R * Math.PI / 180];
+  const [py, px] = toM(pLat, pLng);
+  const [ay, ax] = toM(aLat, aLng);
+  const [by, bx] = toM(bLat, bLng);
+  const dx = bx - ax, dy = by - ay;
+  const lenSq = dx * dx + dy * dy;
+  const t = lenSq === 0 ? 0 : Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lenSq));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+function filterPlacesNearRoute(places, routeCoords, threshold = 50) {
+  return places.filter(p => {
+    if (!p.lat || !p.lng) return false;
+    for (let i = 0; i < routeCoords.length - 1; i++) {
+      const [aLng, aLat] = routeCoords[i];
+      const [bLng, bLat] = routeCoords[i + 1];
+      if (distPointToSegment(p.lat, p.lng, aLat, aLng, bLat, bLng) <= threshold) return true;
+    }
+    return false;
+  });
+}
+
+// 경로 좌표에서 균등 간격으로 최대 maxN개 샘플 추출
+function sampleRouteCoords(coords, maxN) {
+  if (coords.length <= maxN) return coords;
+  const step = (coords.length - 1) / (maxN - 1);
+  return Array.from({ length: maxN }, (_, i) => coords[Math.round(i * step)]);
+}
+
 export const ROUTE_MODES = [
   { id: "findOut", label: "바른 길",     endpoint: "/route/right"   },
   { id: "slow",    label: "여유로운 길", endpoint: "/route/slow"    },
@@ -153,6 +186,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   // 목적지 선택 시 3개 모드 동시 fetch (지도에는 그리지 않음)
   const handleResultClick = async (result) => {
     setSelectedResult(result);
+    setSearchResults([]);
     setDestText(result.place_name);
     setExploredMode(null);
     onDestinationSelect?.(result);

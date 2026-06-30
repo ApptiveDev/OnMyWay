@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/route")
@@ -23,38 +24,34 @@ public class RouteController {
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")
-    public ResponseEntity<?> getFindOutRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-        RouteResponseDTO routing = routeService.findOutRoute(positions).block();
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public Mono<ResponseEntity<?>> getFindOutRoute(@RequestBody List<PositionDTO> positions) {
+        return processRouteAndRecommend(positions, routeService::findOutRoute);
     }
 
     @PostMapping("/right")
-    public ResponseEntity<?> getRightRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-
-        RouteResponseDTO routing = routeService.rightRoute(positions).block();
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public Mono<ResponseEntity<?>> getRightRoute(@RequestBody List<PositionDTO> positions) {
+        return processRouteAndRecommend(positions, routeService::rightRoute);
     }
 
     @PostMapping("/slow")
-    public ResponseEntity<?> getRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public Mono<ResponseEntity<?>> getRoute(@RequestBody List<PositionDTO> positions) {
+        return processRouteAndRecommend(positions, routeService::slowRoute);
+    }
 
-        RouteResponseDTO routing = routeService.slowRoute(positions).block();
+    // 비동기 로직 한 번에 묶기
+    private Mono<ResponseEntity<?>> processRouteAndRecommend(
+            List<PositionDTO> positions,
+            Function<List<PositionDTO>, Mono<RouteResponseDTO>> processer) {
+        if (positions.isEmpty()) return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
+        PositionDTO start = positions.get(0);
+        return processer.apply(positions)
+                .flatMap(routing -> recommendationService.recommendByRoute(routing, start.getLat(), start.getLon())
+                        .map(recommendations -> {
+                            ObjectNode response = objectMapper.createObjectNode();
+                            response.set("route", objectMapper.valueToTree(routing));
+                            response.set("recommendations", objectMapper.valueToTree(recommendations));
 
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+                            return new ResponseEntity<>(response, HttpStatus.OK);
+                        }));
     }
 }

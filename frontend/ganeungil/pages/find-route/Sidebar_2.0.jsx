@@ -3,6 +3,12 @@ import RouteInputSection from "./RouteInputSection";
 import { useRouteSearch, ROUTE_MODES } from "../../hooks/useRouteSearch";
 
 import iconGPS        from "@/assets/icon-gps.svg";
+import iconLocation   from "@/assets/iconlocation.svg";
+import iconArrow      from "@/assets/icon-arrow.svg";
+import iconUnion      from "@/assets/iconUnion.svg";
+import iconLeisure    from "@/assets/icon-leisure.svg";
+import iconFind       from "@/assets/icon-find.svg";
+import iconClock      from "@/assets/icon-route.svg";
 import iconAll        from "@/assets/all.svg";
 import iconWhiteAll   from "@/assets/whiteall.svg";
 import iconSip        from "@/assets/sip.svg";
@@ -16,6 +22,8 @@ import iconOrgSee     from "@/assets/org_see.svg";
 import iconMeal       from "@/assets/meal.svg";
 import iconOrgMeal    from "@/assets/org_meal.svg";
 import iconHeart      from "@/assets/icon-heart.svg";
+import iconQuiet      from "@/assets/iconquiet.svg";
+import iconRoasting   from "@/assets/iconroasting.svg";
 import imgPlace       from "@/assets/img-place.jpg";
 import iconRoute    from "@/assets/icon-route.svg";
 import iconLeisure  from "@/assets/icon-leisure.svg";
@@ -31,13 +39,23 @@ const ROUTE_MODE_META = {
   right:   { icon: iconDiscover, iconBg: "rgba(167,139,218,0.09)",  desc: "새로운 취향을 만나는 우연",    time: "약 35분", dist: "2.1 km" },
 };
 
+// 피그마 기준 프레임 크기
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
+const MODE_CONFIG = {
+  right:   { icon: iconUnion,   iconBg: "#FAE3CE", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+  slow:    { icon: iconLeisure, iconBg: "#E0E4D8", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+  findOut: { icon: iconUnion,   iconBg: "#FDFAEB", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
+};
+
 const CATEGORIES = [
   { label: "전체",  icon: iconWhiteAll, iconActive: iconAll      },
   { label: "한 잔", icon: iconSip,      iconActive: iconOrgSip   },
   { label: "한 입", icon: iconBite,     iconActive: iconOrgBite  },
-  { label: "한 판", icon: iconFight,    iconActive: iconOrgFight },
-  { label: "한 눈", icon: iconSee,      iconActive: iconOrgSee   },
   { label: "한 끼", icon: iconMeal,     iconActive: iconOrgMeal  },
+  { label: "한 눈", icon: iconSee,      iconActive: iconOrgSee   },
+  { label: "한 판", icon: iconFight,    iconActive: iconOrgFight },
 ];
 
 const CATEGORY_ICON_MAP = {
@@ -93,6 +111,7 @@ export default function Sidebar20({
     userCoords,
     onDestinationSelect,
     onDrawRoute,
+    onRouteRecs,
     onRecsHide,
     onRecsShow,
     onDestinationClear,
