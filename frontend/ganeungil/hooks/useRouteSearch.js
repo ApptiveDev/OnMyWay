@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import api from "../api/api";
 
 // 점 → 선분(segment) 최단거리 (미터). 좌표계: equirectangular 근사
@@ -35,27 +35,72 @@ function sampleRouteCoords(coords, maxN) {
 }
 
 export const ROUTE_MODES = [
-  { id: "right",   label: "바른 길",     endpoint: "/route/right" },
-  { id: "slow",    label: "여유로운 길", endpoint: "/route/slow" },
-  { id: "findOut", label: "발견하는 길", endpoint: "/route/findOut" },
+  { id: "findOut", label: "바른 길",     endpoint: "/route/right"   },
+  { id: "slow",    label: "여유로운 길", endpoint: "/route/slow"    },
+  { id: "right",   label: "발견하는 길", endpoint: "/route/findOut" },
 ];
 
-export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRouteRecs, onRecsHide, onRecsShow, onDestinationClear }) {
-  const [destText, setDestText]             = useState("");
-  const [destFocused, setDestFocused]       = useState(false);
-  const [deptText, setDeptText]             = useState("");
-  const [deptFocused, setDeptFocused]       = useState(false);
-  const [searchResults, setSearchResults]   = useState([]);
-  const [selectedResult, setSelectedResult] = useState(null);
-  const [isSearching, setIsSearching]       = useState(false);
-  const [selectedMode, setSelectedMode]     = useState(null);
-  const [routeInfo, setRouteInfo]           = useState({});
+export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRecsHide, onRecsShow, onDestinationClear, onRouteLoadingChange }) {
+  const [destText, setDestText]               = useState("");
+  const [destFocused, setDestFocused]         = useState(false);
+  const [deptText, setDeptText]               = useState("");
+  const [deptFocused, setDeptFocused]         = useState(false);
+  const [searchResults, setSearchResults]     = useState([]);
+  const [deptSearchResults, setDeptSearchResults] = useState([]);
+  const [selectedResult, setSelectedResult]   = useState(null);
+  const [customDeptCoords, setCustomDeptCoords] = useState(null); // null = userCoords 사용
+  const [isSearching, setIsSearching]         = useState(false);
+  const [selectedMode, setSelectedMode]       = useState("slow");
+  const [exploredMode, setExploredMode]       = useState(null);
+  const [routeStats, setRouteStats]           = useState({});
+  const [routeFeatures, setRouteFeatures]     = useState({});
 
-  const destInputRef = useRef(null);
-  const deptInputRef = useRef(null);
+  const destInputRef    = useRef(null);
+  const deptInputRef    = useRef(null);
+  const debounceRef     = useRef(null);
+  const deptDebounceRef = useRef(null);
 
-  const isSearchMode = destFocused || deptFocused;
-  const showResults  = searchResults.length > 0;
+  const isSearchMode    = destFocused || deptFocused;
+  const showResults     = searchResults.length > 0;
+  const showDeptResults = deptSearchResults.length > 0;
+
+  // 목적지 debounce 자동완성 (350ms)
+  useEffect(() => {
+    if (!destText.trim() || !destFocused) {
+      setSearchResults([]);
+      return;
+    }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      if (!window.kakao?.maps?.services) return;
+      setIsSearching(true);
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(destText, (results, status) => {
+        setIsSearching(false);
+        if (status === window.kakao.maps.services.Status.OK) setSearchResults(results.slice(0, 5));
+        else setSearchResults([]);
+      });
+    }, 350);
+    return () => clearTimeout(debounceRef.current);
+  }, [destText, destFocused]);
+
+  // 출발지 debounce 자동완성 (350ms)
+  useEffect(() => {
+    if (!deptText.trim() || !deptFocused) {
+      setDeptSearchResults([]);
+      return;
+    }
+    clearTimeout(deptDebounceRef.current);
+    deptDebounceRef.current = setTimeout(() => {
+      if (!window.kakao?.maps?.services) return;
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(deptText, (results, status) => {
+        if (status === window.kakao.maps.services.Status.OK) setDeptSearchResults(results.slice(0, 5));
+        else setDeptSearchResults([]);
+      });
+    }, 350);
+    return () => clearTimeout(deptDebounceRef.current);
+  }, [deptText, deptFocused]);
 
   const handleDestFocus = () => { setDestFocused(true); onRecsHide?.(); };
   const handleDeptFocus = () => { setDeptFocused(true); onRecsHide?.(); };
@@ -63,8 +108,37 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const handleCancel = () => {
     setDestText(""); setDeptText("");
     setDestFocused(false); setDeptFocused(false);
-    setSearchResults([]); setSelectedResult(null);
+    setSearchResults([]); setDeptSearchResults([]);
+    setSelectedResult(null); setCustomDeptCoords(null);
+    setRouteStats({}); setRouteFeatures({}); setExploredMode(null);
     onRecsShow?.(); onDestinationClear?.();
+  };
+
+  // 출발지 결과 선택
+  const handleDeptResultClick = (result) => {
+    const newCoords = { lat: parseFloat(result.y), lng: parseFloat(result.x) };
+    setDeptText(result.place_name);
+    setCustomDeptCoords(newCoords);
+    setDeptSearchResults([]);
+    setDeptFocused(false);
+    setRouteStats({}); setRouteFeatures({}); setExploredMode(null);
+    // 목적지가 이미 선택된 상태면 새 출발지로 경로 자동 재탐색
+    if (selectedResult) {
+      Promise.all(ROUTE_MODES.map(m => fetchOne(m.id, selectedResult, newCoords)));
+    }
+  };
+
+  // 출발지 초기화 (현재위치 / 부산대정문으로 복귀)
+  const handleDeptClear = () => {
+    setDeptText("");
+    setCustomDeptCoords(null);
+    setDeptSearchResults([]);
+    setDeptFocused(false);
+    setRouteStats({}); setRouteFeatures({}); setExploredMode(null);
+    // 목적지가 이미 선택된 상태면 기본 출발지로 경로 자동 재탐색
+    if (selectedResult && userCoords) {
+      Promise.all(ROUTE_MODES.map(m => fetchOne(m.id, selectedResult, userCoords)));
+    }
   };
 
   const handleDestSubmit = (e) => {
@@ -81,113 +155,88 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
 
   const handleDeptSubmit = (e) => { e?.preventDefault(); };
 
-  const fetchRouteData = async (modeId, result, { draw = true } = {}) => {
-    if (!userCoords || !result) {
-      console.warn("[경로] 중단 - userCoords:", userCoords, "result:", result);
-      return;
-    }
+  // 단일 모드 fetch (startCoordsOverride: 출발지 변경 직후 state 반영 전 명시적으로 전달)
+  const fetchOne = async (modeId, result, startCoordsOverride) => {
+    const startCoords = startCoordsOverride ?? customDeptCoords ?? userCoords;
+    if (!startCoords || !result) return null;
     const mode = ROUTE_MODES.find(m => m.id === modeId);
-    console.log(`[경로] ${mode.label} 요청`, { from: userCoords, to: { y: result.y, x: result.x } });
     try {
       const response = await api.post(mode.endpoint, [
-        { lat: userCoords.lat, lon: userCoords.lng },
+        { lat: startCoords.lat, lon: startCoords.lng },
         { lat: parseFloat(result.y), lon: parseFloat(result.x) },
       ]);
-      console.log("[경로] 응답:", response.data);
       const features = response.data.route?.features;
-      console.log("[경로] features:", features?.length, "개");
-      if (features && Array.isArray(features)) {
-        if (draw) onDrawRoute?.(features);
-        const summary = features[0]?.properties;
-        if (summary?.totalTime != null) {
-          setRouteInfo(prev => ({
-            ...prev,
-            [modeId]: {
-              time: Math.round(summary.totalTime / 60),
-              distance: (summary.totalDistance / 1000).toFixed(1),
-            },
-          }));
-        }
-        const cats = response.data.recommendations?.categories ?? [];
-        if (modeId === "findOut") {
-          const routeCoords = features
-            .filter(f => f.geometry.type === "LineString")
-            .flatMap(f => f.geometry.coordinates); // [lng, lat]
+      if (!features || !Array.isArray(features)) return null;
 
-          // 경로를 따라 최대 6개 지점 샘플 → 각 지점마다 /places/recommend 호출
-          const samples = sampleRouteCoords(routeCoords, 6);
-          const results = await Promise.all(
-            samples.map(([lng, lat]) =>
-              api.get("/places/recommend", { params: { lat, lng } })
-                .then(r => r.data.categories ?? [])
-                .catch(() => [])
-            )
-          );
-
-          // 전체 장소 합치기 + lat/lng 기준 중복 제거
-          const seen = new Set();
-          const allPlaces = results
-            .flat()
-            .flatMap(cat => cat.places ?? [])
-            .filter(p => {
-              if (!p.lat || !p.lng) return false;
-              const key = `${p.lat},${p.lng}`;
-              if (seen.has(key)) return false;
-              seen.add(key);
-              return true;
-            });
-
-          const nearby = filterPlacesNearRoute(allPlaces, routeCoords, 50);
-
-          // 카테고리별 1개씩만
-          const seenCat = new Set();
-          const onePerCategory = nearby.filter(p => {
-            if (seenCat.has(p.category)) return false;
-            seenCat.add(p.category);
-            return true;
-          });
-
-          console.log("[발견하는 길] 수집 장소:", allPlaces.length, "→ 50m 이내:", nearby.length, "→ 카테고리별 1개:", onePerCategory.length);
-          if (draw) onRouteRecs?.(onePerCategory);
-        } else {
-          if (draw) onRouteRecs?.([]);
-        }
-      } else {
-        console.warn("[경로] features 없음. 응답 구조:", JSON.stringify(response.data).slice(0, 200));
+      const props = features[0]?.properties;
+      if (props?.totalDistance != null && props?.totalTime != null) {
+        setRouteStats(prev => ({
+          ...prev,
+          [modeId]: { distance: props.totalDistance, time: props.totalTime },
+        }));
       }
+      setRouteFeatures(prev => ({ ...prev, [modeId]: features }));
+      return features;
     } catch (error) {
-      console.error("[경로] API 에러:", error.response?.status, error.response?.data ?? error.message);
+      console.error(`[경로] ${modeId} 에러:`, error.response?.status, error.response?.data ?? error.message);
+      return null;
     }
   };
 
-  const handleResultClick = (result) => {
+  // 목적지 선택 시 3개 모드 동시 fetch (지도에는 그리지 않음)
+  const handleResultClick = async (result) => {
     setSelectedResult(result);
     setSearchResults([]);
     setDestText(result.place_name);
+    setExploredMode(null);
     onDestinationSelect?.(result);
+    if (!customDeptCoords && !userCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }
+
+    await Promise.all(ROUTE_MODES.map(m => fetchOne(m.id, result)));
   };
 
+  // 모드 카드 클릭: 선택만 변경
   const handleModeChange = (modeId) => {
     setSelectedMode(modeId);
   };
 
-  const handleSearch = () => {
-    if (!userCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }
+  // 탐색하기:
+  // - 처음 or 다른 모드 → 캐시된 경로 즉시 사용
+  // - 같은 모드로 재클릭 → 새로 fetch (랜덤 재탐색)
+  const handleExplore = () => {
     if (!selectedResult) return;
-    const activeMode = selectedMode ?? "slow";
-    ROUTE_MODES.forEach(mode => {
-      fetchRouteData(mode.id, selectedResult, { draw: mode.id === activeMode });
-    });
+    if (exploredMode === selectedMode) {
+      onRouteLoadingChange?.(true);
+      fetchOne(selectedMode, selectedResult).then(f => {
+        if (f) onDrawRoute?.(f, selectedMode);
+        onRouteLoadingChange?.(false);
+      });
+    } else {
+      const cached = routeFeatures[selectedMode];
+      if (cached) {
+        onDrawRoute?.(cached, selectedMode);
+        setExploredMode(selectedMode);
+      } else {
+        onRouteLoadingChange?.(true);
+        fetchOne(selectedMode, selectedResult).then(f => {
+          if (f) { onDrawRoute?.(f, selectedMode); setExploredMode(selectedMode); }
+          onRouteLoadingChange?.(false);
+        });
+      }
+    }
   };
 
   return {
     destText, setDestText, destFocused,
     deptText, setDeptText, deptFocused,
-    searchResults, selectedResult, isSearching, selectedMode, routeInfo, handleSearch,
+    searchResults, deptSearchResults,
+    selectedResult, customDeptCoords,
+    isSearching, selectedMode,
     destInputRef, deptInputRef,
-    isSearchMode, showResults,
+    isSearchMode, showResults, showDeptResults, routeStats,
     handleDestFocus, handleDeptFocus, handleCancel,
     handleDestSubmit, handleDeptSubmit,
-    handleResultClick, handleModeChange,
+    handleDeptResultClick, handleDeptClear,
+    handleResultClick, handleModeChange, handleExplore,
   };
 }

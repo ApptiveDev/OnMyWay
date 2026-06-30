@@ -33,7 +33,7 @@ export function useRoute(kakaoMapRef) {
     });
   };
 
-  const displayRoute = (features) => {
+  const displayRoute = (features, modeId, padding = {}) => {
     const map = kakaoMapRef.current;
     if (!map || !features) return;
 
@@ -54,8 +54,8 @@ export function useRoute(kakaoMapRef) {
     const polyline = new window.kakao.maps.Polyline({
       path,
       strokeWeight: 5,
-      strokeColor: "#7BC4A0",
-      strokeOpacity: 0.8,
+      strokeColor: "rgba(123, 196, 160, 0.75)",
+      strokeOpacity: 1,
     });
     polyline.setMap(map);
     polylineRef.current = polyline;
@@ -63,7 +63,8 @@ export function useRoute(kakaoMapRef) {
 
     const bounds = new window.kakao.maps.LatLngBounds();
     path.forEach(pos => bounds.extend(pos));
-    map.setBounds(bounds);
+    const { top = 60, right = 60, bottom = 60, left = 60 } = padding;
+    map.setBounds(bounds, top, right, bottom, left);
   };
 
   const clearRoute = () => {
