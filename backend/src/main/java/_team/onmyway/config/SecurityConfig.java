@@ -6,6 +6,8 @@ import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
 import _team.onmyway.service.CustomOAuthUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -37,7 +39,7 @@ public class SecurityConfig {
                                         "/",
                                         "/find-route",
                                         "/index.html",
-                                        "/assets/**",
+                                        //"/assets/**",
                                         "/login",
                                         "/error",
                                         "/oauth2/authorization/**",
@@ -45,10 +47,10 @@ public class SecurityConfig {
                                         "/api/auth/**",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
-                                        "/places/**",
-                                        "/route/**"
+                                        "/places/**"
+                                        //"/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
-                                .requestMatchers( "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
+                                .requestMatchers( "/css/**", "/js/**", "/images/**").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -84,5 +86,13 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return webSecurity -> {
+            webSecurity.ignoring()
+                    .requestMatchers("/assets/**", "/route/**");
+        };
     }
 }
