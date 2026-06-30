@@ -47,8 +47,8 @@ public class SecurityConfig {
                                         "/api/auth/**",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
-                                        "/places/**",
-                                        "/route/**"
+                                        "/places/**"
+                                        //"/route/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
                                 .requestMatchers( "/css/**", "/js/**", "/images/**").permitAll()
                                 .anyRequest().authenticated()
@@ -92,7 +92,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return webSecurity -> {
             webSecurity.ignoring()
-                    .requestMatchers("/assets/**");
+                    .requestMatchers("/assets/**", "/route/**");
         };
     }
 }
