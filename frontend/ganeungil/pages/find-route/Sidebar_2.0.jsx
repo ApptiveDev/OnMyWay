@@ -6,7 +6,6 @@ import iconGPS        from "@/assets/icon-gps.svg";
 import iconLocation   from "@/assets/iconlocation.svg";
 import iconArrow      from "@/assets/icon-arrow.svg";
 import iconUnion      from "@/assets/iconUnion.svg";
-import iconLeisure    from "@/assets/icon-leisure.svg";
 import iconFind       from "@/assets/icon-find.svg";
 import iconClock      from "@/assets/icon-route.svg";
 import iconAll        from "@/assets/all.svg";
@@ -38,10 +37,6 @@ const ROUTE_MODE_META = {
   slow:    { icon: iconLeisure,  iconBg: "rgba(123,196,160,0.09)",  desc: "걷기 좋은 골목과 공원을 따라", time: "약 30분", dist: "1.8 km" },
   right:   { icon: iconDiscover, iconBg: "rgba(167,139,218,0.09)",  desc: "새로운 취향을 만나는 우연",    time: "약 35분", dist: "2.1 km" },
 };
-
-// 피그마 기준 프레임 크기
-const DESIGN_W = 1920;
-const DESIGN_H = 1275;
 
 const MODE_CONFIG = {
   right:   { icon: iconUnion,   iconBg: "#FAE3CE", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
