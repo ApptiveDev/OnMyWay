@@ -46,7 +46,7 @@ export default function Header() {
         - transformOrigin: top left → 왼쪽 상단 기준으로 축소
       */}
       <div
-        className="flex items-center pl-[30%] pr-[18.2%] pt-[57px]"
+        className="flex items-center px-[352px] pt-[57px]"
         style={{
           transform:       `scale(${scale})`,
           transformOrigin: "top left",

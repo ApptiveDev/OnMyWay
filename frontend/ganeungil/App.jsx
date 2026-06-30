@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import Onboard_new from "./pages/home/Onboard_1.0";
 import Onboard20 from "./pages/find-route/Onboard_2.0";
+import Loading20 from "./pages/find-route/Loading_2.0";
 import Onboard30 from "./pages/explore/Onboard_3.0";
 import DiscoverPage from "./pages/discover/discover_page";
 import LoginPage from "./pages/signup/LoginPage";
@@ -31,6 +32,7 @@ function AppRoutes() {
           <Route path="/explore" element={<Onboard30 />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/loading" element={<Loading20 />} />
         </Route>
       </Routes>
     </BrowserRouter>
