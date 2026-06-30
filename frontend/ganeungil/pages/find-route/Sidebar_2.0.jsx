@@ -106,7 +106,7 @@ export default function Sidebar20({
     userCoords,
     onDestinationSelect,
     onDrawRoute,
-    onRouteRecs,
+    // onRouteRecs,
     onRecsHide,
     onRecsShow,
     onDestinationClear,
