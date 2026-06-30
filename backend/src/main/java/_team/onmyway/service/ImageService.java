@@ -29,8 +29,6 @@ public class ImageService {
         this.photosRepository = photosRepository;
         this.webClient = WebClient.builder()
                 .baseUrl("https://openapi.naver.com")
-                .defaultHeader("X-Naver-Client-Id", naverClientId)
-                .defaultHeader("X-Naver-Client-Secret", naverClientSecret)
                 .build();
     }
 
@@ -39,12 +37,16 @@ public class ImageService {
         if (hasPhoto) {
             return Mono.just(photosRepository.findFirstByPlaceId(p.getId()).get().getPhotoURL());
         } else {
+            String distinct = p.getAddress().split(" ")[2];
+            String name = p.getName();
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",p.getName()+" 외관")
+                            .queryParam("query",distinct+" "+name)
                             .queryParam("sort","sim")
                             .build())
+                    .header("X-Naver-Client-Id", naverClientId)
+                    .header("X-Naver-Client-Secret", naverClientSecret)
                     .retrieve()
                     .bodyToMono(Map.class)
                     .map(response -> {
