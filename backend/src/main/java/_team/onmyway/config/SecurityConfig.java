@@ -5,6 +5,7 @@ import _team.onmyway.security.OAuthFailureHandler;
 import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
 import _team.onmyway.service.CustomOAuthUserService;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -35,6 +36,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
                                 .requestMatchers(
                                         "/",
                                         "/find-route",
