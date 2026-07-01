@@ -90,12 +90,4 @@ public class SecurityConfig {
 
         return source;
     }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return webSecurity -> {
-            webSecurity.ignoring()
-                    .requestMatchers("/assets/**");
-        };
-    }
 }
