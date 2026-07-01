@@ -3,6 +3,8 @@ package _team.onmyway.service;
 import _team.onmyway.entity.Photos;
 import _team.onmyway.entity.Place;
 import _team.onmyway.repository.PhotosRepository;
+import com.github.benmanes.caffeine.cache.Cache;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -18,6 +20,7 @@ public class ImageService {
 
     private final WebClient webClient;
     private final PhotosRepository photosRepository;
+    private final Cache<Long, String> placePhotoCache;
 
     @Value("${naver.api.clientId}")
     private String naverClientId;
@@ -25,8 +28,9 @@ public class ImageService {
     @Value("${naver.api.clientSecret}")
     private String naverClientSecret;
 
-    public ImageService(PhotosRepository photosRepository) {
+    public ImageService(PhotosRepository photosRepository, Cache<Long, String> placePhotoCache) {
         this.photosRepository = photosRepository;
+        this.placePhotoCache = placePhotoCache;
         this.webClient = WebClient.builder()
                 .baseUrl("https://openapi.naver.com")
                 .build();
@@ -37,8 +41,14 @@ public class ImageService {
         if (hasPhoto) {
             return Mono.just(photosRepository.findFirstByPlaceId(p.getId()).get().getPhotoURL());
         } else {
-            String distinct = p.getAddress().split(" ")[2];
+            String cacheURL = placePhotoCache.getIfPresent(p.getId());
+            if (cacheURL != null) {
+                return Mono.just(cacheURL);
+            }
+
+            String distinct = p.getAddress();
             String name = p.getName();
+
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
