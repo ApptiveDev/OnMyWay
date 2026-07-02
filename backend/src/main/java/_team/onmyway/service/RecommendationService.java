@@ -308,6 +308,7 @@ public class RecommendationService {
         double distance = geoDistanceService.distanceMeters(userLat, userLng, place.getLat(), place.getLng());
         int walkingMinutes = geoDistanceService.estimateWalkingMinutes(distance);
         return new PlaceRecommendationDTO(
+                place.getId(),
                 place.getName(),
                 place.getLat(),
                 place.getLng(),

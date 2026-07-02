@@ -9,6 +9,7 @@ import java.time.LocalTime;
 @Getter
 @AllArgsConstructor
 public class PlaceRecommendationDTO {
+    private Long id;
     private String name;
     private double lat;
     private double lng;
