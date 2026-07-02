@@ -4,8 +4,17 @@ import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RouteResponseDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.graphhopper.GraphHopper;
+import com.graphhopper.routing.util.EdgeFilter;
+import com.graphhopper.storage.BaseGraph;
+import com.graphhopper.storage.NodeAccess;
+import com.graphhopper.storage.index.LocationIndex;
+import com.graphhopper.storage.index.Snap;
+import com.graphhopper.util.EdgeExplorer;
+import com.graphhopper.util.shapes.GHPoint;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.edgegraph.EdgeGraph;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -19,8 +28,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -28,6 +36,7 @@ import java.util.List;
 public class RouteService {
 
     private final ObjectMapper objectMapper;
+    private final GraphHopper graphHopper;
 
     @Value("${tmap.api.key}")
     private String tmapAPIKey;
@@ -144,10 +153,61 @@ public class RouteService {
 
         Double d = 0.0011;
 
+        double lat, lon;
         if (gradation > 0) {
-            return new PositionDTO(positionLat-unitLon*d, positionLon+unitLat*d); // 시계방향 회전
+            lat = positionLat-unitLon*d;
+            lon = positionLon-unitLat*d; // 시계방향 회전
         } else {
-            return new PositionDTO(positionLat+unitLon*d, positionLon-unitLat*d); // 반시계방향 회전
+            lat = positionLat+unitLon*d;
+            lon = positionLon-unitLat*d; // 반시계방향 회전
         }
+        return nearestIntersection(lat, lon);
+    }
+
+    public PositionDTO nearestIntersection(double lat, double lon) {
+        BaseGraph baseGraph = graphHopper.getBaseGraph();
+        NodeAccess nodeAccess = baseGraph.getNodeAccess();
+        EdgeExplorer edgeExplorer = baseGraph.createEdgeExplorer();
+
+        LocationIndex locationIndex = graphHopper.getLocationIndex();
+
+        Snap closest = locationIndex.findClosest(lat, lon, EdgeFilter.ALL_EDGES);
+
+        int closestNodeId = closest.getClosestNode();
+        int intersectionId = findNearestIntersectionBFS(closestNodeId, baseGraph, edgeExplorer);
+
+        return new PositionDTO(nodeAccess.getLat(intersectionId), nodeAccess.getLon(intersectionId));
+    }
+
+    private int findNearestIntersectionBFS(int startNodeId, BaseGraph baseGraph, EdgeExplorer explorer) {
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> visited = new HashSet<>();
+
+        queue.add(startNodeId);
+        visited.add(startNodeId);
+
+        while (!queue.isEmpty()) {
+            int curr = queue.poll();
+
+            int edgeCount = 0;
+            var edgeIterator = explorer.setBaseNode(curr);
+            while (edgeIterator.next()) {
+                edgeCount += 1;
+            }
+
+            if (edgeCount >= 3) {
+                return curr;
+            }
+
+            edgeIterator = explorer.setBaseNode(curr);
+            while (edgeIterator.next()) {
+                int nextId = edgeIterator.getAdjNode();
+                if (!visited.contains(nextId)) {
+                    visited.add(nextId);
+                    queue.add(nextId);
+                }
+            }
+        }
+        return -1;
     }
 }
