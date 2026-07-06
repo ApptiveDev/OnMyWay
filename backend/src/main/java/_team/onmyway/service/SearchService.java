@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SearchService {
 
-    private final DistanceService distanceService;
+    private final GeoDistanceService geoDistanceService;
 
     @Value("${KAKAO_CLIENT_ID}")
     private String apiKey;
@@ -70,8 +70,8 @@ public class SearchService {
                 else allPlaces.addAll(nearbyPlaces.subList(0, 2));
 
                 allPlaces.sort((a,b) -> Double.compare(
-                        distanceService.distance(a.getLatitude(), a.getLongitude(), position.getLat(), position.getLon()),
-                        distanceService.distance(b.getLatitude(), b.getLongitude(), position.getLat(), position.getLon())
+                        geoDistanceService.distanceMeters(a.getLatitude(), a.getLongitude(), position.getLat(), position.getLon()),
+                        geoDistanceService.distanceMeters(b.getLatitude(), b.getLongitude(), position.getLat(), position.getLon())
                 ));
                 return allPlaces;
             } catch (JsonProcessingException e) {

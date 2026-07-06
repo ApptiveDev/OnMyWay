@@ -316,6 +316,7 @@ public class RecommendationService {
                 walkingMinutes,
                 open,
                 close,
+                place.getCatchPhrase(),
                 isOpen(isClosed, open, close),
                 imageURL
         );

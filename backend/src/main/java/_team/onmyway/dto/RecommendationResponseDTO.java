@@ -34,6 +34,7 @@ public class RecommendationResponseDTO {
         private int walkingMinutes;
         private LocalTime open;
         private LocalTime close;
+        private String catchPhrase;
 
         @JsonProperty("isOpen")
         private boolean isOpen;
@@ -54,6 +55,7 @@ public class RecommendationResponseDTO {
                     minutes,
                     p.getOpenTime(),
                     p.getCloseTime(),
+                    p.getCatchPhrase(),
                     p.isOpen(),
                     p.getImageURL()
             );
