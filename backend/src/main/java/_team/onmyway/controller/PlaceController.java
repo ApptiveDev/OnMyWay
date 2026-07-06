@@ -1,7 +1,6 @@
 package _team.onmyway.controller;
 
 import _team.onmyway.dto.PlaceDetailDTO;
-import _team.onmyway.dto.UpdatePlaceDetailDTO;
 import _team.onmyway.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
