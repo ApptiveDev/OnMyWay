@@ -57,7 +57,7 @@ public class RouteService {
         return resultRoute(points);
     }
 
-    private Mono<RouteResponseDTO> resultRoute(List<PositionDTO> positions) {
+    public Mono<RouteResponseDTO> resultRoute(List<PositionDTO> positions) {
         List<PositionDTO> passlist = new ArrayList<>(positions.subList(1, positions.size()-1));
 
         PositionDTO start = positions.get(0);
