@@ -52,9 +52,16 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
         Cookie redirectCookie = WebUtils.getCookie(request, CookieAuthorizationRequestRepository.REDIRECT_URI);
         String redirectURI = redirectCookie != null ? redirectCookie.getValue() : "/";
 
+        // DB에 없어 새로 생성된 사용자(PENDING)만 회원가입 플로우로 이동
+        if (user.getStatus() == Users.Status.PENDING) {
+            redirectURI = "http://localhost:5173/signup/terms";
+        } else {
+            redirectURI = "http://localhost:5173/";
+        }
+
         response.addHeader("Set-Cookie", cookie.toString());
+        cookieRepository.removeAuthorizationCookies(request, response);
 
         response.sendRedirect(redirectURI);
-        // 맞춰야 할 부분 1(로그인 후 리다이렉트는 어디로)
     }
 }

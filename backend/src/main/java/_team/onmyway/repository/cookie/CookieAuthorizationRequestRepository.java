@@ -16,7 +16,8 @@ import java.util.Base64;
 public class CookieAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
     public static final String OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME = "oauth2_auth_request";
     public static final String REDIRECT_URI = "redirect-uri";
-    public static final String DEFAULT_URI = "/"; // 기본 화면으로 돌아가기. 테스트 사이트에서는 루트로 바꿔야 함.
+    public static final String OAUTH_FLOW = "oauth-flow";
+    public static final String DEFAULT_URI = "/";
     private static final int COOKIE_EXPIRE_SECONDS = 180;
 
     @Override
@@ -53,6 +54,17 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
         redirectCookie.setHttpOnly(true);
         redirectCookie.setMaxAge(COOKIE_EXPIRE_SECONDS);
         response.addCookie(redirectCookie);
+
+        String flow = request.getParameter(OAUTH_FLOW);
+        if (flow == null || flow.isBlank()) {
+            flow = "login";
+        }
+
+        Cookie flowCookie = new Cookie(OAUTH_FLOW, flow);
+        flowCookie.setPath("/");
+        flowCookie.setHttpOnly(true);
+        flowCookie.setMaxAge(COOKIE_EXPIRE_SECONDS);
+        response.addCookie(flowCookie);
     }
 
     @Override
@@ -63,6 +75,7 @@ public class CookieAuthorizationRequestRepository implements AuthorizationReques
     public void removeAuthorizationCookies(HttpServletRequest request, HttpServletResponse response) {
         deleteCookie(request, response, OAUTH2_AUTHORIZATION_REQUEST_COOKIE_NAME);
         deleteCookie(request, response, REDIRECT_URI);
+        deleteCookie(request, response, OAUTH_FLOW);
     }
 
     private void deleteCookie(HttpServletRequest request, HttpServletResponse response, String cookieName) {

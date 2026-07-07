@@ -76,6 +76,7 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
                     .nickname(nickname)
                     .email(email)
                     .role(Users.Role.USER) // Enum 적용
+                    .status(Users.Status.PENDING)
                     // isActive: Builder.Default(true) 적용
                     // createdAt / updatedAt: @CreationTimestamp / @UpdateTimestamp 자동 관리
                     .build();

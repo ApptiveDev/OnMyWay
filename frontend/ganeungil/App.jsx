@@ -7,21 +7,21 @@ import Loading20 from "./pages/find-route/Loading_2.0";
 import Onboard30 from "./pages/explore/Onboard_3.0";
 import DiscoverPage from "./pages/discover/discover_page";
 import LoginPage from "./pages/signup/LoginPage";
+import SignupPage from "./pages/signup/SignupPage";
+import LoginKakaoConnectingPage from "./pages/signup/LoginKakaoConnectingPage";
+import KakaoConnectingPage from "./pages/signup/KakaoConnectingPage";
+import TermsAgreementPage from "./pages/signup/TermsAgreementPage";
+import SignupProfilePage from "./pages/signup/SignupProfilePage";
+import SignupCompletePage from "./pages/signup/SignupCompletePage";
+import MyPage from "./pages/mypage/MyPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import api from "./api/api";
 
 function AppRoutes() {
-  const { setAccessToken } = useAuth();
+  const { syncAuth } = useAuth();
 
   useEffect(() => {
-    api.post("/api/auth/refresh")
-      .then((res) => {
-        setAccessToken(res.data.accessToken);
-      })
-      .catch(() => {
-        // 쿠키 없음 = 비로그인 상태, 무시
-      });
-  }, []);
+    syncAuth();
+  }, [syncAuth]);
 
   return (
     <BrowserRouter>
@@ -32,6 +32,13 @@ function AppRoutes() {
           <Route path="/explore" element={<Onboard30 />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/login/kakao-connecting" element={<LoginKakaoConnectingPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signup/kakao-connecting" element={<KakaoConnectingPage />} />
+          <Route path="/signup/terms" element={<TermsAgreementPage />} />
+          <Route path="/signup/profile" element={<SignupProfilePage />} />
+          <Route path="/signup/complete" element={<SignupCompletePage />} />
+          <Route path="/mypage" element={<MyPage />} />
           <Route path="/loading" element={<Loading20 />} />
         </Route>
       </Routes>
