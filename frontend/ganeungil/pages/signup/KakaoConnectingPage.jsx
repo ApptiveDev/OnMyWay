@@ -4,7 +4,7 @@ import LOGO_ICON from "@/assets/Frame 16.svg";
 export default function KakaoConnectingPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
-      const redirectUri = `/signup/terms`;
+      const redirectUri = `${window.location.origin}/signup/terms`;
       window.location.href = `/oauth2/authorization/kakao?redirect-uri=${encodeURIComponent(redirectUri)}&flow=signup`;
     }, 1500);
 
