@@ -54,9 +54,9 @@ public class OAuthSuccessHandler implements AuthenticationSuccessHandler {
 
         // DB에 없어 새로 생성된 사용자(PENDING)만 회원가입 플로우로 이동
         if (user.getStatus() == Users.Status.PENDING) {
-            redirectURI = "https://test.onmyway.cloud/signup/terms";
+            redirectURI = "/signup/terms";
         } else {
-            redirectURI = "https://test.onmyway.cloud";
+            redirectURI = "/";
         }
 
         response.addHeader("Set-Cookie", cookie.toString());
