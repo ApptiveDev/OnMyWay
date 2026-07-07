@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import iconSearch from "@/assets/Button_dialog.svg";
 import iconMenu   from "@/assets/header_search.svg";
+import { useAuth } from "@context/AuthContext";
 
 // Figma 로고 아이콘 (7일 후 만료 → 로컬 파일로 교체 필요)
 import LOGO_ICON from "@/assets/Frame 16.svg";
@@ -18,6 +19,7 @@ const DESIGN_H = 1275;
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
+  const { isLoggedIn, logout } = useAuth();
 
   const [scale, setScale] = useState(
     () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
@@ -29,6 +31,11 @@ export default function Header() {
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     /*
@@ -81,23 +88,35 @@ export default function Header() {
           })}
         </nav>
 
-        {/* 우측: 로그인/회원가입 + 아이콘 */}
+        {/* 우측: 로그인/회원가입 또는 로그아웃 + 아이콘 */}
         <div className="flex items-center gap-[8px] ml-auto">
-          <button
-            onClick={() => navigate("/login")}
-            className="text-[#858585] text-[14px] tracking-[-0.28px]"
-            style={{ fontFamily: "Pretendard-Medium" }}
-          >
-            로그인
-          </button>
-          <div className="w-[1px] h-[10px] bg-[#858585]" />
-          <button
-            onClick={() => navigate("/signup")}
-            className="text-[#858585] text-[14px] tracking-[-0.28px]"
-            style={{ fontFamily: "Pretendard-Medium" }}
-          >
-            회원가입
-          </button>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="text-[#858585] text-[14px] tracking-[-0.28px] hover:text-[#3e2722] transition-colors"
+              style={{ fontFamily: "Pretendard-Medium" }}
+            >
+              로그아웃
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate("/login")}
+                className="text-[#858585] text-[14px] tracking-[-0.28px]"
+                style={{ fontFamily: "Pretendard-Medium" }}
+              >
+                로그인
+              </button>
+              <div className="w-[1px] h-[10px] bg-[#858585]" />
+              <button
+                onClick={() => navigate("/signup")}
+                className="text-[#858585] text-[14px] tracking-[-0.28px]"
+                style={{ fontFamily: "Pretendard-Medium" }}
+              >
+                회원가입
+              </button>
+            </>
+          )}
 
           <div className="flex items-center gap-[16px] ml-[45px] mr-[350px]">
             <button className="w-[24px] h-[24px]">
