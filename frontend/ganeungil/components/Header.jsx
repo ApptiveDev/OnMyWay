@@ -15,6 +15,9 @@ const NAV_ITEMS = [
   { label: "둘러보기", path: "/explore"    },
 ];
 
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();

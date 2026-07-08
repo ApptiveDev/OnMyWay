@@ -24,11 +24,17 @@ public class Users {
 
     private String email;
 
-    @Column(name = "profile_image_url")
-    private String profileImageUrl;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Profile profile;
+//    @Column(name = "profile_image_url")
+//    private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Status status = Status.PENDING;
 
     @CreationTimestamp
     @Column(name="created_at", updatable = false)
@@ -45,12 +51,20 @@ public class Users {
     @Column(name = "refresh_token")
     private String refreshToken;
 
-    public void updateProfile(String nickname, String email, String profileImageUrl) {
+    public void setProfile(Profile profile) {
+        this.profile = profile;
+    }
+
+    public void updateProfile(String nickname, String email) {
         this.nickname = nickname;
         this.email = email;
-        this.profileImageUrl = profileImageUrl;
-        this.isActive = true;
-        // updatedAt은 @UpdateTimestamp가 자동 갱신
+        //this.profileImageUrl = profileImageUrl;
+        // this.isActive = true; // status 필드로 대체 고려
+    }
+
+    public void completeSignup(String nickname) {
+        this.nickname = nickname;
+        this.status = Status.ACTIVE;
     }
 
     public void updateRefreshToken(String refreshToken) {
@@ -64,5 +78,10 @@ public class Users {
     public enum Role {
         USER,
         ADMIN
+    }
+
+    public enum Status {
+        PENDING,
+        ACTIVE
     }
 }

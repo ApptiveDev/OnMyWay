@@ -5,6 +5,8 @@ import { useToast } from "../../context/ToastContext";
 import api from "../../api/api";
 
 import iconHeart      from "@/assets/icon-heart.svg";
+import iconQuiet      from "@/assets/iconquiet.svg";
+import iconRoasting   from "@/assets/iconroasting.svg";
 import imgPlace       from "@/assets/img-place.jpg";
 import iconRoute    from "@/assets/icon-route.svg";
 import iconLeisure  from "@/assets/icon-leisure.svg";

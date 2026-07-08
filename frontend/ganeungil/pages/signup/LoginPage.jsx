@@ -9,9 +9,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const handleKakaoLogin = () => {
-  const params = new URLSearchParams(window.location.search);
-  const redirectUri = params.get('redirect_uri') || '/';
-  window.location.href = `http://localhost:8080/oauth2/authorization/kakao?redirect_uri=${encodeURIComponent(redirectUri)}`;
+    navigate("/login/kakao-connecting");
   };
   
   const handleLogin = (e) => {

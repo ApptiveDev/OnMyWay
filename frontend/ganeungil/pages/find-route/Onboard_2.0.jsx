@@ -137,7 +137,55 @@ export default function Onboard20() {
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
 
-  const { handleDestinationSelect, clearDestMarker, displayRoute } = useRoute(kakaoMapRef);
+  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
+
+  const handleDestSelect = (place) => {
+    handleDestinationSelect(place);
+    circleRef.current?.setMap(null);
+  };
+
+  const handleDestClear = () => {
+    clearDestMarker();
+    clearRoute();
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    if (circleRef.current && kakaoMapRef.current) circleRef.current.setMap(kakaoMapRef.current);
+  };
+
+  const handleRouteRecs = (places) => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
+    places.filter(p => p.lat && p.lng).forEach(place => {
+      const safeUrl = iconArrive2.startsWith('data:image/svg+xml')
+        ? iconArrive2.replace(/#/g, '%23')
+        : iconArrive2;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      const overlay = new window.kakao.maps.CustomOverlay({
+        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        content: container,
+        map,
+        yAnchor: 1,
+        zIndex: 3,
+      });
+      routeRecsOverlaysRef.current.push(overlay);
+    });
+  };
+
+  // 사이드바가 열려 있을 때 경로가 사이드바에 가리지 않도록 왼쪽 패딩 확보
+  // 사이드바 right edge = (36 + 492) * scale = 528 * scale px
+  const handleDrawRoute = (features, modeId) => {
+    const leftPad = sidebarOpen ? Math.round((36 + 492) * scale) + 40 : 60;
+    displayRoute(features, modeId, { top: 60, right: 60, bottom: 80, left: leftPad });
+  };
 
   // 지도 <div>는 이미 레일·사이드바 폭을 제외한 나머지 영역만 차지하므로,
   // 경로가 그 안에 꽉 차 보이도록 사방에 동일한 여백만 준다.
@@ -308,28 +356,34 @@ export default function Onboard20() {
         lng = place.lng + spiralOffsets[offsetIdx][1];
       }
       placed.push({ lat, lng });
+      console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
       const iconUrl = MARKER_ICON[place.category] || markerSip;
-      const content = `
-        <div
-          onclick="window.__onMarkerClick && window.__onMarkerClick(${place.id})"
-          style="
-            width:40px;height:40px;
-            background-image:url('${iconUrl}');
-            background-size:contain;
-            background-repeat:no-repeat;
-            background-position:center;
-            cursor:pointer;transition:transform 0.15s;
-          "
-          onmouseover="this.style.transform='scale(1.2)'"
-          onmouseout="this.style.transform='scale(1)'"
-        ></div>
-      `;
+      const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
+        ? iconUrl.replace(/#/g, '%23')
+        : iconUrl;
+      const container = document.createElement('div');
+      container.style.width = '40px';
+      container.style.height = '40px';
+      container.style.backgroundImage = `url("${safeIconUrl}")`;
+      container.style.backgroundSize = 'contain';
+      container.style.backgroundRepeat = 'no-repeat';
+      container.style.backgroundPosition = 'center';
+      container.style.cursor = 'pointer';
+      container.style.transition = 'transform 0.15s';
+      container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
+      container.onmouseout = () => { container.style.transform = 'scale(1)'; };
+      container.onclick = () => {
+        if (window.__onMarkerClick) {
+          window.__onMarkerClick(place.id);
+        }
+      };
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(lat, lng),
-        content,
+        content: container,
         map,
         yAnchor: 1,
+        zIndex: 3,
       });
       overlaysRef.current.push(overlay);
     });

@@ -62,6 +62,10 @@ dependencies {
 	// OpenCSV
 	implementation 'com.opencsv:opencsv:5.7.1'
 
+	// Cache
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+
 	// Servlet API
 	//compileOnly 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 

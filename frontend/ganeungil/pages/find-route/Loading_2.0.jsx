@@ -1,4 +1,20 @@
+import { useState, useEffect } from "react";
+
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
 export default function Loading20() {
+  const [scale, setScale] = useState(
+    () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
+  );
+
+  useEffect(() => {
+    const update = () =>
+      setScale(Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H));
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   return (
     <div
       className="absolute inset-0 flex items-center justify-center"

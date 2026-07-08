@@ -3,39 +3,60 @@ package _team.onmyway.service;
 import _team.onmyway.entity.Photos;
 import _team.onmyway.entity.Place;
 import _team.onmyway.repository.PhotosRepository;
+import com.github.benmanes.caffeine.cache.Cache;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.beans.factory.annotation.Value;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class ImageService {
 
     private final WebClient webClient;
     private final PhotosRepository photosRepository;
+    private final Cache<Long, String> placePhotoCache;
 
-    public ImageService(PhotosRepository photosRepository) {
+    @Value("${naver.api.clientId}")
+    private String naverClientId;
+
+    @Value("${naver.api.clientSecret}")
+    private String naverClientSecret;
+
+    public ImageService(PhotosRepository photosRepository, Cache<Long, String> placePhotoCache) {
         this.photosRepository = photosRepository;
+        this.placePhotoCache = placePhotoCache;
         this.webClient = WebClient.builder()
                 .baseUrl("https://openapi.naver.com")
-                .defaultHeader("X-Naver-Client-Id", "jSOzQhwW9F2Trv7pnGX4")
-                .defaultHeader("X-Naver-Client-Secret", "qzFMoZ_Cr2")
                 .build();
     }
 
     public Mono<String> getImageURL(Place p) {
-        List<Photos> dbPhotos = p.getPhotos();
-        if (dbPhotos.size() > 0) {
-            return Mono.just(dbPhotos.get(0).getPhotoURL());
+        boolean hasPhoto = photosRepository.existsById(p.getId());
+        if (hasPhoto) {
+            return Mono.just(photosRepository.findFirstByPlaceId(p.getId()).get().getPhotoURL());
         } else {
+            String cacheURL = placePhotoCache.getIfPresent(p.getId());
+            if (cacheURL != null) {
+                return Mono.just(cacheURL);
+            }
+
+            String distinct = p.getAddress();
+            String name = p.getName();
+
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",p.getName())
+                            .queryParam("query",name)
                             .queryParam("sort","sim")
                             .build())
+                    .header("X-Naver-Client-Id", naverClientId)
+                    .header("X-Naver-Client-Secret", naverClientSecret)
                     .retrieve()
                     .bodyToMono(Map.class)
                     .map(response -> {
@@ -44,6 +65,7 @@ public class ImageService {
                         if (list == null || list.isEmpty()) {
                             return ""; // 결과 없으면 빈 문자열
                         }
+                        log.info((String)list.get(0).get("thumbnail"));
                         return (String) list.get(0).get("thumbnail");
                     })
                     .defaultIfEmpty("") // 혹시 모를 빈 응답 처리

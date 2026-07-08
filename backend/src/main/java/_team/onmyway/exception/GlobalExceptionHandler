@@ -11,3 +11,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(500).body("서버에 오류가 발생했습니다");
     }
 }
+
