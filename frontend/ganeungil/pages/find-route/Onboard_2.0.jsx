@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/api";
-import Sidebar20 from "./Sidebar_2.0";
+import Sidebar20 from "./components/Sidebar_2.0";
+import IconRail from "./components/IconRail";
+import LocationPermissionModal from "./components/LocationPermissionModal";
 import { useRoute } from "../../hooks/useRoute";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
@@ -53,11 +55,6 @@ const CAT_ICON = {
 
 // 위치 미허용 시 기본 중심점: 부산대학교 정문
 const PUSAN_UNIV = { lat: 35.2316, lng: 129.0839 };
-
-// 페이지 고정 폭 (Figma 1440 프레임 기준) — 창 크기와 무관하게 항상 이 값으로 스케일 계산
-const PAGE_WIDTH = 1440;
-const DESIGN_W = 1920;
-const DESIGN_H = 1275;
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
@@ -132,13 +129,10 @@ export default function Onboard20() {
   const [recs, setRecs]               = useState([]);        // 사이드바: 전체 places
   const [featuredRecs, setFeaturedRecs] = useState([]);      // 지도 마커: featured만
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const [recsState, setRecsState]     = useState("visible"); // visible | fading | hidden
+  const [sidebarMode, setSidebarMode] = useState("route"); // route | search
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
-  const [scale, setScale] = useState(
-    () => Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H)
-  );
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -205,26 +199,6 @@ export default function Onboard20() {
     return () => { delete window.__onMarkerClick; };
   }, []);
 
-  // ── 위치 권한 요청 (네이티브 UI)
-  useEffect(() => {
-    if (!navigator.geolocation) { setLocStatus("denied"); return; }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setUserCoords(coords);
-        setLocStatus("granted");
-        loadRecommendations(coords.lat, coords.lng)
-          .then((data) => {
-setAllCategories(data.categories);
-            setRecs(mapToRecs(data.categories, "전체"));
-            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
-          })
-          .catch(console.error);
-      },
-      () => setLocStatus("denied")
-    );
-  }, []);
-
   // ── 네트워크 상태 감지
   useEffect(() => {
     const on  = () => setIsOffline(false);
@@ -232,14 +206,6 @@ setAllCategories(data.categories);
     window.addEventListener("online",  on);
     window.addEventListener("offline", off);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
-  }, []);
-
-  // ── 화면 크기 변경 시 scale 갱신 (폭은 1440 고정, 높이만 창 크기에 반응)
-  useEffect(() => {
-    const update = () =>
-      setScale(Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H));
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
   }, []);
 
   // ── 카카오맵 초기화 (SDK 로드 대기 후 실행)
@@ -312,7 +278,7 @@ setAllCategories(data.categories);
     overlaysRef.current.forEach(o => o.setMap(null));
     overlaysRef.current = [];
 
-    if (recsState === "hidden" || locStatus !== "granted") return;
+    if (sidebarMode !== "search" || locStatus !== "granted") return;
 
     // 겹치는 마커 분리: 20m(~0.00018°) 이내 좌표는 나선형으로 오프셋
     const SPREAD = 0.00018;
@@ -362,7 +328,7 @@ setAllCategories(data.categories);
       });
       overlaysRef.current.push(overlay);
     });
-  }, [featuredRecs, recsState, locStatus, mapReady]);
+  }, [featuredRecs, sidebarMode, locStatus, mapReady]);
 
   // ── 핸들러 ──
   const handleCategoryChange = (label) => {
@@ -372,15 +338,24 @@ setAllCategories(data.categories);
     setRecs(mapToRecs(allCategories, label));
   };
 
-  const handleRecsHide = () => {
-    if (recsState !== "visible") return;
-    setRecsState("fading");
-    setTimeout(() => setRecsState("hidden"), 280);
-  };
-
-  const handleRecsShow = () => {
-    setRecsState("visible");
-    setSelectedPlace(null);
+  // 위치 권한 팝업에서 "현재 위치 허용" 클릭 시 (최초 1회 진입 게이트)
+  const requestLocation = () => {
+    if (!navigator.geolocation) { setLocStatus("denied"); return; }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserCoords(coords);
+        setLocStatus("granted");
+        loadRecommendations(coords.lat, coords.lng)
+          .then((data) => {
+            setAllCategories(data.categories);
+            setRecs(mapToRecs(data.categories, "전체"));
+            setFeaturedRecs(mapToFeatured(data.categories, "전체"));
+          })
+          .catch(console.error);
+      },
+      () => setLocStatus("denied")
+    );
   };
 
   // 현재 위치 보정
@@ -391,7 +366,6 @@ setAllCategories(data.categories);
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserCoords(coords);
         setLocStatus("granted");
-        setRecsState("visible");
         setSelectedPlace(null);
         loadRecommendations(coords.lat, coords.lng)
           .then((data) => {
@@ -405,26 +379,18 @@ setAllCategories(data.categories);
     );
   };
 
-  const granted      = locStatus === "granted";
-  const showOverlay  = granted && recsState !== "hidden";
-  const overlayFading = recsState === "fading";
-
-
   return (
-    <>
-      {/* ── 헤더 (Figma node 1412:7236 기준, 1440px 프레임과 1:1이라 scale 불필요) ── */}
+    <div className="fixed inset-0 flex flex-col bg-[#faf6f0] text-[#2c2417]" style={{ fontFamily: "'Noto Serif KR', serif" }}>
+      {/* ── 헤더 (전체 폭에 맞춰 flex로 배치) ── */}
       <header
-        className="relative w-[1440px] mx-auto h-[72px] shrink-0 bg-[#FFFBEC]"
+        className="shrink-0 h-[72px] bg-[#FFFBEC] flex items-center px-[36px] gap-[30px]"
         style={{ boxShadow: "0px 1px 0px 0px rgba(62,39,34,0.06)" }}
       >
-        <button
-          onClick={() => navigate("/")}
-          className="absolute left-[36px] top-1/2 -translate-y-1/2 w-[140.625px] h-[25px]"
-        >
+        <button onClick={() => navigate("/")} className="w-[140.625px] h-[25px] shrink-0">
           <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
         </button>
 
-        <nav className="absolute left-[224.63px] top-[23px] flex items-center gap-[30px]">
+        <nav className="flex items-center gap-[30px] shrink-0">
           {NAV_ITEMS.map(({ label, path }) => {
             const active = pathname === path;
             return (
@@ -443,7 +409,20 @@ setAllCategories(data.categories);
           })}
         </nav>
 
-        <div className="absolute left-[1177px] top-1/2 -translate-y-1/2 flex items-center gap-[10px]">
+        <div className="flex-1" />
+
+        <div
+          className="flex items-center gap-[7px] px-[11px] py-[6px] rounded-[11px] shrink-0"
+          style={{ background: isOffline ? "rgba(201,128,59,.14)" : "rgba(91,168,107,.12)" }}
+          title="온라인/오프라인 상태"
+        >
+          <span className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: isOffline ? "#C9803B" : "#5BA86B" }} />
+          <span className="text-[12px] font-semibold whitespace-nowrap" style={{ color: isOffline ? "#9a6a3a" : "#5a7d5f", fontFamily: "Pretendard" }}>
+            {isOffline ? "오프라인" : "온라인"}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-[10px] shrink-0 ml-[26px]">
           <button
             onClick={() => navigate("/login")}
             className="text-[14px] text-[#858585]"
@@ -461,18 +440,14 @@ setAllCategories(data.categories);
           </button>
         </div>
 
-        <button className="absolute left-[1326px] top-[27px] w-[20px] h-[18px]">
+        <button className="w-[20px] h-[18px] shrink-0 ml-[26px]">
           <img src={iconMenu} alt="메뉴" className="w-full h-full" />
         </button>
-        <button className="absolute left-[1384px] top-1/2 -translate-y-1/2 w-[20px] h-[20px]">
+        <button className="w-[20px] h-[20px] shrink-0 ml-[16px]">
           <img src={iconSearch} alt="검색" className="w-full h-full" />
         </button>
       </header>
 
-      <div
-        className="w-[1440px] mx-auto bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-        style={{ height: `calc(100vh - 72px)`, fontFamily: "'Noto Serif KR', serif" }}
-      >
       <style>{`
         @keyframes fadeOutDown {
           from { opacity: 1; transform: translateY(0); }
@@ -500,31 +475,26 @@ setAllCategories(data.categories);
       `}</style>
 
       {/* ── 메인 ── */}
-      <main className="relative w-full h-full">
+      <main className="relative w-full flex-1 min-h-0 flex">
 
-        {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
-        <div className="absolute inset-0">
-          <div
-            ref={mapContainerRef}
-            className="w-full h-full kakao-map-wrap"
-            style={{ transform: "translateZ(0)", willChange: "transform" }}
-          />
-        </div>
+        {/* ── 좌측 아이콘 레일 ── */}
+        <IconRail
+          mode={sidebarMode}
+          onSelectRoute={() => setSidebarMode("route")}
+          onSelectSearch={() => setSidebarMode("search")}
+          onNavigateSaved={() => navigate("/discover")}
+        />
 
         {/* ── 사이드바 ── */}
         <Sidebar20
+          mode={sidebarMode}
           locStatus={locStatus}
           recs={recs}
           activeCategory={activeCategory}
-          recsState={recsState}
           selectedPlace={selectedPlace}
           sidebarOpen={sidebarOpen}
           onCategoryChange={handleCategoryChange}
           onPlaceSelect={setSelectedPlace}
-          onSidebarToggle={() => setSidebarOpen(prev => !prev)}
-          onRecalibrate={handleRecalibrate}
-          onRecsHide={handleRecsHide}
-          onRecsShow={handleRecsShow}
           onDestinationSelect={handleDestSelect}
           onDestinationClear={handleDestClear}
           userCoords={userCoords}
@@ -532,63 +502,83 @@ setAllCategories(data.categories);
           onRouteRecs={handleRouteRecs}
         />
 
-        {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
-        {selectedPlace && (
+        {/* ── 지도 영역 ── */}
+        <div className="relative flex-1 h-full min-w-0 overflow-hidden bg-[#eae6dd]">
+
+          {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
           <div
-            className="absolute bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in"
-            style={{
-              top:             `${50 * scale}px`,
-              left:            `${400 * scale}px`,
-              width:           "240px",
-              transform:       `scale(${scale})`,
-              transformOrigin: "top left",
-            }}
+            ref={mapContainerRef}
+            className="w-full h-full kakao-map-wrap"
+            style={{ transform: "translateZ(0)", willChange: "transform" }}
+          />
+
+          {/* ── 현재 위치로 이동 버튼 ── */}
+          <button
+            onClick={handleRecalibrate}
+            className="absolute right-[22px] bottom-[22px] w-[46px] h-[46px] rounded-full bg-white shadow-[0_4px_14px_rgba(62,39,34,0.2)] flex items-center justify-center z-10"
+            title="현재 위치로 이동"
           >
-            <div className="relative">
-              <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
-            
-              <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
-                {selectedPlace.category}
-              </span>
-            </div>
-            <div className="p-3">
-              <div className="flex items-start justify-between mb-1">
-                <h3 className="text-[12px] font-medium text-[#2c2417] leading-tight">{selectedPlace.name}</h3>
-                <button onClick={e => e.stopPropagation()} className="ml-1 shrink-0">
-                  <img src={iconHeart} alt="저장" className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <p className="text-[9.6px] font-light text-[#8b7e6a] mb-2">
-                내 위치로부터 도보 {selectedPlace.walkMin}분
-              </p>
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>
-                  {selectedPlace.isOpen ? "영업 중" : "영업 종료"}
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="4.2" stroke="#ED7A13" strokeWidth="1.9" />
+              <path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2" stroke="#ED7A13" strokeWidth="1.9" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {/* ── 위치 권한 동의 팝업 (최초 진입, 권한 결정 전) ── */}
+          {locStatus === "pending" && (
+            <LocationPermissionModal
+              onAllow={requestLocation}
+              onManual={() => setLocStatus("denied")}
+            />
+          )}
+
+          {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}
+          {selectedPlace && (
+            <div className="absolute top-[20px] left-[20px] w-[240px] bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in">
+              <div className="relative">
+                <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
+
+                <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
+                  {selectedPlace.category}
                 </span>
-                {selectedPlace.isOpen && selectedPlace.closeTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.closeTime}에 종료</span>
-                )}
-                {!selectedPlace.isOpen && selectedPlace.openTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.openTime}에 시작</span>
-                )}
               </div>
-              <p className="text-[8.4px] font-light text-[#8b7e6a] leading-relaxed mb-2">
-                {selectedPlace.desc}
-              </p>
-              <div className="flex gap-[3px] flex-wrap">
-                {selectedPlace.tags.map(tag => (
-                  <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[7px] font-normal px-[4px] py-[1.5px] rounded-[3px]">
-                    {tag}
+              <div className="p-3">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="text-[12px] font-medium text-[#2c2417] leading-tight">{selectedPlace.name}</h3>
+                  <button onClick={e => e.stopPropagation()} className="ml-1 shrink-0">
+                    <img src={iconHeart} alt="저장" className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <p className="text-[9.6px] font-light text-[#8b7e6a] mb-2">
+                  내 위치로부터 도보 {selectedPlace.walkMin}분
+                </p>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>
+                    {selectedPlace.isOpen ? "영업 중" : "영업 종료"}
                   </span>
-                ))}
+                  {selectedPlace.isOpen && selectedPlace.closeTime && (
+                    <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.closeTime}에 종료</span>
+                  )}
+                  {!selectedPlace.isOpen && selectedPlace.openTime && (
+                    <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.openTime}에 시작</span>
+                  )}
+                </div>
+                <p className="text-[8.4px] font-light text-[#8b7e6a] leading-relaxed mb-2">
+                  {selectedPlace.desc}
+                </p>
+                <div className="flex gap-[3px] flex-wrap">
+                  {selectedPlace.tags.map(tag => (
+                    <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[7px] font-normal px-[4px] py-[1.5px] rounded-[3px]">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
-
+        </div>
       </main>
     </div>
-    </>
   );
 }

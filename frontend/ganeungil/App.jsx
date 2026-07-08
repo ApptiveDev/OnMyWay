@@ -25,9 +25,10 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* find-route는 지도 기반 앱 화면이라 1440px 고정 프레임(Layout/ScaledFrame) 없이 전체 화면을 그대로 사용 */}
+        <Route path="/find-route" element={<Onboard20 />} />
         <Route element={<Layout />}>
           <Route path="/" element={<Onboard_new />} />
-          <Route path="/find-route" element={<Onboard20 />} />
           <Route path="/explore" element={<Onboard30 />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />

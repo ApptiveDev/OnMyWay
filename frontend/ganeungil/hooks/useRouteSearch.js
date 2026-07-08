@@ -40,7 +40,7 @@ export const ROUTE_MODES = [
   { id: "findOut", label: "발견하는 길", endpoint: "/route/findOut" },
 ];
 
-export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRouteRecs, onRecsHide, onRecsShow, onDestinationClear }) {
+export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, onRouteRecs, onDestinationClear }) {
   const [destText, setDestText]             = useState("");
   const [destFocused, setDestFocused]       = useState(false);
   const [deptText, setDeptText]             = useState("");
@@ -57,14 +57,14 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const isSearchMode = destFocused || deptFocused;
   const showResults  = searchResults.length > 0;
 
-  const handleDestFocus = () => { setDestFocused(true); onRecsHide?.(); };
-  const handleDeptFocus = () => { setDeptFocused(true); onRecsHide?.(); };
+  const handleDestFocus = () => { setDestFocused(true); };
+  const handleDeptFocus = () => { setDeptFocused(true); };
 
   const handleCancel = () => {
     setDestText(""); setDeptText("");
     setDestFocused(false); setDeptFocused(false);
     setSearchResults([]); setSelectedResult(null);
-    onRecsShow?.(); onDestinationClear?.();
+    onDestinationClear?.();
   };
 
   const handleDestSubmit = (e) => {
