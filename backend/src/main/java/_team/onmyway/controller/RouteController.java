@@ -2,7 +2,6 @@ package _team.onmyway.controller;
 
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RouteResponseDTO;
-import _team.onmyway.service.RecommendationService;
 import _team.onmyway.service.RouteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -22,7 +21,6 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class RouteController {
     private final RouteService routeService;
-    private final RecommendationService recommendationService;
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")

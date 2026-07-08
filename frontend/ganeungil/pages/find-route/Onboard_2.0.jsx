@@ -1,26 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
+import IconRail from "./IconRail";
 import Sidebar20 from "./Sidebar_2.0";
 import Loading20 from "./Loading_2.0";
 import { useRoute } from "../../hooks/useRoute";
+import { useRouteSearch } from "../../hooks/useRouteSearch";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
+import { useToast } from "../../context/ToastContext";
+import { CATEGORIES } from "./categoryIcons";
 
-// ── 에셋 (헤더 + 장소 상세 카드용) ──
-import imgPlace  from "@/assets/img-place.jpg";
-import iconDrink from "@/assets/icon-drink.svg";
-import iconFood  from "@/assets/icon-food.svg";
-import iconRest  from "@/assets/icon-rest.svg";
-import iconShop  from "@/assets/icon-shop.svg";
-import iconView  from "@/assets/icon-view.svg";
-import iconHeart from "@/assets/icon-heart.svg";
-
-import markerSip   from "@/assets/map/iconsip.svg?url";
-import markerBite  from "@/assets/map/iconbite.svg?url";
-import markerFight from "@/assets/map/iconfight.svg?url";
-import markerMeal  from "@/assets/map/iconmeal.svg?url";
-import markerSee   from "@/assets/map/iconsee.svg?url";
-import markerHansoom from "@/assets/map/icon_한숨.svg?url";
-import iconArrive2 from "@/assets/iconArrive2.svg?url";
+import markerSip   from "@/assets/map/iconsip.svg";
+import markerBite  from "@/assets/map/iconbite.svg";
+import markerFight from "@/assets/map/iconfight.svg";
+import markerMeal  from "@/assets/map/iconmeal.svg";
+import markerSee   from "@/assets/map/iconsee.svg";
+import iconGPS     from "@/assets/icon-gps.svg";
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -37,15 +32,6 @@ const CATEGORY_LABEL_TO_ID = {
   "한 판": 4,
   "한 눈": 5,
   "한 끼": 6,
-};
-
-const CAT_ICON = {
-  "한잔": iconDrink,
-  "한입": iconFood,
-  "한숨": iconRest,
-  "한판": iconShop,
-  "한눈": iconView,
-  "한끼": iconFood,
 };
 
 // 위치 미허용 시 기본 중심점: 부산대학교 정문
@@ -118,36 +104,30 @@ function mapToFeatured(categories, categoryLabel) {
   return toPlaceList(raw);
 }
 
-const fmt = (t) => t?.slice(0, 5) ?? null;
-
-function HoursLabel({ place }) {
-  if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중</span>;
-    return <span className="text-[6.9px] font-light text-[#2b8237]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
-  }
-  if (!place.openTime) return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[6.9px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
-}
-
 export default function Onboard20() {
   const navigate = useNavigate();
+  const showToast = useToast();
+  const isOnline = useOnlineStatus();
+
   const [activeCategory, setActiveCategory] = useState("전체");
   const [locStatus, setLocStatus]     = useState("pending"); // pending | granted | denied
   const [userCoords, setUserCoords]   = useState(null);      // { lat, lng }
   const [allCategories, setAllCategories] = useState([]);    // API 전체 응답
   const [randomPicks, setRandomPicks]   = useState([]);      // 전체 탭: 카테고리별 랜덤 1개
-  const [recs, setRecs]               = useState([]);        // 사이드바: 전체 places
+  const [recs, setRecs]               = useState([]);        // 장소검색: 전체 places
   const [featuredRecs, setFeaturedRecs] = useState([]);      // 지도 마커: featured만
   const [selectedPlace, setSelectedPlace] = useState(null);
-  const [recsState, setRecsState]     = useState("visible"); // visible | fading | hidden
-  const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
-  const [scale, setScale] = useState(
-    () => Math.min(window.innerWidth / 1920, window.innerHeight / 1275)
-  );
+
+  // ── find-route 화면 구성 상태 (flow: 좌측 아이콘 레일 / step: directions 내부 단계) ──
+  const [flow, setFlow] = useState("directions"); // directions | search | saved | recent
+  const [step, setStep] = useState("input");      // input | searchDest | searchOrigin | routes | nearby | place | pin | edit
+  const [placeFrom, setPlaceFrom] = useState("input"); // place 단계에서 뒤로가기로 돌아갈 step
+  const [pinCoords, setPinCoords] = useState(null);
+  const [pinLabel, setPinLabel]   = useState("");
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -155,8 +135,6 @@ export default function Onboard20() {
   const circleRef       = useRef(null); // 500m 반경 Circle
   const userDotRef      = useRef(null); // 내 위치 CustomOverlay
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
-  const routeRecsOverlaysRef = useRef([]);  // 경로 추천 마커
-  const recsRef         = useRef([]);   // recs 최신값 (window 콜백에서 참조)
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
 
   const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
@@ -209,8 +187,29 @@ export default function Onboard20() {
     displayRoute(features, modeId, { top: 60, right: 60, bottom: 80, left: leftPad });
   };
 
+  // 지도 <div>는 이미 레일·사이드바 폭을 제외한 나머지 영역만 차지하므로,
+  // 경로가 그 안에 꽉 차 보이도록 사방에 동일한 여백만 준다.
+  const handleDrawRoute = (features, modeId) => {
+    // 지도 컨테이너 크기를 카카오맵이 최신 상태로 인식하도록 맞춘 뒤 bounds를 계산한다.
+    kakaoMapRef.current?.relayout();
+    displayRoute(features, modeId, { top: 40, right: 40, bottom: 40, left: 40 });
+  };
+
+  const openPlace = (place, from) => {
+    setSelectedPlace(place);
+    setPlaceFrom(from);
+    setStep("place");
+  };
+
+  const routeSearch = useRouteSearch({
+    userCoords,
+    onDestinationSelect: handleDestinationSelect,
+    onDrawRoute: handleDrawRoute,
+    onDestinationClear: clearDestMarker,
+    onRouteLoadingChange: setIsLoadingRoute,
+  });
+
   // ref 동기화
-  useEffect(() => { recsRef.current = recs; }, [recs]);
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
 
   // ── 지도 마커 클릭 핸들러 (window에 등록 → CustomOverlay HTML에서 호출)
@@ -218,7 +217,7 @@ export default function Onboard20() {
     window.__onMarkerClick = (id) => {
       const place = featuredRef.current.find(p => p.id === id);
       if (!place) return;
-      setSelectedPlace(prev => (prev?.id === id ? null : place));
+      openPlace(place, "nearby");
     };
     return () => { delete window.__onMarkerClick; };
   }, []);
@@ -264,23 +263,6 @@ export default function Onboard20() {
     );
   }, []);
 
-  // ── 네트워크 상태 감지
-  useEffect(() => {
-    const on  = () => setIsOffline(false);
-    const off = () => setIsOffline(true);
-    window.addEventListener("online",  on);
-    window.addEventListener("offline", off);
-    return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
-  }, []);
-
-  // ── 화면 크기 변경 시 scale 갱신
-  useEffect(() => {
-    const update = () =>
-      setScale(Math.min(window.innerWidth / 1920, window.innerHeight / 1275));
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   // ── 카카오맵 초기화 (SDK 로드 대기 후 실행)
   useEffect(() => {
     const init = () => {
@@ -296,7 +278,6 @@ export default function Onboard20() {
           level: 4,
         });
         setMapReady(true);
-        console.log("카카오맵 초기화 성공");
       } catch (e) {
         console.error("카카오맵 초기화 실패:", e);
       }
@@ -304,12 +285,21 @@ export default function Onboard20() {
     init();
   }, []);
 
+  // ── 사이드바 열림/닫힘, 창 크기 변경 시 지도 relayout (폭이 바뀌므로 회색 타일 방지)
+  useEffect(() => {
+    const map = kakaoMapRef.current;
+    if (!map) return;
+    const relayout = () => map.relayout();
+    const t = setTimeout(relayout, 320); // 사이드바 width 트랜지션(300ms) 종료 후
+    window.addEventListener("resize", relayout);
+    return () => { clearTimeout(t); window.removeEventListener("resize", relayout); };
+  }, [sidebarOpen, flow, mapReady]);
+
   // ── 위치 확정 시 지도 중심 이동 + 반경 원 + 내 위치 마커
   useEffect(() => {
     const map = kakaoMapRef.current;
     if (!map) return;
 
-    // 기존 원/마커 제거
     if (circleRef.current)  { circleRef.current.setMap(null);  circleRef.current = null; }
     if (userDotRef.current) { userDotRef.current.setMap(null); userDotRef.current = null; }
 
@@ -318,17 +308,15 @@ export default function Onboard20() {
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
 
-    // 250m 반경 원
     circleRef.current = new window.kakao.maps.Circle({
       center:         pos,
       radius:         250,
-      strokeWeight:  7,                        
+      strokeWeight:  7,
       strokeColor:    "#FFEDA1",
       shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
       map,
     });
 
-    // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
       content:  `<div style="width:25px;height:25px;border-radius:20.617px;background:#ED7A13; border:2.577px solid white; box-shadow:0px 2px 8px rgba(0,0,0,0.3);"></div>`,
@@ -338,26 +326,22 @@ export default function Onboard20() {
     });
   }, [locStatus, userCoords]);
 
-  // ── 지도 마커 갱신: featured 장소만 표시
+  // ── 지도 마커 갱신: '장소검색' 흐름에서만 featured 장소 표시
   useEffect(() => {
     const map = kakaoMapRef.current;
     if (!map) return;
 
-    // 기존 마커 제거
     overlaysRef.current.forEach(o => o.setMap(null));
     overlaysRef.current = [];
 
-    if (recsState === "hidden" || !userCoords) return;
+    if (flow !== "search" || !userCoords) return;
 
-    // 겹치는 마커 분리: 20m(~0.00018°) 이내 좌표는 나선형으로 오프셋
     const SPREAD = 0.00018;
     const spiralOffsets = [
       [0, 0], [SPREAD, 0], [-SPREAD, 0],
       [0, SPREAD], [0, -SPREAD], [SPREAD, SPREAD], [-SPREAD, -SPREAD],
     ];
     const placed = [];
-
-    console.log("[마커] featuredRecs:", featuredRecs.map(p => ({ id: p.id, name: p.name, lat: p.lat, lng: p.lng, category: p.category })));
 
     featuredRecs.filter(p => p.lat && p.lng).forEach(place => {
       let lat = place.lat;
@@ -403,13 +387,35 @@ export default function Onboard20() {
       });
       overlaysRef.current.push(overlay);
     });
-  }, [featuredRecs, recsState, locStatus, mapReady]);
+  }, [featuredRecs, flow, locStatus, mapReady, userCoords]);
+
+  // ── 핀 지정 단계: 지도 중심 이동 시 역지오코딩으로 라벨 갱신
+  useEffect(() => {
+    const map = kakaoMapRef.current;
+    if (!map || step !== "pin") { setPinLabel(""); setPinCoords(null); return; }
+    if (!window.kakao?.maps?.services) return;
+
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    const update = () => {
+      const c = map.getCenter();
+      const lat = c.getLat(), lng = c.getLng();
+      setPinCoords({ lat, lng });
+      geocoder.coord2Address(lng, lat, (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK && result[0]) {
+          const addr = result[0].road_address?.address_name || result[0].address?.address_name;
+          setPinLabel(addr || "주소를 확인할 수 없어요");
+        }
+      });
+    };
+    update();
+    window.kakao.maps.event.addListener(map, "center_changed", update);
+    return () => window.kakao.maps.event.removeListener(map, "center_changed", update);
+  }, [step]);
 
   // ── 핸들러 ──
   const handleCategoryChange = (label) => {
     if (label === activeCategory) return;
     setActiveCategory(label);
-    setSelectedPlace(null);
     if (label === "전체") {
       const pickList = toPlaceList(randomPicks);
       setRecs(pickList);
@@ -420,15 +426,14 @@ export default function Onboard20() {
     }
   };
 
-  const handleRecsHide = () => {
-    if (recsState !== "visible") return;
-    setRecsState("fading");
-    setTimeout(() => setRecsState("hidden"), 280);
-  };
-
-  const handleRecsShow = () => {
-    setRecsState("visible");
+  const handleFlowChange = (nextFlow) => {
+    setFlow(nextFlow);
     setSelectedPlace(null);
+    if (nextFlow === "directions") {
+      setStep("input");
+      // 장소검색에서 바꿔둔 카테고리 필터가 길찾기 추천 목록에 남지 않도록 초기화
+      if (activeCategory !== "전체") handleCategoryChange("전체");
+    }
   };
 
   // 현재 위치 보정
@@ -439,8 +444,6 @@ export default function Onboard20() {
         const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setUserCoords(coords);
         setLocStatus("granted");
-        setRecsState("visible");
-        setSelectedPlace(null);
         loadRecommendations(coords.lat, coords.lng)
           .then((data) => {
             const cats = normalizeCategories(data.categories);
@@ -455,6 +458,7 @@ export default function Onboard20() {
               setRecs(mapToRecs(data.categories, activeCategory));
               setFeaturedRecs(mapToFeatured(data.categories, activeCategory));
             }
+            showToast("현재 위치로 이동했어요");
           })
           .catch(console.error);
       },
@@ -462,28 +466,19 @@ export default function Onboard20() {
     );
   };
 
-  const granted      = locStatus === "granted" || locStatus === "denied";
-  const showOverlay  = granted && recsState !== "hidden";
-  const overlayFading = recsState === "fading";
-
+  const handleConfirmPin = () => {
+    if (!pinCoords) return;
+    routeSearch.selectManualDestination({ name: pinLabel || "지정한 위치", lat: pinCoords.lat, lng: pinCoords.lng });
+    showToast("도착지를 지정했어요");
+    setStep("routes");
+  };
 
   return (
     <div
-      className="w-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-      style={{ height: `calc(100vh - ${120 * scale}px)`, fontFamily: "'Noto Serif KR', serif" }}
+      className="w-full h-full bg-[#FFFBEC] text-[#2c2417] overflow-hidden flex"
+      style={{ fontFamily: "Pretendard, system-ui, sans-serif" }}
     >
       <style>{`
-        @keyframes fadeOutDown {
-          from { opacity: 1; transform: translateY(0); }
-          to   { opacity: 0; transform: translateY(8px); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .fade-out { animation: fadeOutDown 0.28s ease forwards; }
-        .fade-in  { animation: fadeInUp   0.28s ease forwards; }
-
         .kakao-map-wrap,
         .kakao-map-wrap canvas,
         .kakao-map-wrap img {
@@ -498,10 +493,45 @@ export default function Onboard20() {
         }
       `}</style>
 
-      {/* ── 메인 ── */}
-      <main className="relative w-full h-full">
+      {/* ── 오프라인 배너 ── */}
+      {!isOnline && (
+        <div className="absolute left-0 right-0 top-0 h-[38px] bg-[#3E2722] flex items-center justify-center gap-[9px] z-30">
+          <span className="text-[13px] font-medium text-[#FFF6D6]">오프라인 · 저장한 장소와 최근 기록은 계속 볼 수 있어요</span>
+        </div>
+      )}
 
-        {/* ── 카카오맵 컨테이너 (항상 렌더링 → 초기화 가능) ── */}
+      {/* ── 아이콘 레일 ── */}
+      <IconRail
+        flow={flow}
+        onFlowChange={handleFlowChange}
+        sidebarOpen={sidebarOpen}
+        onSidebarToggle={() => setSidebarOpen(prev => !prev)}
+      />
+
+      {/* ── 사이드바 ── */}
+      <div
+        className="flex flex-col min-h-0 bg-[#FFFBEC] border-r border-[rgba(62,39,34,0.06)] z-[5] overflow-hidden transition-[width] duration-300 ease-out"
+        style={{ width: sidebarOpen ? "min(420px, max(320px, 26vw))" : 0 }}
+      >
+        <Sidebar20
+          flow={flow}
+          step={step}
+          setStep={setStep}
+          placeFrom={placeFrom}
+          locStatus={locStatus}
+          recs={recs}
+          selectedPlace={selectedPlace}
+          onPlaceSelect={openPlace}
+          onRecalibrate={handleRecalibrate}
+          userCoords={userCoords}
+          pinLabel={pinLabel}
+          onConfirmPin={handleConfirmPin}
+          {...routeSearch}
+        />
+      </div>
+
+      {/* ── 지도 ── */}
+      <main className="relative flex-1 min-w-0 overflow-hidden">
         <div className="absolute inset-0">
           <div
             ref={mapContainerRef}
@@ -510,80 +540,48 @@ export default function Onboard20() {
           />
         </div>
 
-        {/* ── 사이드바 ── */}
-        <Sidebar20
-          locStatus={locStatus}
-          recs={recs}
-          activeCategory={activeCategory}
-          recsState={recsState}
-          selectedPlace={selectedPlace}
-          sidebarOpen={sidebarOpen}
-          onCategoryChange={handleCategoryChange}
-          onPlaceSelect={setSelectedPlace}
-          onSidebarToggle={() => setSidebarOpen(prev => !prev)}
-          onRecalibrate={handleRecalibrate}
-          onRecsHide={handleRecsHide}
-          onRecsShow={handleRecsShow}
-          onDestinationSelect={handleDestSelect}
-          onDestinationClear={handleDestClear}
-          userCoords={userCoords}
-          onDrawRoute={handleDrawRoute}
-          onRouteLoadingChange={setIsLoadingRoute}
-        />
-
-        {/* ── 장소 상세 카드 ──지도 클릭 시 사라짐 + 사이드바에서 장소 선택 시 나타남 */}  
-        {selectedPlace && (
-          <div
-            className="absolute bg-white rounded-2xl shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.15)] border border-[#f3f4f6] overflow-hidden z-20 fade-in"
-            style={{
-              top:             `${50 * scale}px`,
-              left:            `${400 * scale}px`,
-              width:           "240px",
-              transform:       `scale(${scale})`,
-              transformOrigin: "top left",
-            }}
-          >
-            <div className="relative">
-              <img src={imgPlace} alt={selectedPlace.name} className="w-full h-[100px] object-cover" />
-            
-              <span className="absolute top-2 left-2 bg-[#c8873a] text-white text-[7px] font-medium px-2 py-0.5 rounded-full">
-                {selectedPlace.category}
-              </span>
-            </div>
-            <div className="p-3">
-              <div className="flex items-start justify-between mb-1">
-                <h3 className="text-[12px] font-medium text-[#2c2417] leading-tight">{selectedPlace.name}</h3>
-                <button onClick={e => e.stopPropagation()} className="ml-1 shrink-0">
-                  <img src={iconHeart} alt="저장" className="w-3.5 h-3.5" />
+        {/* 장소검색 흐름: 카테고리 선택 바 (지도 상단) */}
+        {flow === "search" && (
+          <div className="absolute left-1/2 top-[18px] -translate-x-1/2 flex gap-[8px] max-w-[calc(100%-36px)] overflow-x-auto z-10 py-[2px]">
+            {CATEGORIES.map(({ label, icon, iconActive }) => {
+              const isActive = activeCategory === label;
+              return (
+                <button
+                  key={label}
+                  onClick={() => handleCategoryChange(label)}
+                  className="shrink-0 group drop-shadow-[0_3px_8px_rgba(62,39,34,0.2)]"
+                >
+                  <img src={isActive ? iconActive : icon} alt={label} className={`w-[70.695px] h-[31.813px] ${!isActive ? "group-hover:hidden" : ""}`} />
+                  {!isActive && <img src={iconActive} alt={label} className="w-[70.695px] h-[31.813px] hidden group-hover:block" />}
                 </button>
-              </div>
-              <p className="text-[9.6px] font-light text-[#8b7e6a] mb-2">
-                내 위치로부터 도보 {selectedPlace.walkMin}분
-              </p>
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className={`text-[8.4px] font-semibold ${selectedPlace.isOpen ? "text-[#2b8237]" : "text-[#c82b2b]"}`}>
-                  {selectedPlace.isOpen ? "영업 중" : "영업 종료"}
-                </span>
-                {selectedPlace.isOpen && selectedPlace.closeTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.closeTime}에 종료</span>
-                )}
-                {!selectedPlace.isOpen && selectedPlace.openTime && (
-                  <span className="text-[8.4px] font-light text-[#8b7e6a]">{selectedPlace.openTime}에 시작</span>
-                )}
-              </div>
-              <p className="text-[8.4px] font-light text-[#8b7e6a] leading-relaxed mb-2">
-                {selectedPlace.desc}
-              </p>
-              <div className="flex gap-[3px] flex-wrap">
-                {selectedPlace.tags.map(tag => (
-                  <span key={tag} className="bg-[#f5f0e8] text-[#8b7e6a] text-[7px] font-normal px-[4px] py-[1.5px] rounded-[3px]">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
+              );
+            })}
           </div>
         )}
+
+        {/* 핀 지정 오버레이 (지도 중앙 고정 핀) */}
+        {step === "pin" && (
+          <>
+            <div className="absolute left-1/2 top-[22px] -translate-x-1/2 bg-[#3E2722] text-white text-[13.5px] px-[16px] py-[9px] rounded-[20px] shadow-[0_4px_12px_rgba(62,39,34,0.25)] z-[6] whitespace-nowrap" style={{ fontFamily: "'MaruBuri', serif" }}>
+              지도를 움직여 도착지를 맞춰주세요
+            </div>
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center z-[6] pointer-events-none">
+              <div className="w-[40px] h-[40px] rounded-[50%_50%_50%_2px] rotate-[-45deg] bg-[#ED7A13] shadow-[0_6px_14px_rgba(62,39,34,0.35)] flex items-center justify-center">
+                <div className="rotate-45 w-[10px] h-[10px] rounded-full bg-white" />
+              </div>
+              <div className="w-[14px] h-[5px] rounded-[50%] bg-[rgba(62,39,34,0.25)] mt-[3px]" />
+            </div>
+          </>
+        )}
+
+        {/* 위치 보정 버튼 */}
+        <button
+          onClick={handleRecalibrate}
+          title="현재 위치 보정"
+          className="absolute right-[22px] bottom-[22px] w-[46px] h-[46px] rounded-full bg-white shadow-[0_4px_14px_rgba(62,39,34,0.2)] flex items-center justify-center cursor-pointer transition-transform active:scale-[0.92] hover:shadow-[0_6px_18px_rgba(62,39,34,0.28)] z-10"
+        >
+          <img src={iconGPS} alt="위치 보정" className="w-[22px] h-[22px]" />
+        </button>
 
         {/* ── 로딩 오버레이 (초기 진입 or 경로 탐색 중) ── */}
         {(isInitialLoading || isLoadingRoute) && (
@@ -591,7 +589,6 @@ export default function Onboard20() {
             <Loading20 />
           </div>
         )}
-
       </main>
     </div>
   );

@@ -96,74 +96,14 @@ export default function OnboardNew() {
       className="relative w-[1440px] mx-auto overflow-hidden bg-[#fdfdfd] text-[#2c2417]"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
-      <img
-        src={backVector}
-        alt=""
-        className="absolute top-[607px] left-0 z-0 w-full h-auto pointer-events-none"
-      />
-
-      <div className="relative z-10">
-      {/* ── 헤더 (Figma node 1412:7236 기준, 1440px 프레임과 1:1이라 scale 불필요) ── */}
-      <header
-        className="relative w-full h-[72px] bg-[#FFFBEC]"
-        style={{ boxShadow: "0px 1px 0px 0px rgba(62,39,34,0.06)" }}
-      >
-        <button
-          onClick={() => navigate("/")}
-          className="absolute left-[36px] top-1/2 -translate-y-1/2 w-[140.625px] h-[25px]"
-        >
-          <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
-        </button>
-
-        <nav className="absolute left-[224.63px] top-[23px] flex items-center gap-[30px]">
-          {NAV_ITEMS.map(({ label, path }) => {
-            const active = pathname === path;
-            return (
-              <button
-                key={path}
-                onClick={() => navigate(path)}
-                className="pb-[8px] pt-px border-b-2"
-                style={{
-                  borderColor: active ? "#3e2722" : "transparent",
-                  fontFamily:  active ? "Pretendard-Bold" : "Pretendard-Light",
-                }}
-              >
-                <span className="text-[16px] text-[#3e2722] whitespace-nowrap">{label}</span>
-              </button>
-            );
-          })}
-        </nav>
-
-        <div className="absolute left-[1177px] top-1/2 -translate-y-1/2 flex items-center gap-[10px]">
-          <button
-            onClick={() => navigate("/login")}
-            className="text-[14px] text-[#858585]"
-            style={{ fontFamily: "Pretendard-Light" }}
-          >
-            로그인
-          </button>
-          <div className="w-px h-[11px] bg-[#cfcac1]" />
-          <button
-            onClick={() => navigate("/signup")}
-            className="text-[14px] text-[#858585]"
-            style={{ fontFamily: "Pretendard-Light" }}
-          >
-            회원가입
-          </button>
-        </div>
-
-        <button className="absolute left-[1326px] top-[27px] w-[20px] h-[18px]">
-          <img src={iconMenu} alt="메뉴" className="w-full h-full" />
-        </button>
-        <button className="absolute left-[1384px] top-1/2 -translate-y-1/2 w-[20px] h-[20px]">
-          <img src={iconSearch} alt="검색" className="w-full h-full" />
-        </button>
-      </header>
-
-      {/* ── 히어로 ── */}
-      <section className="relative h-[535px] overflow-hidden">
-        <img src={heroBg} alt="골목길 배경" className="absolute inset-0 object-cover w-full h-full" />
-        <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[rgba(0,0,0,0.5)]" />
+      {/* ── 히어로 섹션 ── */}
+      <section className="relative h-[34vw] overflow-hidden">
+        <img
+          src={imgHero}
+          alt="골목길 배경"
+          className="absolute inset-0 object-cover w-full h-full"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.7)] via-[rgba(0,0,0,0.25)] to-transparent" />
 
         <div className="relative h-full px-[113px] flex flex-col justify-center gap-[18px] max-w-[700px]">
           <h1 className="text-white text-[36px] font-semibold font-['MaruBuriOTF'] leading-[40.5px]">
@@ -176,19 +116,10 @@ export default function OnboardNew() {
             <br />
             가는길에 들를 만한 곳을 추천합니다.
           </p>
-          <div className="flex items-center gap-[14px] mt-[10px]">
-            <button
-              onClick={() => navigate("/find-route")}
-              className="w-[240px] h-[65px] flex justify-center items-center rounded-[28.25px] bg-[#ed7a13] text-white text-[18px] leading-[27px] font-['Pretendard-Medium'] hover:opacity-90 transition-opacity"
-            >
-              길찾기
-            </button>
-            <button
-              onClick={() => navigate("/explore")}
-              className="w-[240px] h-[65px] flex justify-center items-center rounded-[28.25px] bg-[#fdfdfd] border-[1.5px] border-[#d9d9d9] text-[#3e2722] text-[18px] leading-[27px] font-['Pretendard-Medium'] hover:bg-[#fffbec] transition-colors"
-            >
-              둘러보기
-            </button>
+
+          <div className="flex gap-3 w-[20vw]">
+            <FindRouteButton />
+            <ExploreButton />
           </div>
         </div>
       </section>
@@ -247,27 +178,29 @@ export default function OnboardNew() {
         </div>
       </section>
 
-      {/* ── 우리동네 사람들의 이야기 ── */}
-      <section className="px-[113px] py-[80px]">
-        <div
-          className="relative flex items-start justify-between gap-[24px] bg-[#ffeda1] rounded-[18.75px] pl-[44px] pr-[44px] pt-[69px] pb-[40px]"
-          style={{ boxShadow: "inset 3px 3px 3px 0px rgba(0,0,0,0.25)" }}
-        >
-          <h2 className="font-['MaruBuriOTF'] font-semibold text-[36px] leading-[40.5px] text-[#3e2722] whitespace-nowrap">
-            우리동네 사람들의 이야기
-          </h2>
-          <div className="grid grid-cols-2 gap-x-[10.5px] gap-y-[40.5px]">
-            {TESTIMONIALS.map((t, i) => (
-              <div
-                key={i}
-                className="w-[288px] h-[183px] bg-[#fefcf0] rounded-[7.5px] flex flex-col items-center justify-center gap-[9.65px] px-[24px] text-center"
-              >
-                <p className="font-['MaruBuriOTF'] font-semibold text-[11.25px] leading-[25.5px] text-[#3e2722] whitespace-pre-line">
-                  {`"${t.quote}"`}
-                </p>
-                <p className="font-['MaruBuriOTF'] text-[9px] tracking-[-0.243px] text-[#3e2722]">
-                  {t.name} <span className="font-['MaruBuriOTF'] font-semibold">{t.place}</span>
-                </p>
+      {/* ── 동네 사람들의 이야기 섹션 ── */}
+      <section className="max-w-[1101px] mx-auto px-10 py-16">
+        <h2 className="text-[28.8px] font-light text-[#2c2417] mb-10">
+          동네 사람들의{" "}
+          <span className="font-medium text-[#c8873a]">이야기</span>
+        </h2>
+
+        <div className="grid grid-cols-[3fr_2fr] gap-5">
+          {/* 큰 카드 (왼쪽) */}
+          <div className="relative overflow-hidden rounded-2xl h-[21vw] group cursor-pointer">
+            <img
+              src={imgStory1}
+              alt="망원동의 숨은 골목 산책"
+              className="absolute inset-0 object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent" />
+            <div className="absolute bottom-4 left-4 right-4">
+              <div className="flex gap-1.5 mb-2">
+                {["골목길", "카페", "벽화"].map((tag) => (
+                  <span key={tag} className="bg-[rgba(255,255,255,0.8)] text-[#2c2417] text-[10.88px] px-2 py-0.5 rounded-full">
+                    {tag}
+                  </span>
+                ))}
               </div>
             ))}
           </div>

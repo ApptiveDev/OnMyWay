@@ -15,6 +15,8 @@ import SignupProfilePage from "./pages/signup/SignupProfilePage";
 import SignupCompletePage from "./pages/signup/SignupCompletePage";
 import MyPage from "./pages/mypage/MyPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
+import api from "./api/api";
 
 function AppRoutes() {
   const { syncAuth } = useAuth();
@@ -32,13 +34,6 @@ function AppRoutes() {
           <Route path="/explore" element={<Onboard30 />} />
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/login/kakao-connecting" element={<LoginKakaoConnectingPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/signup/kakao-connecting" element={<KakaoConnectingPage />} />
-          <Route path="/signup/terms" element={<TermsAgreementPage />} />
-          <Route path="/signup/profile" element={<SignupProfilePage />} />
-          <Route path="/signup/complete" element={<SignupCompletePage />} />
-          <Route path="/mypage" element={<MyPage />} />
           <Route path="/loading" element={<Loading20 />} />
         </Route>
       </Routes>
@@ -49,7 +44,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
     </AuthProvider>
   );
 }
