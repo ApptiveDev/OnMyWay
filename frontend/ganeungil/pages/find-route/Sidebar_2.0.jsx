@@ -21,11 +21,11 @@ const fmt = (t) => t?.slice(0, 5) ?? null;
 
 function HoursLabel({ place }) {
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[11px] font-normal text-[#6A8042]">영업 중</span>;
-    return <span className="text-[11px] font-light text-[#6A8042]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
+    if (!place.closeTime) return <span className="text-[11px] text-[#6A8042]" style={{ fontFamily: "Pretendard" }}>영업 중</span>;
+    return <span className="text-[11px] text-[#6A8042]" style={{ fontFamily: "Pretendard-Light" }}>영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
-  if (!place.openTime) return <span className="text-[11px] font-normal text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[11px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
+  if (!place.openTime) return <span className="text-[11px] text-[#c82b2b]" style={{ fontFamily: "Pretendard" }}>영업 종료</span>;
+  return <span className="text-[11px] text-[#c82b2b]" style={{ fontFamily: "Pretendard-Light" }}>영업 종료 ({fmt(place.openTime)}에 시작)</span>;
 }
 
 function SearchResultRow({ result, onClick }) {
@@ -38,7 +38,7 @@ function SearchResultRow({ result, onClick }) {
         </svg>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[15px] font-semibold text-[#3E2722] truncate">{result.place_name}</div>
+        <div className="text-[15px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-SemiBold" }}>{result.place_name}</div>
         <div className="text-[12.5px] text-[#9a8e84] truncate mt-[2px]">{result.road_address_name || result.address_name}</div>
       </div>
     </button>
@@ -81,7 +81,8 @@ function PlaceSearchBar({ onSelect }) {
           value={query}
           onChange={e => setQuery(e.target.value)}
           placeholder="장소 · 주소 검색"
-          className="flex-1 min-w-0 outline-none bg-transparent text-[14.5px] font-semibold text-[#3E2722] placeholder:text-[#b3a892] placeholder:font-normal"
+          className="flex-1 min-w-0 outline-none bg-transparent text-[14.5px] text-[#3E2722] placeholder:text-[#b3a892] placeholder:font-normal"
+          style={{ fontFamily: "Pretendard-SemiBold" }}
         />
         {query && (
           <button type="button" onClick={() => setQuery("")} className="shrink-0">
@@ -110,7 +111,7 @@ function PlaceRow({ place, onClick, onSave, destPicker }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-[6px]">
-          <span className="text-[14.5px] font-bold text-[#3E2722] truncate">{place.name}</span>
+          <span className="text-[14.5px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-Bold" }}>{place.name}</span>
           {CATEGORY_ICON_MAP[place.category] && <img src={CATEGORY_ICON_MAP[place.category]} alt={place.category} className="h-[13px] shrink-0" />}
         </div>
         <div className="text-[12px] text-[#9a8e84] mt-[2px] flex items-center gap-[6px]">
@@ -141,8 +142,8 @@ function EmptyFlowScreen({ title, desc, icon }) {
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#D9A86E" strokeWidth="1.7" /><path d="M12 7.5V12l3 2" stroke="#D9A86E" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
         )}
       </div>
-      <div className="font-bold text-[17px] text-[#3E2722]" style={{ fontFamily: "'MaruBuri', serif" }}>{title}</div>
-      {desc && <div className="text-[13.5px] text-[#9a8e84] leading-[1.5] whitespace-pre-line" style={{ fontFamily: "'MaruBuri', serif" }}>{desc}</div>}
+      <div className="font-bold text-[17px] text-[#3E2722]" style={{ fontFamily: "MaruBuriOTF" }}>{title}</div>
+      {desc && <div className="text-[13.5px] text-[#9a8e84] leading-[1.5] whitespace-pre-line" style={{ fontFamily: "Pretendard" }}>{desc}</div>}
     </div>
   );
 }
@@ -167,23 +168,23 @@ function EditSuggestion({ place, onBack, onSubmit }) {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <div>
-          <div className="text-[16px] font-bold text-[#3E2722]">정보 수정 제안</div>
+          <div className="text-[16px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>정보 수정 제안</div>
           <div className="text-[12.5px] text-[#9a8e84] mt-[1px]">{place.name}</div>
         </div>
       </div>
       <div className="flex-1 overflow-y-auto p-[18px]">
-        <div className="text-[13px] text-[#8a7d5f] mb-[8px]" style={{ fontFamily: "'MaruBuri', serif" }}>한줄 소개</div>
+        <div className="text-[13px] text-[#8a7d5f] mb-[8px]" style={{ fontFamily: "Pretendard" }}>한줄 소개</div>
         <textarea
           value={intro}
           onChange={e => setIntro(e.target.value)}
           placeholder="이 장소를 한 줄로 소개해 주세요"
           className="w-full min-h-[84px] resize-none border-[1.5px] border-[#EADFC8] rounded-[13px] p-[13px_14px] text-[15px] text-[#3E2722] leading-[1.6] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
-          style={{ fontFamily: "'MaruBuri', serif" }}
+          style={{ fontFamily: "Pretendard" }}
         />
-        <div className="text-[13px] text-[#8a7d5f]" style={{ fontFamily: "'MaruBuri', serif", margin: "18px 0 8px" }}>해시태그</div>
+        <div className="text-[13px] text-[#8a7d5f]" style={{ fontFamily: "Pretendard", margin: "18px 0 8px" }}>해시태그</div>
         <div className="flex flex-wrap gap-[7px]">
           {tags.map((t, i) => (
-            <span key={t + i} className="inline-flex items-center gap-[5px] text-[12.5px] font-semibold text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] pl-[12px] pr-[8px] py-[5px]">
+            <span key={t + i} className="inline-flex items-center gap-[5px] text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] pl-[12px] pr-[8px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
               {t}
               <button onClick={() => removeTag(i)} className="w-[16px] h-[16px] rounded-full bg-[rgba(176,122,46,0.18)] flex items-center justify-center">
                 <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#b07a2e" strokeWidth="3" strokeLinecap="round" /></svg>
@@ -197,14 +198,15 @@ function EditSuggestion({ place, onBack, onSubmit }) {
             onChange={e => setNewTag(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
             placeholder="태그 추가"
-            className="flex-1 h-[40px] border-[1.5px] border-[#EADFC8] rounded-[11px] px-[13px] text-[13.5px] font-semibold text-[#3E2722] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
+            className="flex-1 h-[40px] border-[1.5px] border-[#EADFC8] rounded-[11px] px-[13px] text-[13.5px] text-[#3E2722] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
+            style={{ fontFamily: "Pretendard-SemiBold" }}
           />
-          <button onClick={addTag} className="h-[40px] px-[16px] rounded-[11px] bg-[#F4EEE3] text-[#8a5a22] text-[13.5px] font-semibold">추가</button>
+          <button onClick={addTag} className="h-[40px] px-[16px] rounded-[11px] bg-[#F4EEE3] text-[#8a5a22] text-[13.5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>추가</button>
         </div>
-        <button onClick={onSubmit} className="w-full mt-[22px] h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[15.5px] font-semibold shadow-[0_6px_16px_rgba(237,122,19,0.3)]">
+        <button onClick={onSubmit} className="w-full mt-[22px] h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[15.5px] shadow-[0_6px_16px_rgba(237,122,19,0.3)]" style={{ fontFamily: "Pretendard-SemiBold" }}>
           수정 제안하기
         </button>
-        <div className="text-[12px] text-[#b3a892] text-center mt-[11px] leading-[1.5]" style={{ fontFamily: "'MaruBuri', serif" }}>
+        <div className="text-[12px] text-[#b3a892] text-center mt-[11px] leading-[1.5]" style={{ fontFamily: "Pretendard" }}>
           제안은 검토 후 반영돼요.<br />다른 분들의 길을 더 풍성하게 만들어요.
         </div>
       </div>
@@ -262,30 +264,30 @@ export default function Sidebar20({
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
           <div className="absolute left-[18px] bottom-[13px] text-white">
-            <div className="font-bold text-[21px]" style={{ fontFamily: "'MaruBuri', serif" }}>{p.name}</div>
-            <div className="text-[13px] font-medium opacity-90 mt-[3px]">{p.category}{p.walkMin != null ? ` · 도보 ${p.walkMin}분` : ""}</div>
+            <div className="font-bold text-[21px]" style={{ fontFamily: "MaruBuriOTF" }}>{p.name}</div>
+            <div className="text-[13px] opacity-90 mt-[3px]" style={{ fontFamily: "Pretendard-Medium" }}>{p.category}{p.walkMin != null ? ` · 도보 ${p.walkMin}분` : ""}</div>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-[18px]">
-          <div className="text-[12.5px] text-[#9a8e84] mb-[7px]" style={{ fontFamily: "'MaruBuri', serif" }}>한줄 소개</div>
-          <div className="text-[16px] text-[#3E2722] leading-[1.6]" style={{ fontFamily: "'MaruBuri', serif" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
+          <div className="text-[12.5px] text-[#9a8e84] mb-[7px]" style={{ fontFamily: "Pretendard" }}>한줄 소개</div>
+          <div className="text-[16px] text-[#3E2722] leading-[1.6]" style={{ fontFamily: "Pretendard" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
           {p.isOpen != null && <div className="mt-[10px]"><HoursLabel place={p} /></div>}
           {p.tags?.length > 0 && (
             <div className="flex flex-wrap gap-[7px] mt-[14px]">
               {p.tags.map(tag => (
-                <span key={tag} className="text-[12.5px] font-semibold text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]">{tag}</span>
+                <span key={tag} className="text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>{tag}</span>
               ))}
             </div>
           )}
           <div className="flex gap-[9px] mt-[20px]">
-            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#FFF3D6] text-[#ED7A13] flex items-center justify-center gap-[7px] text-[14px] font-semibold">
+            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#FFF3D6] text-[#ED7A13] flex items-center justify-center gap-[7px] text-[14px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
               <img src={iconHeart} alt="" className="w-[15px] h-[13px]" />저장
             </button>
-            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#ED7A13] text-white flex items-center justify-center gap-[7px] text-[14px] font-semibold shadow-[0_4px_12px_rgba(237,122,19,0.28)]">
+            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#ED7A13] text-white flex items-center justify-center gap-[7px] text-[14px] shadow-[0_4px_12px_rgba(237,122,19,0.28)]" style={{ fontFamily: "Pretendard-SemiBold" }}>
               경로에 추가
             </button>
           </div>
-          <button onClick={() => setStep("edit")} className="w-full mt-[10px] h-[44px] rounded-[13px] border-[1.5px] border-[#F2D49A] bg-[#FFFDF2] text-[#b07a2e] flex items-center justify-center gap-[7px] text-[13.5px] font-semibold">
+          <button onClick={() => setStep("edit")} className="w-full mt-[10px] h-[44px] rounded-[13px] border-[1.5px] border-[#F2D49A] bg-[#FFFDF2] text-[#b07a2e] flex items-center justify-center gap-[7px] text-[13.5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
             정보 수정 제안
           </button>
         </div>
@@ -333,7 +335,7 @@ export default function Sidebar20({
         <PlaceSearchBar onSelect={handleSearchPlaceSelect} />
         <div className="flex-none p-[18px_18px_10px] flex items-center gap-[7px]">
           <span className="w-[7px] h-[7px] rounded-full bg-[#ED7A13]" />
-          <span className="text-[14.5px] font-bold text-[#3E2722]">내 주변 장소</span>
+          <span className="text-[14.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>내 주변 장소</span>
         </div>
         <div className="flex-1 overflow-y-auto px-[10px] pb-[10px]">
           {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">위치 확인 중…</div>}
@@ -360,11 +362,11 @@ export default function Sidebar20({
             <div className="flex-1 flex flex-col gap-[9px] min-w-0">
               <div className="h-[46px] rounded-[13px] bg-[#FFFDF2] flex items-center gap-[9px] px-[14px] shadow-[inset_0_0_0_1px_rgba(62,39,34,0.06)]">
                 <div className="w-[13px] h-[13px] rounded-full bg-[#6A8042] shrink-0" />
-                <span className="text-[14.5px] font-semibold text-[#3E2722] truncate">{deptLabel}</span>
+                <span className="text-[14.5px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-SemiBold" }}>{deptLabel}</span>
               </div>
               <div className="h-[46px] rounded-[13px] bg-[#FFF7E0] border-2 border-[#ED7A13] flex items-center gap-[9px] px-[14px]">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /></svg>
-                <span className="flex-1 text-[14px] text-[#b8843f] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{pinLabel || "지도에서 위치 지정 중…"}</span>
+                <span className="flex-1 text-[14px] text-[#b8843f] truncate" style={{ fontFamily: "Pretendard" }}>{pinLabel || "지도에서 위치 지정 중…"}</span>
               </div>
             </div>
           </div>
@@ -375,16 +377,16 @@ export default function Sidebar20({
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /><circle cx="12" cy="10" r="2.4" stroke="#ED7A13" strokeWidth="1.8" /></svg>
             </div>
             <div>
-              <div className="text-[15px] font-bold text-[#3E2722]">핀을 옮겨 도착지 지정</div>
-              <div className="text-[12.5px] text-[#9a8e84] mt-[2px]" style={{ fontFamily: "'MaruBuri', serif" }}>지도를 움직이면 가운데 핀이 도착지가 돼요</div>
+              <div className="text-[15px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>핀을 옮겨 도착지 지정</div>
+              <div className="text-[12.5px] text-[#9a8e84] mt-[2px]" style={{ fontFamily: "Pretendard" }}>지도를 움직이면 가운데 핀이 도착지가 돼요</div>
             </div>
           </div>
-          <button onClick={() => setStep("input")} className="mt-auto self-start text-[12.5px] font-semibold text-[#b07a52]">‹ 취소</button>
+          <button onClick={() => setStep("input")} className="mt-auto self-start text-[12.5px] text-[#b07a52]" style={{ fontFamily: "Pretendard-SemiBold" }}>‹ 취소</button>
           <button
             onClick={onConfirmPin}
             disabled={!pinLabel}
-            className="h-[52px] rounded-[15px] flex items-center justify-center text-[16px] font-semibold text-white mt-[12px]"
-            style={{ background: pinLabel ? "#ED7A13" : "#e6c98a", boxShadow: pinLabel ? "0 6px 16px rgba(237,122,19,0.3)" : "none" }}
+            className="h-[52px] rounded-[15px] flex items-center justify-center text-[16px] text-white mt-[12px]"
+            style={{ background: pinLabel ? "#ED7A13" : "#e6c98a", boxShadow: pinLabel ? "0 6px 16px rgba(237,122,19,0.3)" : "none", fontFamily: "Pretendard-SemiBold" }}
           >
             이 위치로 도착지 설정
           </button>
@@ -405,14 +407,14 @@ export default function Sidebar20({
               <div className="w-[12px] h-[12px] rounded-[50%_50%_50%_2px] rotate-[-45deg] bg-[#3E2722]" />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-[7px]">
-              <div className="text-[14.5px] text-[#6a5d52] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{deptLabel}</div>
-              <div className="text-[15.5px] font-semibold text-[#3E2722] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{destText}</div>
+              <div className="text-[14.5px] text-[#6a5d52] truncate" style={{ fontFamily: "Pretendard" }}>{deptLabel}</div>
+              <div className="text-[15.5px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-SemiBold" }}>{destText}</div>
             </div>
-            <button onClick={goInputFresh} className="shrink-0 text-[12.5px] font-semibold text-[#b07a52]">변경</button>
+            <button onClick={goInputFresh} className="shrink-0 text-[12.5px] text-[#b07a52]" style={{ fontFamily: "Pretendard-SemiBold" }}>변경</button>
           </div>
         </div>
         <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden p-[16px]">
-          <div className="flex-none text-[14px] text-[#8a7d5f] pb-[12px]" style={{ fontFamily: "'MaruBuri', serif" }}>어떤 길로 걸어볼까요?</div>
+          <div className="flex-none text-[14px] text-[#8a7d5f] pb-[12px]" style={{ fontFamily: "Pretendard" }}>어떤 길로 걸어볼까요?</div>
           <div className="flex-1 overflow-y-auto">
             {ROUTE_MODES.map((mode) => {
               const isActive = selectedMode === mode.id;
@@ -430,18 +432,18 @@ export default function Sidebar20({
                     <img src={meta.icon} alt="" className="w-[24px] h-[24px]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <span className="font-bold text-[16.5px] text-[#3E2722] block" style={{ fontFamily: "'MaruBuri', serif" }}>{mode.label}</span>
-                    <div className="text-[12.5px] text-[#6a5d52] mt-[3px]" style={{ fontFamily: "'MaruBuri', serif" }}>{meta.desc}</div>
+                    <span className="text-[16.5px] text-[#3E2722] block" style={{ fontFamily: "Pretendard-Bold" }}>{mode.label}</span>
+                    <div className="text-[12.5px] text-[#6a5d52] mt-[3px]" style={{ fontFamily: "Pretendard" }}>{meta.desc}</div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-bold text-[16px] text-[#3E2722]">{stats ? fmtTime(stats.time) : meta.time}</div>
+                    <div className="text-[16px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>{stats ? fmtTime(stats.time) : meta.time}</div>
                     <div className="text-[12px] text-[#9a8e84] mt-[2px]">{stats ? fmtDist(stats.distance) : meta.dist}</div>
                   </div>
                 </button>
               );
             })}
           </div>
-          <button onClick={goExplore} className="flex-none h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center text-[16px] font-semibold shadow-[0_6px_16px_rgba(237,122,19,0.3)] mt-[12px]">
+          <button onClick={goExplore} className="flex-none h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center text-[16px] shadow-[0_6px_16px_rgba(237,122,19,0.3)] mt-[12px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
             탐색하기
           </button>
         </div>
@@ -456,16 +458,16 @@ export default function Sidebar20({
         <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[16px_18px]">
           <div className="flex items-center gap-[11px]">
             <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
-              <div className="text-[14px] text-[#6a5d52] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{deptLabel}</div>
-              <div className="text-[15px] font-semibold text-[#3E2722] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{destText}</div>
+              <div className="text-[14px] text-[#6a5d52] truncate" style={{ fontFamily: "Pretendard" }}>{deptLabel}</div>
+              <div className="text-[15px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-SemiBold" }}>{destText}</div>
             </div>
-            <button onClick={() => setStep("routes")} className="shrink-0 text-[12.5px] font-semibold text-[#b07a52]">경로 다시 선택 ›</button>
+            <button onClick={() => setStep("routes")} className="shrink-0 text-[12.5px] text-[#b07a52]" style={{ fontFamily: "Pretendard-SemiBold" }}>경로 다시 선택 ›</button>
           </div>
         </div>
         <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden">
           <div className="flex-none flex items-center gap-[9px] p-[14px_16px_10px]">
             <div className="w-[8px] h-[8px] rounded-full bg-[#ED7A13]" />
-            <span className="text-[14.5px] font-bold text-[#3E2722]">가는길에 들를 곳</span>
+            <span className="text-[14.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>가는길에 들를 곳</span>
           </div>
           <div className="flex-1 overflow-y-auto px-[8px] pb-[8px]">
             {recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">추천 장소를 준비하고 있어요</div>}
@@ -504,7 +506,7 @@ export default function Sidebar20({
               <SearchResultRow key={r.id} result={r} onClick={() => handleDeptResultClick(r)} />
             ))}
             {!isSearching && ((destFocused && !showResults && destText) || (deptFocused && !showDeptResults && deptText)) && (
-              <div className="text-center text-[13.5px] text-[#9a8e84] py-[30px]" style={{ fontFamily: "'MaruBuri', serif" }}>검색 결과가 없어요</div>
+              <div className="text-center text-[13.5px] text-[#9a8e84] py-[30px]" style={{ fontFamily: "Pretendard" }}>검색 결과가 없어요</div>
             )}
           </div>
         ) : (
@@ -516,10 +518,10 @@ export default function Sidebar20({
               <div className="w-[46px] h-[46px] rounded-[12px] bg-[#FFEDA1] flex items-center justify-center shrink-0">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /></svg>
               </div>
-              <div className="flex-1 text-[15px] font-semibold text-[#3E2722] text-left">지도에서 위치 지정</div>
+              <div className="flex-1 text-[15px] text-[#3E2722] text-left" style={{ fontFamily: "Pretendard-SemiBold" }}>지도에서 위치 지정</div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#ED7A13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
-            <div className="flex-none px-[12px] pb-[8px] text-[13.5px] text-[#8a7d5f]" style={{ fontFamily: "'MaruBuri', serif" }}>가는길에 잠시 들러 보세요</div>
+            <div className="flex-none px-[12px] pb-[8px] text-[13.5px] text-[#8a7d5f]" style={{ fontFamily: "Pretendard" }}>가는길에 잠시 들러 보세요</div>
             <div className="flex-1 overflow-y-auto px-[4px]">
               {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">위치 확인 중…</div>}
               {granted && recs.map(place => (

@@ -260,14 +260,17 @@ export default function Onboard20() {
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
 
-    circleRef.current = new window.kakao.maps.Circle({
-      center:         pos,
-      radius:         250,
-      strokeWeight:  7,
-      strokeColor:    "#FFEDA1",
-      shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
-      map,
-    });
+    // 250m 반경 원 — 장소검색 흐름에서만 표시 (길찾기 흐름에서는 숨김)
+    if (flow === "search") {
+      circleRef.current = new window.kakao.maps.Circle({
+        center:         pos,
+        radius:         250,
+        strokeWeight:  7,
+        strokeColor:    "#FFEDA1",
+        shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
+        map,
+      });
+    }
 
     userDotRef.current = new window.kakao.maps.CustomOverlay({
       position: pos,
@@ -276,7 +279,7 @@ export default function Onboard20() {
       yAnchor:  0.5,
       xAnchor:  0.5,
     });
-  }, [locStatus, userCoords]);
+  }, [locStatus, userCoords, flow]);
 
   // ── 지도 마커 갱신: '장소검색' 흐름에서만 featured 장소 표시
   useEffect(() => {
@@ -442,7 +445,7 @@ export default function Onboard20() {
       {/* ── 오프라인 배너 ── */}
       {!isOnline && (
         <div className="absolute left-0 right-0 top-0 h-[38px] bg-[#3E2722] flex items-center justify-center gap-[9px] z-30">
-          <span className="text-[13px] font-medium text-[#FFF6D6]">오프라인 · 저장한 장소와 최근 기록은 계속 볼 수 있어요</span>
+          <span className="text-[13px] text-[#FFF6D6]" style={{ fontFamily: "Pretendard-Medium" }}>오프라인 · 저장한 장소와 최근 기록은 계속 볼 수 있어요</span>
         </div>
       )}
 
@@ -508,7 +511,7 @@ export default function Onboard20() {
         {/* 핀 지정 오버레이 (지도 중앙 고정 핀) */}
         {step === "pin" && (
           <>
-            <div className="absolute left-1/2 top-[22px] -translate-x-1/2 bg-[#3E2722] text-white text-[13.5px] px-[16px] py-[9px] rounded-[20px] shadow-[0_4px_12px_rgba(62,39,34,0.25)] z-[6] whitespace-nowrap" style={{ fontFamily: "'MaruBuri', serif" }}>
+            <div className="absolute left-1/2 top-[22px] -translate-x-1/2 bg-[#3E2722] text-white text-[13.5px] px-[16px] py-[9px] rounded-[20px] shadow-[0_4px_12px_rgba(62,39,34,0.25)] z-[6] whitespace-nowrap" style={{ fontFamily: "Pretendard" }}>
               지도를 움직여 도착지를 맞춰주세요
             </div>
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full flex flex-col items-center z-[6] pointer-events-none">

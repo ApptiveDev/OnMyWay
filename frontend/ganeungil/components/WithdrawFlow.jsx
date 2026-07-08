@@ -42,11 +42,11 @@ export default function WithdrawFlow({ onClose, onWithdrawn }) {
             </svg>
           </button>
           <div className="max-w-[520px] mx-auto px-[24px] pt-[56px] pb-[60px] text-center">
-            <div className="font-['MaruBuri',serif] font-bold text-[22px] text-[#3E2722] mb-[18px]">서비스 탈퇴하기</div>
-            <div className="font-['MaruBuri',serif] text-[14px] text-[#6a5d52] leading-[1.7] mb-[26px]">
+            <div className="font-bold text-[22px] text-[#3E2722] mb-[18px]" style={{ fontFamily: "MaruBuriOTF" }}>서비스 탈퇴하기</div>
+            <div className="text-[14px] text-[#6a5d52] leading-[1.7] mb-[26px]" style={{ fontFamily: "MaruBuriOTF" }}>
               탈퇴하시면 가는길 계정이 삭제되며,<br />삭제된 정보는 복구할 수 없습니다.<br />아래 사항을 확인하신 후 신중하게 결정해 주세요.
             </div>
-            <div className="text-left bg-[#EDE7D8] rounded-[16px] px-[22px] py-[20px] text-[13.5px] leading-[1.9] font-medium text-[#5a4d42]">
+            <div className="text-left bg-[#EDE7D8] rounded-[16px] px-[22px] py-[20px] text-[13.5px] leading-[1.9] text-[#5a4d42]" style={{ fontFamily: "Pretendard-Medium" }}>
               - 프로필 정보, 카카오 로그인 연동 정보가 삭제됩니다.<br />
               - 저장한 게시글이 모두 삭제됩니다.<br />
               - 저장한 장소(즐겨찾기)가 모두 삭제됩니다.<br />
@@ -71,16 +71,17 @@ export default function WithdrawFlow({ onClose, onWithdrawn }) {
                   </svg>
                 )}
               </span>
-              <span className="text-[13.5px] font-medium text-[#6a5d52]">안내 사항을 모두 확인하였으며, 이에 동의합니다.</span>
+              <span className="text-[13.5px] text-[#6a5d52]" style={{ fontFamily: "Pretendard-Medium" }}>안내 사항을 모두 확인하였으며, 이에 동의합니다.</span>
             </button>
             <button
               onClick={confirmWithdraw}
               disabled={!agree}
-              className="w-full h-[50px] rounded-[14px] flex items-center justify-center text-[15px] font-semibold cursor-pointer"
+              className="w-full h-[50px] rounded-[14px] flex items-center justify-center text-[15px] cursor-pointer"
               style={{
                 background: agree ? "#ED7A13" : "#EDE7D8",
                 color: agree ? "#fff" : "#b3a892",
                 boxShadow: agree ? "0 6px 16px rgba(237,122,19,0.3)" : "none",
+                fontFamily: "Pretendard-SemiBold",
               }}
             >
               탈퇴하기
@@ -89,10 +90,10 @@ export default function WithdrawFlow({ onClose, onWithdrawn }) {
         </>
       ) : (
         <div className="flex flex-col items-center justify-center text-center min-h-full px-[24px] py-[60px]">
-          <div className="font-['MaruBuri',serif] text-[15px] text-[#3E2722] leading-[1.8] mb-[16px]">
+          <div className="text-[15px] text-[#3E2722] leading-[1.8] mb-[16px]" style={{ fontFamily: "MaruBuriOTF" }}>
             회원 탈퇴가 완료되었습니다.<br />그동안 가는길 서비스를 이용해 주셔서 감사합니다.
           </div>
-          <div className="font-['MaruBuri',serif] text-[13px] text-[#9a8e84]">{countdown}초 후에 홈으로 이동합니다.</div>
+          <div className="text-[13px] text-[#9a8e84]" style={{ fontFamily: "MaruBuriOTF" }}>{countdown}초 후에 홈으로 이동합니다.</div>
         </div>
       )}
     </div>

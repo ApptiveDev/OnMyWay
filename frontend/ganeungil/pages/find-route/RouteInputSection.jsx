@@ -43,7 +43,8 @@ export default function RouteInputSection({
               {(locStatus === "granted" || locStatus === "denied") && !deptFocused && !deptText ? (
                 <button
                   type="button"
-                  className="w-full text-[15px] font-semibold leading-tight text-[#3e2722] text-left bg-transparent"
+                  className="w-full text-[15px] leading-tight text-[#3e2722] text-left bg-transparent"
+                  style={{ fontFamily: "Pretendard-SemiBold" }}
                   onClick={handleDeptFocus}
                 >
                   {defaultDeptLabel}
@@ -56,7 +57,8 @@ export default function RouteInputSection({
                   onChange={e => setDeptText(e.target.value)}
                   onFocus={handleDeptFocus}
                   placeholder={defaultDeptLabel}
-                  className="w-full text-[15px] font-semibold bg-transparent outline-none leading-tight placeholder:text-[#afafaf] placeholder:font-normal text-[#3e2722]"
+                  className="w-full text-[15px] bg-transparent outline-none leading-tight placeholder:text-[#afafaf] placeholder:font-normal text-[#3e2722]"
+                  style={{ fontFamily: "Pretendard-SemiBold" }}
                   autoFocus={deptFocused}
                 />
               )}
@@ -86,7 +88,8 @@ export default function RouteInputSection({
                 onChange={e => setDestText(e.target.value)}
                 onFocus={handleDestFocus}
                 placeholder="어디로 가시나요?"
-                className="w-full text-[15px] font-semibold bg-transparent outline-none leading-tight placeholder:text-[#b3a892] placeholder:font-normal text-[#3e2722]"
+                className="w-full text-[15px] bg-transparent outline-none leading-tight placeholder:text-[#b3a892] placeholder:font-normal text-[#3e2722]"
+                style={{ fontFamily: "Pretendard-SemiBold" }}
                 autoFocus={destFocused}
               />
             </div>
