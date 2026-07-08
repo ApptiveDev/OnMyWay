@@ -62,8 +62,8 @@ export function useRoute(kakaoMapRef) {
     const polyline = new window.kakao.maps.Polyline({
       path,
       strokeWeight: 5,
-      strokeColor: "rgba(123, 196, 160, 0.75)",
-      strokeOpacity: 1,
+      strokeColor: "#ED7A13",
+      strokeOpacity: 0.85,
     });
     polyline.setMap(map);
     polylineRef.current = polyline;

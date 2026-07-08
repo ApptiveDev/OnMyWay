@@ -8,6 +8,7 @@ import Onboard30 from "./pages/explore/Onboard_3.0";
 import DiscoverPage from "./pages/discover/discover_page";
 import LoginPage from "./pages/signup/LoginPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import api from "./api/api";
 
 function AppRoutes() {
@@ -42,7 +43,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ToastProvider>
+        <AppRoutes />
+      </ToastProvider>
     </AuthProvider>
   );
 }

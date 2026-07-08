@@ -1,29 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import RouteInputSection from "./RouteInputSection";
-import { useRouteSearch, ROUTE_MODES } from "../../hooks/useRouteSearch";
+import { ROUTE_MODES, toSearchResults } from "../../hooks/useRouteSearch";
+import { useToast } from "../../context/ToastContext";
+import api from "../../api/api";
 
-import iconGPS        from "@/assets/icon-gps.svg";
-import iconAll        from "@/assets/all.svg";
-import iconWhiteAll   from "@/assets/whiteall.svg";
-import iconSip        from "@/assets/sip.svg";
-import iconOrgSip     from "@/assets/org_sip.svg";
-import iconBite       from "@/assets/bite.svg";
-import iconOrgBite    from "@/assets/org_bite.svg";
-import iconFight      from "@/assets/fight.svg";
-import iconOrgFight   from "@/assets/org_fight.svg";
-import iconSee        from "@/assets/see.svg";
-import iconOrgSee     from "@/assets/org_see.svg";
-import iconMeal       from "@/assets/meal.svg";
-import iconOrgMeal    from "@/assets/org_meal.svg";
 import iconHeart      from "@/assets/icon-heart.svg";
 import imgPlace       from "@/assets/img-place.jpg";
 import iconRoute    from "@/assets/icon-route.svg";
 import iconLeisure  from "@/assets/icon-leisure.svg";
 import iconDiscover from "@/assets/icon-discover.svg";
-
-// 피그마 기준 프레임 크기
-const DESIGN_W = 1920;
-const DESIGN_H = 1275;
+import { CATEGORY_ICON_MAP } from "./categoryIcons";
 
 const ROUTE_MODE_META = {
   findOut: { icon: iconRoute,    iconBg: "rgba(212,149,74,0.09)",   desc: "가장 빠르고 효율적인 경로",    time: "약 20분", dist: "1.5 km" },
@@ -31,361 +17,518 @@ const ROUTE_MODE_META = {
   right:   { icon: iconDiscover, iconBg: "rgba(167,139,218,0.09)",  desc: "새로운 취향을 만나는 우연",    time: "약 35분", dist: "2.1 km" },
 };
 
-const CATEGORIES = [
-  { label: "전체",  icon: iconWhiteAll, iconActive: iconAll      },
-  { label: "한 잔", icon: iconSip,      iconActive: iconOrgSip   },
-  { label: "한 입", icon: iconBite,     iconActive: iconOrgBite  },
-  { label: "한 판", icon: iconFight,    iconActive: iconOrgFight },
-  { label: "한 눈", icon: iconSee,      iconActive: iconOrgSee   },
-  { label: "한 끼", icon: iconMeal,     iconActive: iconOrgMeal  },
-];
-
-const CATEGORY_ICON_MAP = {
-  "한잔": iconOrgSip,
-  "한입": iconOrgBite,
-  "한판": iconOrgFight,
-  "한눈": iconOrgSee,
-  "한끼": iconOrgMeal,
-};
-
 const fmt = (t) => t?.slice(0, 5) ?? null;
 
 function HoursLabel({ place }) {
   if (place.isOpen) {
-    if (!place.closeTime) return <span className="text-[7.714px] font-normal text-[#6A8042]">영업 중</span>;
-    return <span className="text-[7.714px] font-light text-[#6A8042]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
+    if (!place.closeTime) return <span className="text-[11px] font-normal text-[#6A8042]">영업 중</span>;
+    return <span className="text-[11px] font-light text-[#6A8042]">영업 중 ({fmt(place.closeTime)}에 종료)</span>;
   }
-  if (!place.openTime) return <span className="text-[7.714px] font-normal text-[#c82b2b]">영업 종료</span>;
-  return <span className="text-[7.714px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
+  if (!place.openTime) return <span className="text-[11px] font-normal text-[#c82b2b]">영업 종료</span>;
+  return <span className="text-[11px] font-light text-[#c82b2b]">영업 종료 ({fmt(place.openTime)}에 시작)</span>;
+}
+
+function SearchResultRow({ result, onClick }) {
+  return (
+    <button onClick={onClick} className="w-full flex items-center gap-[12px] px-[10px] py-[11px] rounded-[14px] text-left hover:bg-[#FFFBEC] transition-colors">
+      <div className="w-[38px] h-[38px] rounded-[11px] bg-[#F4EEE3] flex items-center justify-center shrink-0 text-[#ED7A13]">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="currentColor" strokeWidth="1.7" />
+          <circle cx="12" cy="10" r="2.4" stroke="currentColor" strokeWidth="1.7" />
+        </svg>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[15px] font-semibold text-[#3E2722] truncate">{result.place_name}</div>
+        <div className="text-[12.5px] text-[#9a8e84] truncate mt-[2px]">{result.road_address_name || result.address_name}</div>
+      </div>
+    </button>
+  );
+}
+
+function PlaceSearchBar({ onSelect }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef(null);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const res = await api.get("/places/search", {
+          params: { query },
+        });
+        setResults(toSearchResults(res.data));
+      } catch (e) {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 350);
+    return () => clearTimeout(debounceRef.current);
+  }, [query]);
+
+  return (
+    <div className="flex-none px-[18px] pt-[18px]">
+      <div className="h-[46px] rounded-[14px] bg-white shadow-[0_2px_10px_rgba(62,39,34,0.08)] flex items-center gap-[9px] px-[15px]">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="#9a8e84" strokeWidth="1.8" />
+          <path d="m20 20-3.4-3.4" stroke="#9a8e84" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="장소 · 주소 검색"
+          className="flex-1 min-w-0 outline-none bg-transparent text-[14.5px] font-semibold text-[#3E2722] placeholder:text-[#b3a892] placeholder:font-normal"
+        />
+        {query && (
+          <button type="button" onClick={() => setQuery("")} className="shrink-0">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#8a7d5f" strokeWidth="2.4" strokeLinecap="round" /></svg>
+          </button>
+        )}
+      </div>
+      {query.trim() && (
+        <div className="mt-[6px] max-h-[280px] overflow-y-auto bg-white rounded-[14px] shadow-[0_4px_14px_rgba(62,39,34,0.1)]">
+          {searching && <div className="text-center text-[13.5px] text-[#8a7d5f] py-[16px]">검색 중...</div>}
+          {!searching && results.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] py-[16px]">검색 결과가 없어요</div>}
+          {!searching && results.map(r => (
+            <SearchResultRow key={r.id ?? r.place_name} result={r} onClick={() => onSelect(r)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlaceRow({ place, onClick, onSave, destPicker }) {
+  return (
+    <div onClick={onClick} className="flex items-center gap-[12px] p-[11px_10px] rounded-[16px] cursor-pointer hover:bg-[#FFFBEC] transition-colors">
+      <div className="w-[48px] h-[48px] rounded-[13px] overflow-hidden shrink-0 bg-[#F4EEE3]">
+        <img src={place.imageURL || imgPlace} alt={place.name} className="w-full h-full object-cover" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-[6px]">
+          <span className="text-[14.5px] font-bold text-[#3E2722] truncate">{place.name}</span>
+          {CATEGORY_ICON_MAP[place.category] && <img src={CATEGORY_ICON_MAP[place.category]} alt={place.category} className="h-[13px] shrink-0" />}
+        </div>
+        <div className="text-[12px] text-[#9a8e84] mt-[2px] flex items-center gap-[6px]">
+          {place.walkMin != null && <span>도보 {place.walkMin}분</span>}
+          {place.isOpen != null && <HoursLabel place={place} />}
+        </div>
+      </div>
+      {destPicker ? (
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0">
+          <path d="M9 6l6 6-6 6" stroke="#c9bcae" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <button onClick={(e) => { e.stopPropagation(); onSave?.(); }} className="shrink-0 w-[20px] h-[20px] flex items-center justify-center">
+          <img src={iconHeart} alt="저장" className="w-[15px] h-[13px]" />
+        </button>
+      )}
+    </div>
+  );
+}
+
+function EmptyFlowScreen({ title, desc, icon }) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-[13px] text-center px-[30px]">
+      <div className="w-[74px] h-[74px] rounded-full bg-[#FFF3D6] flex items-center justify-center">
+        {icon === "heart" ? (
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M7 4.5h10v15l-5-4-5 4z" stroke="#D9A86E" strokeWidth="1.7" strokeLinejoin="round" /></svg>
+        ) : (
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="#D9A86E" strokeWidth="1.7" /><path d="M12 7.5V12l3 2" stroke="#D9A86E" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        )}
+      </div>
+      <div className="font-bold text-[17px] text-[#3E2722]" style={{ fontFamily: "'MaruBuri', serif" }}>{title}</div>
+      {desc && <div className="text-[13.5px] text-[#9a8e84] leading-[1.5] whitespace-pre-line" style={{ fontFamily: "'MaruBuri', serif" }}>{desc}</div>}
+    </div>
+  );
+}
+
+function EditSuggestion({ place, onBack, onSubmit }) {
+  const [intro, setIntro] = useState(place.desc || "");
+  const [tags, setTags] = useState(place.tags || []);
+  const [newTag, setNewTag] = useState("");
+
+  const addTag = () => {
+    const t = newTag.trim();
+    if (!t) return;
+    setTags(prev => [...prev, t.startsWith("#") ? t : `#${t}`]);
+    setNewTag("");
+  };
+  const removeTag = (i) => setTags(prev => prev.filter((_, idx) => idx !== i));
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-none flex items-center gap-[11px] p-[16px_18px_10px] shadow-[0_1px_0_rgba(62,39,34,0.06)]">
+        <button onClick={onBack} className="w-[34px] h-[34px] rounded-[10px] bg-[#F4EEE3] flex items-center justify-center active:scale-[0.93]">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </button>
+        <div>
+          <div className="text-[16px] font-bold text-[#3E2722]">정보 수정 제안</div>
+          <div className="text-[12.5px] text-[#9a8e84] mt-[1px]">{place.name}</div>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto p-[18px]">
+        <div className="text-[13px] text-[#8a7d5f] mb-[8px]" style={{ fontFamily: "'MaruBuri', serif" }}>한줄 소개</div>
+        <textarea
+          value={intro}
+          onChange={e => setIntro(e.target.value)}
+          placeholder="이 장소를 한 줄로 소개해 주세요"
+          className="w-full min-h-[84px] resize-none border-[1.5px] border-[#EADFC8] rounded-[13px] p-[13px_14px] text-[15px] text-[#3E2722] leading-[1.6] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
+          style={{ fontFamily: "'MaruBuri', serif" }}
+        />
+        <div className="text-[13px] text-[#8a7d5f]" style={{ fontFamily: "'MaruBuri', serif", margin: "18px 0 8px" }}>해시태그</div>
+        <div className="flex flex-wrap gap-[7px]">
+          {tags.map((t, i) => (
+            <span key={t + i} className="inline-flex items-center gap-[5px] text-[12.5px] font-semibold text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] pl-[12px] pr-[8px] py-[5px]">
+              {t}
+              <button onClick={() => removeTag(i)} className="w-[16px] h-[16px] rounded-full bg-[rgba(176,122,46,0.18)] flex items-center justify-center">
+                <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#b07a2e" strokeWidth="3" strokeLinecap="round" /></svg>
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="flex gap-[8px] mt-[12px]">
+          <input
+            value={newTag}
+            onChange={e => setNewTag(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
+            placeholder="태그 추가"
+            className="flex-1 h-[40px] border-[1.5px] border-[#EADFC8] rounded-[11px] px-[13px] text-[13.5px] font-semibold text-[#3E2722] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
+          />
+          <button onClick={addTag} className="h-[40px] px-[16px] rounded-[11px] bg-[#F4EEE3] text-[#8a5a22] text-[13.5px] font-semibold">추가</button>
+        </div>
+        <button onClick={onSubmit} className="w-full mt-[22px] h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[15.5px] font-semibold shadow-[0_6px_16px_rgba(237,122,19,0.3)]">
+          수정 제안하기
+        </button>
+        <div className="text-[12px] text-[#b3a892] text-center mt-[11px] leading-[1.5]" style={{ fontFamily: "'MaruBuri', serif" }}>
+          제안은 검토 후 반영돼요.<br />다른 분들의 길을 더 풍성하게 만들어요.
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function Sidebar20({
-  locStatus,
-  recs,
-  activeCategory,
-  recsState,
-  selectedPlace,
-  sidebarOpen,
-  onCategoryChange,
-  onPlaceSelect,
-  onSidebarToggle,
-  onRecalibrate,
-  onRecsHide,
-  onRecsShow,
-  onDestinationSelect,
-  onDestinationClear,
+  flow, step, setStep, placeFrom,
+  locStatus, recs,
+  selectedPlace, onPlaceSelect,
   userCoords,
-  onDrawRoute,
-  onRouteLoadingChange,
+  pinLabel, onConfirmPin,
+  destText, setDestText, destFocused,
+  deptText, setDeptText, deptFocused,
+  searchResults, deptSearchResults,
+  selectedResult, customDeptCoords,
+  isSearching, selectedMode,
+  destInputRef, deptInputRef,
+  isSearchMode, showResults, showDeptResults, routeStats,
+  handleDestFocus, handleDeptFocus, handleCancel,
+  handleDestSubmit, handleDeptSubmit,
+  handleDeptResultClick, handleDeptClear,
+  handleResultClick, handleModeChange, handleExplore,
 }) {
-  const [scale, setScale] = useState(
-    () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
-  );
-
-  useEffect(() => {
-    const update = () =>
-      setScale(Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H));
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
-  const routeSearch = useRouteSearch({
-    userCoords,
-    onDestinationSelect,
-    onDrawRoute,
-    onRecsHide,
-    onRecsShow,
-    onDestinationClear,
-    onRouteLoadingChange,
-  });
-
-  const {
-    showResults, showDeptResults, isSearchMode, selectedMode,
-    searchResults, deptSearchResults, selectedResult, isSearching, routeStats,
-    handleResultClick, handleModeChange, handleExplore,
-    handleDeptResultClick,
-  } = routeSearch;
+  const showToast = useToast();
+  const notReady = () => showToast("준비 중인 기능이에요");
 
   const fmtDist = (m) => m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`;
   const fmtTime = (s) => `약 ${Math.round(s / 60)}분`;
 
-  const granted       = locStatus === "granted" || locStatus === "denied";
-  const showRecs      = granted && recsState !== "hidden";
-  const overlayFading = recsState === "fading";
+  const granted = locStatus === "granted" || locStatus === "denied";
+  const deptLabel = deptText || (locStatus === "granted" ? "현재 위치" : "부산대학교 정문");
 
-  return (
-    <>
-      {/* ── 위치 보정 버튼 ── */}
-      <button
-        onClick={onRecalibrate}
-        className="absolute bg-[#fdfdfd] rounded-full drop-shadow-[0px_4.5px_2.25px_rgba(0,0,0,0.25)] flex items-center justify-center transition-all duration-300 z-20"
-        style={{
-          width:   `${66 * scale}px`,
-          height:  `${66 * scale}px`,
-          padding: `${15 * scale}px`,
-          left:    `${545 * scale}px`,
-          top:     `${50 * scale}px`,
-        }}
-        title="현재 위치 보정"
-      >
-        <img
-          src={iconGPS}
-          alt="위치 보정"
-          style={{ width: `${35.982 * scale}px`, height: `${35.982 * scale}px` }}
-        />
-      </button>
+  const goRoutes = (result) => { handleResultClick(result); setStep("routes"); };
+  const goInputFresh = () => { handleCancel(); setStep("input"); };
+  const goExplore = () => { handleExplore(); setStep("nearby"); };
+  const backFromPlace = () => setStep(placeFrom || "nearby");
 
-      {/*
-        ── 사이드바 래퍼 ──
-        - 스케일된 크기·위치·그림자·애니메이션 담당
-        - overflow:hidden 으로 원본 크기(492×1091)의 aside를 잘라냄
-      */}
-      <div
-        className="absolute flex-shrink-0"
-        style={{
-          top:          `${34 * scale}px`,
-          left:         `${36 * scale}px`,
-          width:        `${492 * scale}px`,
-          height:       `${1091 * scale}px`,
-          borderRadius: `${30 * scale}px`,
-          boxShadow:    "0 4px 10px 0 rgba(0,0,0,0.25)",
-          overflow:     "hidden",
-          transition:   "transform 300ms",
-          transform:    sidebarOpen ? "translateX(0)" : "translateX(calc(-100% - 16px))",
-        }}
-      >
-        {/*
-          ── 사이드바 본체 ──
-          - 원본 px 값 그대로 유지 (피그마 기준)
-          - transform:scale 로 래퍼 크기에 맞춰 축소·확대
-          - RouteInputSection 포함 모든 하위 요소가 함께 스케일됨
-        */}
-        <aside
-          className="w-[492px] h-[1091px] bg-[#FDFDFD] flex flex-col overflow-hidden"
-          style={{
-            transform:       `scale(${scale})`,
-            transformOrigin: "top left",
-          }}
-        >
+  // input 단계 추천 목록에서 목적지 바로 선택 (검색 결과와 동일한 형태로 변환해 재사용)
+  const chooseDestFromRec = (place) => {
+    if (place.lat == null || place.lng == null) { notReady(); return; }
+    goRoutes({ place_name: place.name, x: String(place.lng), y: String(place.lat) });
+  };
 
-          {/* ── 노란 상단 영역 ── */}
-          <div className="w-[492px] h-[407.19px] rounded-t-[30px] overflow-hidden bg-[#FFEDA1] shrink-0 flex flex-col">
-
-            <div className="flex flex-col gap-[37px] items-center px-[41px] pt-[41px] w-full">
-
-              {/* 입력 섹션 */}
-              <RouteInputSection locStatus={locStatus} {...routeSearch} />
-
-              {/* 구분선 */}
-              <div className="w-[423px] h-px bg-[#d9d9d9] shrink-0" />
-
+  // ── place 단계 (flow 무관, 최우선) ──
+  if (step === "place" && selectedPlace) {
+    const p = selectedPlace;
+    return (
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-none relative h-[152px] overflow-hidden">
+          <img src={p.imageURL || imgPlace} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(62,39,34,0) 35%, rgba(62,39,34,.55))" }} />
+          <button onClick={backFromPlace} className="absolute left-[14px] top-[14px] w-[34px] h-[34px] rounded-full bg-white/90 flex items-center justify-center shadow-[0_2px_8px_rgba(62,39,34,0.2)] active:scale-[0.92]">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          </button>
+          <div className="absolute left-[18px] bottom-[13px] text-white">
+            <div className="font-bold text-[21px]" style={{ fontFamily: "'MaruBuri', serif" }}>{p.name}</div>
+            <div className="text-[13px] font-medium opacity-90 mt-[3px]">{p.category}{p.walkMin != null ? ` · 도보 ${p.walkMin}분` : ""}</div>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-[18px]">
+          <div className="text-[12.5px] text-[#9a8e84] mb-[7px]" style={{ fontFamily: "'MaruBuri', serif" }}>한줄 소개</div>
+          <div className="text-[16px] text-[#3E2722] leading-[1.6]" style={{ fontFamily: "'MaruBuri', serif" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
+          {p.isOpen != null && <div className="mt-[10px]"><HoursLabel place={p} /></div>}
+          {p.tags?.length > 0 && (
+            <div className="flex flex-wrap gap-[7px] mt-[14px]">
+              {p.tags.map(tag => (
+                <span key={tag} className="text-[12.5px] font-semibold text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]">{tag}</span>
+              ))}
             </div>
-
-            {/* 가는길에 + 카테고리 필터 */}
-            {!showResults && granted && showRecs && (
-              <>
-                <div className="px-4 pt-[25px] shrink-0">
-                  <p className="text-[15px] font-normal text-[#000000] leading-[133.4%] tracking-[-0.405px] opacity-70">
-                    가는길에{" "}
-                    <span>잠시 들러 보세요</span>
-                  </p>
-                </div>
-                <div className="px-[24px] pt-[15px] pb-2 flex items-center gap-[7px] shrink-0">
-                  {CATEGORIES.map(({ label, icon, iconActive }) => {
-                    const isActive = activeCategory === label;
-                    return (
-                      <button key={label} onClick={() => onCategoryChange(label)} className="shrink-0 group">
-                        <img
-                          src={isActive ? iconActive : icon}
-                          alt={label}
-                          className={`w-[70.695px] h-[31.813px] ${!isActive ? "group-hover:hidden" : ""}`}
-                        />
-                        {!isActive && (
-                          <img
-                            src={iconActive}
-                            alt={label}
-                            className="w-[70.695px] h-[31.813px] hidden group-hover:block"
-                          />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-
-            <div className="h-[46.19px] shrink-0" />
-
+          )}
+          <div className="flex gap-[9px] mt-[20px]">
+            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#FFF3D6] text-[#ED7A13] flex items-center justify-center gap-[7px] text-[14px] font-semibold">
+              <img src={iconHeart} alt="" className="w-[15px] h-[13px]" />저장
+            </button>
+            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#ED7A13] text-white flex items-center justify-center gap-[7px] text-[14px] font-semibold shadow-[0_4px_12px_rgba(237,122,19,0.28)]">
+              경로에 추가
+            </button>
           </div>
-
-          {/* ── 흰색 하단 영역 ── */}
-          <div className="flex-1 flex flex-col overflow-hidden">
-
-            {selectedResult && !showDeptResults ? (
-              /* 목적지 선택 후: 경로 카드 리스트 + 탐색하기 버튼 */
-              <>
-                <div className="flex-1 overflow-y-auto flex flex-col gap-[12px] px-[20px] pt-[20px] pb-[12px]">
-                  {ROUTE_MODES.map((mode) => {
-                    const isActive = selectedMode === mode.id;
-                    const meta = ROUTE_MODE_META[mode.id];
-                    const stats = routeStats[mode.id];
-                    return (
-                      <button
-                        key={mode.id}
-                        onClick={() => handleModeChange(mode.id)}
-                        className={`flex items-center gap-[16px] p-[20px] rounded-[20px] text-left transition-all border w-full ${
-                          isActive
-                            ? "bg-[rgba(200,135,58,0.08)] border-[rgba(200,135,58,0.4)] shadow-sm"
-                            : "bg-white border-[rgba(44,36,23,0.1)] hover:shadow-md"
-                        }`}
-                      >
-                        <div
-                          className="w-[48px] h-[48px] rounded-full flex items-center justify-center shrink-0"
-                          style={{ background: meta.iconBg }}
-                        >
-                          <img src={meta.icon} alt="" className="w-[24px] h-[24px]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className={`text-[15px] font-semibold mb-[5px] ${isActive ? "text-[#c8873a]" : "text-[#2c2417]"}`}>
-                            {mode.label}
-                          </p>
-                          <p className="text-[12px] font-light text-[#8b7e6a] leading-[1.4]">
-                            {meta.desc}
-                          </p>
-                        </div>
-                        <div className="text-right shrink-0 ml-[8px]">
-                          <p className={`text-[14px] font-semibold ${isActive ? "text-[#c8873a]" : "text-[#2c2417]"}`}>
-                            {stats ? fmtTime(stats.time) : meta.time}
-                          </p>
-                          <p className="text-[11px] font-light text-[#8b7e6a] mt-[2px]">
-                            {stats ? fmtDist(stats.distance) : meta.dist}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* 탐색하기 버튼 (하단 고정) */}
-                <div className="px-[20px] pb-[28px] pt-[12px] shrink-0">
-                  <button
-                    className="w-full h-[56px] bg-[#ED7A13] rounded-full text-white text-[16px] font-medium tracking-[-0.5px] hover:bg-[#d96e10] transition-colors shadow-sm"
-                    onClick={handleExplore}
-                  >
-                    탐색하기
-                  </button>
-                </div>
-              </>
-            ) : (
-              /* 목적지 미선택: 카카오 검색 결과 또는 추천 장소 목록 */
-              <div className="flex-1 overflow-y-auto pt-[17px]">
-
-                {/* 출발지 검색 결과 */}
-                {showDeptResults && (
-                  <div className="flex flex-col gap-2 px-4 py-3">
-                    <p className="text-[12px] font-light text-[#8b7e6a] px-4 pb-1">출발지 검색 결과</p>
-                    {deptSearchResults.map((result) => (
-                      <button
-                        key={result.id}
-                        onClick={() => handleDeptResultClick(result)}
-                        className="w-full flex items-center gap-3 px-4 py-[10px] text-left transition-colors border-b border-[#f9fafb] hover:bg-[#faf6f0]"
-                      >
-                        <div className="w-7 h-7 rounded-[10px] bg-[rgba(237,122,19,0.1)] flex items-center justify-center shrink-0">
-                          <img src={iconGPS} alt="" className="w-[13px] h-[13px]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[18px] font-medium text-[#2c2417] leading-[20.4px] truncate">{result.place_name}</p>
-                          <p className="text-[15px] font-light text-[#8b7e6a] leading-[16.8px] truncate">{result.road_address_name || result.address_name}</p>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* 목적지 검색 결과 */}
-                {showResults && !showDeptResults && (
-                  <div className="flex flex-col gap-2 px-4 py-3">
-                    {isSearching ? (
-                      <div className="flex items-center justify-center h-16">
-                        <p className="text-[15px] font-light text-[#8b7e6a]">검색 중...</p>
-                      </div>
-                    ) : (
-                      searchResults.map((result) => (
-                        <button
-                          key={result.id}
-                          onClick={() => handleResultClick(result)}
-                          className="w-full flex items-center gap-3 px-4 py-[10px] text-left transition-colors border-b border-[#f9fafb] hover:bg-[#faf6f0]"
-                        >
-                          <div className="w-7 h-7 rounded-[10px] bg-[rgba(200,135,58,0.1)] flex items-center justify-center shrink-0">
-                            <img src={iconGPS} alt="" className="w-[13px] h-[13px]" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-[18px] font-medium text-[#2c2417] leading-[20.4px] truncate">{result.place_name}</p>
-                            <p className="text-[15px] font-light text-[#8b7e6a] leading-[16.8px] truncate">{result.road_address_name || result.address_name}</p>
-                          </div>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                )}
-
-                {/* 추천 장소 목록 */}
-                {!showResults && !showDeptResults && granted && showRecs && (
-                  <div className={`flex flex-col px-[14px] py-3 gap-2 ${overlayFading ? "fade-out" : "fade-in"}`}>
-                    {recs.map(place => (
-                      <div
-                        key={place.id}
-                        className="p-[8px] w-full"
-                        onClick={() => onPlaceSelect(selectedPlace?.id === place.id ? null : place)}
-                      >
-                        <div className={`bg-[#fdfdfd] border-[1.286px] flex h-[127px] items-start pb-[9px] pt-[14px] px-[16px] rounded-[25.714px] w-full cursor-pointer transition-all ${
-                          selectedPlace?.id === place.id
-                            ? "border-[rgba(200,135,58,0.5)] shadow-sm"
-                            : "border-[rgba(175,175,175,0.5)] hover:shadow-sm"
-                        }`}>
-                          <div className="flex gap-[6px] items-start flex-1 min-w-0">
-                            <div className="w-[80.286px] h-[80.286px] rounded-[8.6px] overflow-hidden shrink-0">
-                              <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
-                            </div>
-                            <div className="flex flex-col gap-[10px] items-start flex-1 min-w-0">
-                              <div className="flex flex-col gap-[11px] items-start w-full">
-                                <div className="flex items-center">
-                                  <p className="font-['Pretendard'] font-semibold text-[#3e2722] text-[12.857px] whitespace-nowrap shrink-0">{place.name}</p>
-                                  {CATEGORY_ICON_MAP[place.category] && (
-                                    <img src={CATEGORY_ICON_MAP[place.category]} alt={place.category} className="w-[37.286px] h-[16.512px] shrink-0 ml-[14.14px]" />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-[12px]">
-                                  <p className="font-['MaruBuriOTF'] font-light text-[#3e2722] text-[7.714px] whitespace-nowrap">내 위치로부터 도보 {place.walkMin}분</p>
-                                  <HoursLabel place={place} />
-                                </div>
-                                <p className="font-['MaruBuriOTF'] font-light text-[#3e2722] text-[9px] leading-[1.334] line-clamp-2">{place.desc}</p>
-                              </div>
-                              <div className="flex gap-[4px] items-center flex-wrap">
-                                {place.tags.map(tag => (
-                                  <span key={tag} className="bg-[#fff2b9] text-[#3e2722] font-['MaruBuriOTF'] font-light text-[6.429px] px-[6.429px] py-[3.857px] rounded-[12.857px] whitespace-nowrap">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <button className="shrink-0 w-[19px] h-[19px] flex items-center justify-center ml-2" onClick={e => e.stopPropagation()}>
-                            <img src={iconHeart} alt="저장" className="w-[15.74px] h-[13.705px]" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-              </div>
-            )}
-
-          </div>
-
-        </aside>
+          <button onClick={() => setStep("edit")} className="w-full mt-[10px] h-[44px] rounded-[13px] border-[1.5px] border-[#F2D49A] bg-[#FFFDF2] text-[#b07a2e] flex items-center justify-center gap-[7px] text-[13.5px] font-semibold">
+            정보 수정 제안
+          </button>
+        </div>
       </div>
-    </>
+    );
+  }
+
+  // ── edit 단계 ──
+  if (step === "edit" && selectedPlace) {
+    return (
+      <EditSuggestion
+        place={selectedPlace}
+        onBack={() => setStep("place")}
+        onSubmit={() => { notReady(); setStep("place"); }}
+      />
+    );
+  }
+
+  // ── 저장 / 최근 흐름 (스텁) ──
+  if (flow === "saved") {
+    return <EmptyFlowScreen title="아직 저장한 장소가 없어요" desc={"마음에 드는 곳을 저장해 두면\n여기에 모여요"} icon="heart" />;
+  }
+  if (flow === "recent") {
+    return <EmptyFlowScreen title="최근 본 곳이 없어요" desc="" icon="clock" />;
+  }
+
+  // ── 장소검색 흐름 ──
+  if (flow === "search") {
+    const handleSearchPlaceSelect = (result) => {
+      onPlaceSelect({
+        id: result.id ?? result.place_name,
+        name: result.place_name,
+        category: result.category ?? "",
+        walkMin: null,
+        lat: result.y != null ? parseFloat(result.y) : null,
+        lng: result.x != null ? parseFloat(result.x) : null,
+        isOpen: null,
+        imageURL: null,
+        desc: result.road_address_name || result.address_name || "",
+        tags: [],
+      }, "nearby");
+    };
+    return (
+      <div className="flex-1 flex flex-col min-h-0">
+        <PlaceSearchBar onSelect={handleSearchPlaceSelect} />
+        <div className="flex-none p-[18px_18px_10px] flex items-center gap-[7px]">
+          <span className="w-[7px] h-[7px] rounded-full bg-[#ED7A13]" />
+          <span className="text-[14.5px] font-bold text-[#3E2722]">내 주변 장소</span>
+        </div>
+        <div className="flex-1 overflow-y-auto px-[10px] pb-[10px]">
+          {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">위치 확인 중…</div>}
+          {granted && recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">주변 장소를 찾지 못했어요</div>}
+          {granted && recs.map(place => (
+            <PlaceRow key={place.id} place={place} onClick={() => onPlaceSelect(place, "nearby")} onSave={notReady} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── 길찾기 흐름: pin ──
+  if (step === "pin") {
+    return (
+      <div className="flex-1 flex flex-col min-h-0 p-[18px]">
+        <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[18px]">
+          <div className="flex gap-[11px]">
+            <div className="flex flex-col items-center pt-[15px]">
+              <div className="w-[12px] h-[12px] rounded-full border-[3px] border-[#ED7A13]" />
+              <div className="w-[2px] h-[26px]" style={{ background: "repeating-linear-gradient(#c9a86a 0 3px, transparent 3px 6px)" }} />
+              <div className="w-[13px] h-[13px] rounded-[50%_50%_50%_2px] rotate-[-45deg] bg-[#3E2722]" />
+            </div>
+            <div className="flex-1 flex flex-col gap-[9px] min-w-0">
+              <div className="h-[46px] rounded-[13px] bg-[#FFFDF2] flex items-center gap-[9px] px-[14px] shadow-[inset_0_0_0_1px_rgba(62,39,34,0.06)]">
+                <div className="w-[13px] h-[13px] rounded-full bg-[#6A8042] shrink-0" />
+                <span className="text-[14.5px] font-semibold text-[#3E2722] truncate">{deptLabel}</span>
+              </div>
+              <div className="h-[46px] rounded-[13px] bg-[#FFF7E0] border-2 border-[#ED7A13] flex items-center gap-[9px] px-[14px]">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="shrink-0"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /></svg>
+                <span className="flex-1 text-[14px] text-[#b8843f] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{pinLabel || "지도에서 위치 지정 중…"}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] p-[20px]">
+          <div className="flex items-center gap-[11px] mb-[14px]">
+            <div className="w-[36px] h-[36px] rounded-[11px] bg-[#FFF3D6] flex items-center justify-center shrink-0">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /><circle cx="12" cy="10" r="2.4" stroke="#ED7A13" strokeWidth="1.8" /></svg>
+            </div>
+            <div>
+              <div className="text-[15px] font-bold text-[#3E2722]">핀을 옮겨 도착지 지정</div>
+              <div className="text-[12.5px] text-[#9a8e84] mt-[2px]" style={{ fontFamily: "'MaruBuri', serif" }}>지도를 움직이면 가운데 핀이 도착지가 돼요</div>
+            </div>
+          </div>
+          <button onClick={() => setStep("input")} className="mt-auto self-start text-[12.5px] font-semibold text-[#b07a52]">‹ 취소</button>
+          <button
+            onClick={onConfirmPin}
+            disabled={!pinLabel}
+            className="h-[52px] rounded-[15px] flex items-center justify-center text-[16px] font-semibold text-white mt-[12px]"
+            style={{ background: pinLabel ? "#ED7A13" : "#e6c98a", boxShadow: pinLabel ? "0 6px 16px rgba(237,122,19,0.3)" : "none" }}
+          >
+            이 위치로 도착지 설정
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 길찾기 흐름: routes ──
+  if (step === "routes" && selectedResult) {
+    return (
+      <div className="flex-1 flex flex-col min-h-0 p-[18px_18px_0]">
+        <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[16px_18px]">
+          <div className="flex items-center gap-[11px]">
+            <div className="flex flex-col items-center gap-[3px]">
+              <div className="w-[11px] h-[11px] rounded-full border-[3px] border-[#ED7A13]" />
+              <div className="w-[2px] h-[18px]" style={{ background: "repeating-linear-gradient(#c9a86a 0 3px, transparent 3px 6px)" }} />
+              <div className="w-[12px] h-[12px] rounded-[50%_50%_50%_2px] rotate-[-45deg] bg-[#3E2722]" />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-[7px]">
+              <div className="text-[14.5px] text-[#6a5d52] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{deptLabel}</div>
+              <div className="text-[15.5px] font-semibold text-[#3E2722] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{destText}</div>
+            </div>
+            <button onClick={goInputFresh} className="shrink-0 text-[12.5px] font-semibold text-[#b07a52]">변경</button>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden p-[16px]">
+          <div className="flex-none text-[14px] text-[#8a7d5f] pb-[12px]" style={{ fontFamily: "'MaruBuri', serif" }}>어떤 길로 걸어볼까요?</div>
+          <div className="flex-1 overflow-y-auto">
+            {ROUTE_MODES.map((mode) => {
+              const isActive = selectedMode === mode.id;
+              const meta = ROUTE_MODE_META[mode.id];
+              const stats = routeStats[mode.id];
+              return (
+                <button
+                  key={mode.id}
+                  onClick={() => handleModeChange(mode.id)}
+                  className={`relative flex items-center gap-[13px] p-[14px_15px] rounded-[17px] mb-[10px] text-left w-full transition-shadow ${
+                    isActive ? "bg-[#FFFBEC] shadow-[inset_0_0_0_2px_#ED7A13]" : "bg-white shadow-[inset_0_0_0_1.5px_rgba(62,39,34,0.1)] hover:shadow-md"
+                  }`}
+                >
+                  <div className="w-[44px] h-[44px] rounded-[13px] flex items-center justify-center shrink-0" style={{ background: meta.iconBg }}>
+                    <img src={meta.icon} alt="" className="w-[24px] h-[24px]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-[16.5px] text-[#3E2722] block" style={{ fontFamily: "'MaruBuri', serif" }}>{mode.label}</span>
+                    <div className="text-[12.5px] text-[#6a5d52] mt-[3px]" style={{ fontFamily: "'MaruBuri', serif" }}>{meta.desc}</div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-bold text-[16px] text-[#3E2722]">{stats ? fmtTime(stats.time) : meta.time}</div>
+                    <div className="text-[12px] text-[#9a8e84] mt-[2px]">{stats ? fmtDist(stats.distance) : meta.dist}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <button onClick={goExplore} className="flex-none h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center text-[16px] font-semibold shadow-[0_6px_16px_rgba(237,122,19,0.3)] mt-[12px]">
+            탐색하기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 길찾기 흐름: nearby (탐색 후) ──
+  if (step === "nearby" && selectedResult) {
+    return (
+      <div className="flex-1 flex flex-col min-h-0 p-[18px_18px_0]">
+        <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[16px_18px]">
+          <div className="flex items-center gap-[11px]">
+            <div className="flex-1 min-w-0 flex flex-col gap-[6px]">
+              <div className="text-[14px] text-[#6a5d52] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{deptLabel}</div>
+              <div className="text-[15px] font-semibold text-[#3E2722] truncate" style={{ fontFamily: "'MaruBuri', serif" }}>{destText}</div>
+            </div>
+            <button onClick={() => setStep("routes")} className="shrink-0 text-[12.5px] font-semibold text-[#b07a52]">경로 다시 선택 ›</button>
+          </div>
+        </div>
+        <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden">
+          <div className="flex-none flex items-center gap-[9px] p-[14px_16px_10px]">
+            <div className="w-[8px] h-[8px] rounded-full bg-[#ED7A13]" />
+            <span className="text-[14.5px] font-bold text-[#3E2722]">가는길에 들를 곳</span>
+          </div>
+          <div className="flex-1 overflow-y-auto px-[8px] pb-[8px]">
+            {recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">추천 장소를 준비하고 있어요</div>}
+            {recs.map(place => (
+              <PlaceRow key={place.id} place={place} onClick={() => onPlaceSelect(place, "nearby")} onSave={notReady} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── 길찾기 흐름: input (기본) ──
+  return (
+    <div className="flex-1 flex flex-col min-h-0 p-[18px_18px_0]">
+      <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[18px]">
+        <RouteInputSection
+          locStatus={locStatus}
+          destText={destText} setDestText={setDestText} destFocused={destFocused}
+          deptText={deptText} setDeptText={setDeptText} deptFocused={deptFocused}
+          customDeptCoords={customDeptCoords}
+          destInputRef={destInputRef} deptInputRef={deptInputRef}
+          handleDestFocus={handleDestFocus} handleDeptFocus={handleDeptFocus} handleCancel={handleCancel}
+          handleDestSubmit={handleDestSubmit} handleDeptSubmit={handleDeptSubmit}
+          handleDeptClear={handleDeptClear}
+        />
+      </div>
+      <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden pt-[16px]">
+        {isSearchMode ? (
+          <div className="flex-1 overflow-y-auto px-[8px]">
+            {isSearching && <div className="text-center text-[14px] text-[#8a7d5f] py-[20px]">검색 중...</div>}
+            {!isSearching && destFocused && showResults && searchResults.map(r => (
+              <SearchResultRow key={r.id} result={r} onClick={() => goRoutes(r)} />
+            ))}
+            {!isSearching && deptFocused && showDeptResults && deptSearchResults.map(r => (
+              <SearchResultRow key={r.id} result={r} onClick={() => handleDeptResultClick(r)} />
+            ))}
+            {!isSearching && ((destFocused && !showResults && destText) || (deptFocused && !showDeptResults && deptText)) && (
+              <div className="text-center text-[13.5px] text-[#9a8e84] py-[30px]" style={{ fontFamily: "'MaruBuri', serif" }}>검색 결과가 없어요</div>
+            )}
+          </div>
+        ) : (
+          <>
+            <button
+              onClick={() => setStep("pin")}
+              className="flex-none flex items-center gap-[12px] mx-[12px] mb-[12px] p-[9px_13px_9px_9px] rounded-[15px] bg-[#FFF7E0] border-[1.5px] border-[#F2D49A] cursor-pointer hover:shadow-[0_4px_12px_rgba(237,122,19,0.16)] transition-shadow"
+            >
+              <div className="w-[46px] h-[46px] rounded-[12px] bg-[#FFEDA1] flex items-center justify-center shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#ED7A13" strokeWidth="1.8" /></svg>
+              </div>
+              <div className="flex-1 text-[15px] font-semibold text-[#3E2722] text-left">지도에서 위치 지정</div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#ED7A13" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </button>
+            <div className="flex-none px-[12px] pb-[8px] text-[13.5px] text-[#8a7d5f]" style={{ fontFamily: "'MaruBuri', serif" }}>가는길에 잠시 들러 보세요</div>
+            <div className="flex-1 overflow-y-auto px-[4px]">
+              {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">위치 확인 중…</div>}
+              {granted && recs.map(place => (
+                <PlaceRow key={place.id} place={place} onClick={() => chooseDestFromRec(place)} onSave={notReady} destPicker />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

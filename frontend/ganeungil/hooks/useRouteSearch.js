@@ -1,6 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import api from "../api/api";
 
+// 백엔드 /places/search는 PointDTO({placeName, latitude, longitude, address, roadAddress})를 반환한다.
+// 백엔드 SearchService가 위경도를 바꿔 담고 있어서(latitude 필드에 실제 경도, longitude 필드에 실제 위도가 들어옴),
+// 백엔드는 건드리지 않고 여기서 다시 바꿔 카카오 Places 결과와 같은 형태(place_name, x=lng, y=lat)로 맞춘다.
+export function toSearchResults(data) {
+  if (!Array.isArray(data)) return [];
+  return data.slice(0, 5).map((p, i) => ({
+    id: `${p.placeName}-${i}`,
+    place_name: p.placeName,
+    x: String(p.latitude),
+    y: String(p.longitude),
+    address_name: p.address,
+    road_address_name: p.roadAddress,
+  }));
+}
+
 export const ROUTE_MODES = [
   { id: "findOut", label: "바른 길",     endpoint: "/route/right"   },
   { id: "slow",    label: "여유로운 길", endpoint: "/route/slow"    },
@@ -38,15 +53,19 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
       return;
     }
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      if (!window.kakao?.maps?.services) return;
+    debounceRef.current = setTimeout(async () => {
       setIsSearching(true);
-      const ps = new window.kakao.maps.services.Places();
-      ps.keywordSearch(destText, (results, status) => {
+      try {
+        const response = await api.get("/places/search", {
+          params: { query: destText },
+        });
+        setSearchResults(toSearchResults(response.data));
+      } catch (error) {
+        console.error("[자동완성] 백엔드 검색 에러:", error);
+        setSearchResults([]);
+      } finally {
         setIsSearching(false);
-        if (status === window.kakao.maps.services.Status.OK) setSearchResults(results.slice(0, 5));
-        else setSearchResults([]);
-      });
+      }
     }, 350);
     return () => clearTimeout(debounceRef.current);
   }, [destText, destFocused]);
@@ -108,16 +127,23 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     }
   };
 
-  const handleDestSubmit = (e) => {
+/* 바꿀 코드 (백엔드 API 연동 방식) */
+  const handleDestSubmit = async (e) => {
     e?.preventDefault();
-    if (!destText.trim() || !window.kakao?.maps?.services) return;
+    if (!destText.trim()) return;
+
     setIsSearching(true);
-    const ps = new window.kakao.maps.services.Places();
-    ps.keywordSearch(destText, (results, status) => {
+    try {
+      const response = await api.get("/places/search", {
+        params: { query: destText },
+      });
+      setSearchResults(toSearchResults(response.data));
+    } catch (error) {
+      console.error("[검색 제출] 백엔드 검색 에러:", error);
+      setSearchResults([]);
+    } finally {
       setIsSearching(false);
-      if (status === window.kakao.maps.services.Status.OK) setSearchResults(results.slice(0, 5));
-      else setSearchResults([]);
-    });
+    }
   };
 
   const handleDeptSubmit = (e) => { e?.preventDefault(); };
@@ -192,6 +218,10 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     }
   };
 
+  // 지도 핀으로 직접 지정한 위치를 목적지로 선택 (검색 결과와 동일한 파이프라인 재사용)
+  const selectManualDestination = ({ name, lat, lng }) =>
+    handleResultClick({ place_name: name, x: String(lng), y: String(lat) });
+
   return {
     destText, setDestText, destFocused,
     deptText, setDeptText, deptFocused,
@@ -204,5 +234,6 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     handleDestSubmit, handleDeptSubmit,
     handleDeptResultClick, handleDeptClear,
     handleResultClick, handleModeChange, handleExplore,
+    selectManualDestination,
   };
 }
