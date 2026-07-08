@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import api from "../api/api";
 
 // 점 → 선분(segment) 최단거리 (미터). 좌표계: equirectangular 근사
@@ -51,11 +51,20 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const [selectedMode, setSelectedMode]     = useState(null);
   const [routeInfo, setRouteInfo]           = useState({});
 
+  const [deptSearchResults, setDeptSearchResults] = useState([]);
+  const [isDeptSearching, setIsDeptSearching]     = useState(false);
+  const [originPlace, setOriginPlace]             = useState(null); // 출발지를 직접 검색해 고른 경우의 장소
+
   const destInputRef = useRef(null);
   const deptInputRef = useRef(null);
 
   const isSearchMode = destFocused || deptFocused;
   const showResults  = searchResults.length > 0;
+
+  // 실제 경로 계산에 쓰일 출발 좌표: 직접 고른 출발지가 있으면 그곳, 없으면 현재 위치
+  const originCoords = originPlace
+    ? { lat: parseFloat(originPlace.y), lng: parseFloat(originPlace.x) }
+    : userCoords;
 
   const handleDestFocus = () => { setDestFocused(true); };
   const handleDeptFocus = () => { setDeptFocused(true); };
@@ -81,16 +90,39 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
 
   const handleDeptSubmit = (e) => { e?.preventDefault(); };
 
+  // 출발지 입력창에 타이핑하는 동안 카카오 키워드 검색 (디바운스)
+  useEffect(() => {
+    if (!deptFocused || !deptText.trim()) { setDeptSearchResults([]); return; }
+    if (!window.kakao?.maps?.services) return;
+    setIsDeptSearching(true);
+    const timer = setTimeout(() => {
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(deptText, (results, status) => {
+        setIsDeptSearching(false);
+        if (status === window.kakao.maps.services.Status.OK) setDeptSearchResults(results.slice(0, 5));
+        else setDeptSearchResults([]);
+      });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [deptText, deptFocused]);
+
+  const handleDeptResultClick = (result) => {
+    setOriginPlace(result);
+    setDeptText(result.place_name);
+    setDeptFocused(false);
+    setDeptSearchResults([]);
+  };
+
   const fetchRouteData = async (modeId, result, { draw = true } = {}) => {
-    if (!userCoords || !result) {
-      console.warn("[경로] 중단 - userCoords:", userCoords, "result:", result);
+    if (!originCoords || !result) {
+      console.warn("[경로] 중단 - originCoords:", originCoords, "result:", result);
       return;
     }
     const mode = ROUTE_MODES.find(m => m.id === modeId);
-    console.log(`[경로] ${mode.label} 요청`, { from: userCoords, to: { y: result.y, x: result.x } });
+    console.log(`[경로] ${mode.label} 요청`, { from: originCoords, to: { y: result.y, x: result.x } });
     try {
       const response = await api.post(mode.endpoint, [
-        { lat: userCoords.lat, lon: userCoords.lng },
+        { lat: originCoords.lat, lon: originCoords.lng },
         { lat: parseFloat(result.y), lon: parseFloat(result.x) },
       ]);
       console.log("[경로] 응답:", response.data);
@@ -172,7 +204,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   };
 
   const handleSearch = () => {
-    if (!userCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }
+    if (!originCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }
     if (!selectedResult) return;
     const activeMode = selectedMode ?? "slow";
     ROUTE_MODES.forEach(mode => {
@@ -184,10 +216,11 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     destText, setDestText, destFocused,
     deptText, setDeptText, deptFocused,
     searchResults, selectedResult, isSearching, selectedMode, routeInfo, handleSearch,
+    deptSearchResults, isDeptSearching, originPlace,
     destInputRef, deptInputRef,
     isSearchMode, showResults,
     handleDestFocus, handleDeptFocus, handleCancel,
     handleDestSubmit, handleDeptSubmit,
-    handleResultClick, handleModeChange,
+    handleResultClick, handleModeChange, handleDeptResultClick,
   };
 }

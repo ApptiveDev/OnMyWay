@@ -133,6 +133,9 @@ export default function Onboard20() {
   const [isOffline, setIsOffline]     = useState(!navigator.onLine);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
+  const [pinMode, setPinMode] = useState(false);              // 지도에서 위치 지정 중인지
+  const [pinCenter, setPinCenter] = useState(null);            // 현재 지도 중심 좌표 { lat, lng }
+  const [pinNeighborhood, setPinNeighborhood] = useState("");  // 지도 중심의 역지오코딩 동네명
 
   // 카카오맵 관련 refs
   const mapContainerRef = useRef(null); // <div> DOM 노드
@@ -249,15 +252,17 @@ export default function Onboard20() {
     const pos = new window.kakao.maps.LatLng(userCoords.lat, userCoords.lng);
     map.setCenter(pos);
 
-    // 250m 반경 원
-    circleRef.current = new window.kakao.maps.Circle({
-      center:         pos,
-      radius:         250,
-      strokeWeight:  7,                        
-      strokeColor:    "#FFEDA1",
-      shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
-      map,
-    });
+    // 250m 반경 원 — 장소검색 탭에서만 표시 (길찾기 탭에서는 숨김)
+    if (sidebarMode === "search") {
+      circleRef.current = new window.kakao.maps.Circle({
+        center:         pos,
+        radius:         250,
+        strokeWeight:  7,
+        strokeColor:    "#FFEDA1",
+        shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
+        map,
+      });
+    }
 
     // 내 위치 점
     userDotRef.current = new window.kakao.maps.CustomOverlay({
@@ -267,7 +272,7 @@ export default function Onboard20() {
       yAnchor:  0.5,
       xAnchor:  0.5,
     });
-  }, [locStatus, userCoords]);
+  }, [locStatus, userCoords, sidebarMode]);
 
   // ── 지도 마커 갱신: featured 장소만 표시
   useEffect(() => {
@@ -329,6 +334,47 @@ export default function Onboard20() {
       overlaysRef.current.push(overlay);
     });
   }, [featuredRecs, sidebarMode, locStatus, mapReady]);
+
+  // ── 지도에서 위치 지정 모드: 지도 중심이 바뀔 때마다 좌표/동네명 갱신
+  useEffect(() => {
+    const map = kakaoMapRef.current;
+    if (!pinMode || !map) return;
+
+    let debounceTimer;
+    const geocodeCenter = () => {
+      const center = map.getCenter();
+      const lat = center.getLat();
+      const lng = center.getLng();
+      setPinCenter({ lat, lng });
+      if (!window.kakao?.maps?.services?.Geocoder) return;
+      const geocoder = new window.kakao.maps.services.Geocoder();
+      geocoder.coord2RegionCode(lng, lat, (result, status) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const region = result.find(r => r.region_type === "H") || result[0];
+          if (region) setPinNeighborhood(`${region.region_3depth_name} 일대`);
+        }
+      });
+    };
+
+    geocodeCenter();
+    const onCenterChanged = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(geocodeCenter, 400);
+    };
+    window.kakao.maps.event.addListener(map, "center_changed", onCenterChanged);
+
+    return () => {
+      clearTimeout(debounceTimer);
+      window.kakao.maps.event.removeListener(map, "center_changed", onCenterChanged);
+    };
+  }, [pinMode]);
+
+  const enterPinMode = () => setPinMode(true);
+  const exitPinMode = () => {
+    setPinMode(false);
+    setPinCenter(null);
+    setPinNeighborhood("");
+  };
 
   // ── 핸들러 ──
   const handleCategoryChange = (label) => {
@@ -500,6 +546,11 @@ export default function Onboard20() {
           userCoords={userCoords}
           onDrawRoute={displayRoute}
           onRouteRecs={handleRouteRecs}
+          pinMode={pinMode}
+          pinCenter={pinCenter}
+          pinNeighborhood={pinNeighborhood}
+          onEnterPinMode={enterPinMode}
+          onExitPinMode={exitPinMode}
         />
 
         {/* ── 지도 영역 ── */}
@@ -523,6 +574,27 @@ export default function Onboard20() {
               <path d="M12 2.5v3.2M12 18.3v3.2M2.5 12h3.2M18.3 12h3.2" stroke="#ED7A13" strokeWidth="1.9" strokeLinecap="round" />
             </svg>
           </button>
+
+          {/* ── 지도에서 위치 지정 모드: 중앙 고정 핀 + 안내 툴팁 ── */}
+          {pinMode && (
+            <>
+              <div
+                className="absolute top-[24px] left-1/2 -translate-x-1/2 bg-[#3e2722] text-white text-[13.5px] px-[16px] py-[11px] rounded-[20px] shadow-[0_4px_6px_rgba(62,39,34,0.25)] whitespace-nowrap z-10 pointer-events-none"
+                style={{ fontFamily: "MaruBuriOTF" }}
+              >
+                지도를 움직여 도착지를 맞춰주세요
+              </div>
+              <div
+                className="absolute left-1/2 top-1/2 flex flex-col items-center z-10 pointer-events-none"
+                style={{ transform: "translate(-50%, calc(-100% + 4px))" }}
+              >
+                <div className="w-[40px] h-[40px] bg-[#ED7A13] rounded-tl-[20px] rounded-tr-[20px] rounded-br-[20px] rounded-bl-[2px] shadow-[0_6px_7px_rgba(62,39,34,0.35)] rotate-45 flex items-center justify-center">
+                  <div className="w-[10px] h-[10px] bg-white rounded-full -rotate-45" />
+                </div>
+                <div className="w-[14px] h-[5px] bg-[rgba(62,39,34,0.25)] rounded-full -mt-[2px]" />
+              </div>
+            </>
+          )}
 
           {/* ── 위치 권한 동의 팝업 (최초 진입, 권한 결정 전) ── */}
           {locStatus === "pending" && (

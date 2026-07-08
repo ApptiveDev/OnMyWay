@@ -93,7 +93,7 @@ export default function OnboardNew() {
 
   return (
     <div
-      className="relative w-[1440px] mx-auto overflow-hidden bg-[#fdfdfd] text-[#2c2417]"
+      className="relative w-full overflow-hidden bg-[#fdfdfd] text-[#2c2417]"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       <img
@@ -103,19 +103,16 @@ export default function OnboardNew() {
       />
 
       <div className="relative z-10">
-      {/* ── 헤더 (Figma node 1412:7236 기준, 1440px 프레임과 1:1이라 scale 불필요) ── */}
+      {/* ── 헤더 (전체 폭에 맞춰 flex로 배치 — find-route와 동일한 패턴) ── */}
       <header
-        className="relative w-full h-[72px] bg-[#FFFBEC]"
+        className="relative w-full h-[72px] bg-[#FFFBEC] flex items-center px-[36px] gap-[30px]"
         style={{ boxShadow: "0px 1px 0px 0px rgba(62,39,34,0.06)" }}
       >
-        <button
-          onClick={() => navigate("/")}
-          className="absolute left-[36px] top-1/2 -translate-y-1/2 w-[140.625px] h-[25px]"
-        >
+        <button onClick={() => navigate("/")} className="w-[140.625px] h-[25px] shrink-0">
           <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
         </button>
 
-        <nav className="absolute left-[224.63px] top-[23px] flex items-center gap-[30px]">
+        <nav className="flex items-center gap-[30px] shrink-0">
           {NAV_ITEMS.map(({ label, path }) => {
             const active = pathname === path;
             return (
@@ -134,7 +131,9 @@ export default function OnboardNew() {
           })}
         </nav>
 
-        <div className="absolute left-[1177px] top-1/2 -translate-y-1/2 flex items-center gap-[10px]">
+        <div className="flex-1" />
+
+        <div className="flex items-center gap-[10px] shrink-0">
           <button
             onClick={() => navigate("/login")}
             className="text-[14px] text-[#858585]"
@@ -152,10 +151,10 @@ export default function OnboardNew() {
           </button>
         </div>
 
-        <button className="absolute left-[1326px] top-[27px] w-[20px] h-[18px]">
+        <button className="w-[20px] h-[18px] shrink-0 ml-[26px]">
           <img src={iconMenu} alt="메뉴" className="w-full h-full" />
         </button>
-        <button className="absolute left-[1384px] top-1/2 -translate-y-1/2 w-[20px] h-[20px]">
+        <button className="w-[20px] h-[20px] shrink-0 ml-[16px]">
           <img src={iconSearch} alt="검색" className="w-full h-full" />
         </button>
       </header>
