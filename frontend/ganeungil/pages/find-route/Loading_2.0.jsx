@@ -28,7 +28,7 @@ export default function Loading20() {
           className="w-[42px] h-[42px] rounded-full border-[3.5px] border-[#F0E2C0]"
           style={{ borderTopColor: "#ED7A13", animation: "gg-spin 0.8s linear infinite" }}
         />
-        <div className="text-[14.5px] text-[#5a4d42]" style={{ fontFamily: "'MaruBuri', serif" }}>
+        <div className="text-[14.5px] text-[#5a4d42]" style={{ fontFamily: "Pretendard" }}>
           걷기 좋은 길을 준비하고 있어요…
         </div>
       </div>

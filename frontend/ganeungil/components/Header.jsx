@@ -6,13 +6,14 @@ import { useOnlineStatus } from "../hooks/useOnlineStatus";
 import SettingsPanel from "./SettingsPanel";
 import WithdrawFlow from "./WithdrawFlow";
 
-// Figma 로고 아이콘 (7일 후 만료 → 로컬 파일로 교체 필요)
-import LOGO_ICON from "@/assets/Frame 16.svg";
+import LOGO_ICON  from "@/assets/header-logo.svg";
+import iconSearch from "@/assets/header-search.svg";
+import iconMenu   from "@/assets/header-menu.svg";
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
-  { label: "탐색하기", path: "/discover"   },
   { label: "둘러보기", path: "/explore"    },
+  { label: "간직하기", path: "/discover"   },
 ];
 
 const DESIGN_W = 1920;
@@ -37,32 +38,29 @@ export default function Header() {
 
   return (
     <header
-      className="flex-none w-full h-[64px] bg-[#FFFBEC] flex items-center px-[28px] gap-[26px] shadow-[0_1px_0_rgba(62,39,34,0.07)] relative z-20"
-      style={{ fontFamily: "Pretendard, system-ui, sans-serif" }}
+      className="shrink-0 w-full h-[72px] bg-[#FFFBEC] flex items-center px-[36px] gap-[30px] relative z-20"
+      style={{ boxShadow: "0px 1px 0px 0px rgba(62,39,34,0.06)", fontFamily: "'Noto Serif KR', serif" }}
     >
       {/* 로고 */}
-      <button
-        onClick={() => navigate("/")}
-        className="flex items-center gap-[10px] shrink-0"
-      >
-        <img src={LOGO_ICON} alt="가는길" className="h-[24px]" />
+      <button onClick={() => navigate("/")} className="w-[140.625px] h-[25px] shrink-0">
+        <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
       </button>
 
       {/* 내비게이션 */}
-      <nav className="flex items-center gap-[26px] ml-[8px]">
+      <nav className="flex items-center gap-[30px] shrink-0">
         {NAV_ITEMS.map(({ label, path }) => {
           const active = pathname === path;
           return (
             <button
               key={path}
               onClick={() => navigate(path)}
-              className={`text-[15.5px] pb-[3px] border-b-2 cursor-pointer ${
-                active
-                  ? "font-semibold text-[#3E2722] border-[#3E2722]"
-                  : "font-medium text-[#8a7d5f] border-transparent hover:opacity-70"
-              }`}
+              className="pb-[8px] pt-px border-b-2"
+              style={{
+                borderColor: active ? "#3e2722" : "transparent",
+                fontFamily:  active ? "Pretendard-Bold" : "Pretendard-Light",
+              }}
             >
-              {label}
+              <span className="text-[16px] text-[#3e2722] whitespace-nowrap">{label}</span>
             </button>
           );
         })}
@@ -72,17 +70,14 @@ export default function Header() {
 
       {/* 온라인/오프라인 표시 */}
       <div
-        className="flex items-center gap-[7px] px-[11px] py-[6px] rounded-[11px]"
-        style={{ background: isOnline ? "rgba(91,168,107,0.12)" : "rgba(201,128,59,0.14)" }}
+        className="flex items-center gap-[7px] px-[11px] py-[6px] rounded-[11px] shrink-0"
+        style={{ background: isOnline ? "rgba(91,168,107,.12)" : "rgba(201,128,59,.14)" }}
         title="온라인/오프라인 상태"
       >
+        <span className="w-[7px] h-[7px] rounded-full shrink-0" style={{ background: isOnline ? "#5BA86B" : "#C9803B" }} />
         <span
-          className="w-[7px] h-[7px] rounded-full"
-          style={{ background: isOnline ? "#5BA86B" : "#C9803B" }}
-        />
-        <span
-          className="text-[12px] font-semibold"
-          style={{ color: isOnline ? "#5a7d5f" : "#9a6a3a" }}
+          className="text-[12px] font-semibold whitespace-nowrap"
+          style={{ color: isOnline ? "#5a7d5f" : "#9a6a3a", fontFamily: "Pretendard" }}
         >
           {isOnline ? "온라인" : "오프라인"}
         </span>
@@ -90,7 +85,7 @@ export default function Header() {
 
       {/* 계정 영역 */}
       {accessToken ? (
-        <div className="relative shrink-0">
+        <div className="relative shrink-0 ml-[26px]">
           <button
             onClick={() => setAccountOpen((v) => !v)}
             title="내 계정"
@@ -132,22 +127,31 @@ export default function Header() {
           )}
         </div>
       ) : (
-        <div className="flex items-center gap-[8px] shrink-0">
+        <div className="flex items-center gap-[10px] shrink-0 ml-[26px]">
           <button
             onClick={() => navigate("/login")}
-            className="text-[#858585] text-[14px] font-medium"
+            className="text-[14px] text-[#858585]"
+            style={{ fontFamily: "Pretendard-Light" }}
           >
             로그인
           </button>
-          <div className="w-px h-[10px] bg-[#858585]" />
+          <div className="w-px h-[11px] bg-[#cfcac1]" />
           <button
             onClick={() => navigate("/signup")}
-            className="text-[#858585] text-[14px] font-medium"
+            className="text-[14px] text-[#858585]"
+            style={{ fontFamily: "Pretendard-Light" }}
           >
             회원가입
           </button>
         </div>
       )}
+
+      <button className="w-[20px] h-[18px] shrink-0 ml-[26px]">
+        <img src={iconMenu} alt="메뉴" className="w-full h-full" />
+      </button>
+      <button className="w-[20px] h-[20px] shrink-0 ml-[16px]">
+        <img src={iconSearch} alt="검색" className="w-full h-full" />
+      </button>
 
       {showSettings && (
         <SettingsPanel onClose={() => setShowSettings(false)} onOpenWithdraw={() => { setShowSettings(false); setShowWithdraw(true); }} />

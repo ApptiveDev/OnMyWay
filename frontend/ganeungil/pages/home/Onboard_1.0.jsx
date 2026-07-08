@@ -105,13 +105,20 @@ export default function OnboardNew() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.7)] via-[rgba(0,0,0,0.25)] to-transparent" />
 
-        <div className="relative h-full px-[113px] flex flex-col justify-center gap-[18px] max-w-[700px]">
-          <h1 className="text-white text-[36px] font-semibold font-['MaruBuriOTF'] leading-[40.5px]">
-            목적지보다
+        <div className="relative h-full max-w-[1101px] mx-auto px-14 flex flex-col justify-end pb-16">
+          <h1
+            className="text-[51.2px] font-light leading-[1.25] tracking-[-0.025em] text-white mb-6"
+            style={{ fontFamily: "MaruBuriOTF" }}
+          >
+            길을 걷는 것이
             <br />
             <span className="text-[#ed7a13]">가는길</span>이 더 궁금한 사람에게
           </h1>
-          <p className="text-white text-[15px] font-light font-['MaruBuriOTF'] leading-[24px]">
+
+          <p
+            className="text-[15.2px] text-[rgba(255,255,255,0.55)] mb-7 leading-relaxed"
+            style={{ fontFamily: "Pretendard-Light" }}
+          >
             단순히 지나가는 공간이 아닌, 새로운 취향을 만나는 통로로.
             <br />
             가는길에 들를 만한 곳을 추천합니다.
@@ -124,54 +131,99 @@ export default function OnboardNew() {
         </div>
       </section>
 
-      {/* ── 가장 빠른 길이, 동네를 좁게 만들어요 ── */}
-      <section className="relative px-[113px] py-[100px] grid grid-cols-2 gap-x-[60px] items-center">
-        <div className="relative flex flex-col gap-[19px]">
-          <h2 className="font-['MaruBuriOTF'] font-semibold text-[36px] leading-[42px] text-[#2c2417]">
-            가장 빠른 <span className="text-[#ed7a13]">길</span>이,
-            <br />
-            동네를 좁게 만들어요
+      {/* ── 길 선택 섹션 ── */}
+      <section className="max-w-[1101px] mx-auto px-10 py-16">
+        <div className="mb-10">
+          <h2
+            className="text-[28.8px] font-light text-[#2c2417] leading-[1.375] mb-3"
+            style={{ fontFamily: "MaruBuriOTF" }}
+          >
+            당신에게 맞는{" "}
+            <span className="font-medium text-[#c8873a]">길</span>
+            을 선택하세요
           </h2>
-          <p className="font-['MaruBuriOTF'] font-light text-[15px] leading-[22px] text-[#3e2722]">
-            지도는 늘 1분이라도 빠른 길을 권해요.
-            <br />
-            그래서 우리는 늘 같은 골목, 같은 풍경 위에 있어요.
-            <br />그 5분이 동네를 한 칸씩 지웁니다.
-          </p>
-        </div>
-
-        <div className="relative flex items-start justify-left gap-[64px]">
-          <MiniMapSquare label="before" caption="목적지까지 가는 방법만" bgImage={map1} />
-          <MiniMapSquare label="after" caption="가는길에 무엇이 있는지" bgImage={map2} />
-        </div>
-      </section>
-
-      {/* ── 당신에게 맞는 길을 선택하세요 ── */}
-      <section className="px-[113px] py-[80px]">
-        <div className="mb-[40px]">
-          <h2 className="font-['MaruBuriOTF'] font-semibold text-[36px] leading-[46px] text-[#2c2417] mb-[8px]">
-            당신에게 맞는 <span className="text-[#ed7a13]">길</span>을 선택하세요
-          </h2>
-          <p className="font-['Noto_Serif_KR'] font-light text-[15px] text-[#3e2722]">
+          <p
+            className="text-sm text-[#8b7e6a] leading-relaxed"
+            style={{ fontFamily: "Pretendard-Light" }}
+          >
             바쁜 출근길부터 여유로운 주말 산책까지, 상황에 따라 다른 길을 제안합니다.
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-[20px]">
-          {PATH_CARDS.map((card) => (
-            <div
-              key={card.title}
-              className="flex flex-col gap-[29px] bg-[#fdfdfd] border border-[#afafaf] rounded-[23px] px-[29px] py-[48px] shadow-[0px_5px_3px_0px_rgba(0,0,0,0.05)]"
-            >
-              <div
-                className="w-[54px] h-[54px] rounded-full flex items-center justify-center"
-                style={{ backgroundColor: card.iconBg }}
-              >
-                <img src={card.icon} alt="" className="w-[27px] h-[27px]" />
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                <p className="font-['Pretendard'] text-[18px] tracking-[-0.5px] text-[#3e2722]">{card.desc}</p>
-                <p className="font-['Pretendard-Bold'] text-[24px] tracking-[-0.65px] text-[#3e2722]">{card.title}</p>
+        <div className="grid grid-cols-3 gap-5">
+          <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-full bg-[rgba(212,149,74,0.09)] flex items-center justify-center mb-8">
+              <img src={iconRoute} alt="" className="w-5 h-5" />
+            </div>
+            <h3
+              className="text-[16.8px] text-[#2c2417] mb-2"
+              style={{ fontFamily: "Pretendard-Medium" }}
+            >바른 길</h3>
+            <p
+              className="text-[13.6px] text-[#8b7e6a]"
+              style={{ fontFamily: "Pretendard-Light" }}
+            >가장 빠르고 효율적인 경로</p>
+          </div>
+
+          <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-full bg-[rgba(123,196,160,0.09)] flex items-center justify-center mb-8">
+              <img src={iconLeisure} alt="" className="w-5 h-5" />
+            </div>
+            <h3
+              className="text-[16.8px] text-[#2c2417] mb-2"
+              style={{ fontFamily: "Pretendard-Medium" }}
+            >여유로운 길</h3>
+            <p
+              className="text-[13.6px] text-[#8b7e6a]"
+              style={{ fontFamily: "Pretendard-Light" }}
+            >걷기 좋은 골목과 공원을 따라</p>
+          </div>
+
+          <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 rounded-full bg-[rgba(167,139,218,0.09)] flex items-center justify-center mb-8">
+              <img src={iconDiscover} alt="" className="w-5 h-5" />
+            </div>
+            <h3
+              className="text-[16.8px] text-[#2c2417] mb-2"
+              style={{ fontFamily: "Pretendard-Medium" }}
+            >발견하는 길</h3>
+            <p
+              className="text-[13.6px] text-[#8b7e6a]"
+              style={{ fontFamily: "Pretendard-Light" }}
+            >새로운 취향을 만나는 우연</p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 자연스러운 발견 섹션 ── */}
+      <section className="max-w-[1101px] mx-auto px-10 py-16 bg-[rgba(245,230,200,0.2)]">
+        <h2
+          className="text-[28.8px] font-light text-[#2c2417] leading-[1.375] mb-12"
+          style={{ fontFamily: "MaruBuriOTF" }}
+        >
+          일부러 돌아가지 않아도 되는
+          <br />
+          <span className="font-medium text-[#c8873a]">자연스러운 발견</span>
+        </h2>
+
+        <div className="grid grid-cols-2 gap-x-16 gap-y-9">
+          {[
+            { title: "경로 기반 추천", desc: "이동 경로에서 도보 5분 이내의 장소만 추천합니다." },
+            { title: "걷기 좋은 길", desc: "골목길, 공원, 하천 주변의 산책로를 우선합니다." },
+            { title: "취향 큐레이션", desc: "당신의 관심사에 맞는 장소를 발견합니다." },
+            { title: "로컬 스토리", desc: "동네 주민이 만든 이야기가 담긴 코스입니다." },
+          ].map((item) => (
+            <div key={item.title} className="flex gap-4">
+              <div className="w-1.5 rounded-full bg-[rgba(200,135,58,0.25)] shrink-0" />
+              <div>
+                <h4
+                  className="text-[15.2px] text-[#2c2417] mb-1"
+                  style={{ fontFamily: "Pretendard-Medium" }}
+                >{item.title}</h4>
+                <p
+                  className="text-[13.6px] text-[#8b7e6a] leading-relaxed"
+                  style={{ fontFamily: "Pretendard-Light" }}
+                >{item.desc}</p>
               </div>
             </div>
           ))}
@@ -180,7 +232,10 @@ export default function OnboardNew() {
 
       {/* ── 동네 사람들의 이야기 섹션 ── */}
       <section className="max-w-[1101px] mx-auto px-10 py-16">
-        <h2 className="text-[28.8px] font-light text-[#2c2417] mb-10">
+        <h2
+          className="text-[28.8px] font-light text-[#2c2417] mb-10"
+          style={{ fontFamily: "MaruBuriOTF" }}
+        >
           동네 사람들의{" "}
           <span className="font-medium text-[#c8873a]">이야기</span>
         </h2>
@@ -202,63 +257,55 @@ export default function OnboardNew() {
                   </span>
                 ))}
               </div>
-            ))}
+              <h3
+                className="text-[18.4px] text-white mb-1.5"
+                style={{ fontFamily: "Pretendard-Medium" }}
+              >망원동의 숨은 골목 산책</h3>
+              <p
+                className="text-[12.48px] text-[rgba(255,255,255,0.6)]"
+                style={{ fontFamily: "Pretendard-Light" }}
+              >동네주민 하늘 · 2.3km · 약 35분</p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── 자주 묻는 질문을 모아봤어요 ── */}
-      <section className="px-[113px] py-[80px] grid grid-cols-[448px_1fr] gap-x-[60px]">
-        <div className="flex flex-col gap-[18px]">
-          <h2 className="font-['MaruBuriOTF'] font-semibold text-[36px] leading-[40px] text-[#3e2722]">
-            자주 묻는 질문을 모아봤어요
-          </h2>
-          <p className="font-['MaruBuriOTF'] font-light text-[15px] leading-[22px] text-[#3e2722]">
-            가는길을 처음 만나는 분들의 자주 묻는 질문을 모아봤어요.
-            <br />더 궁금하신 부분이 있다면 이메일을 보내주세요.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-[27px]">
-          {FAQS.map((faq, i) => {
-            const open = openFaq === i;
-            return (
-              <div key={faq.q} className="flex flex-col gap-[20px]">
-                <button
-                  onClick={() => setOpenFaq(open ? -1 : i)}
-                  className="flex items-center justify-between w-full text-left"
-                >
-                  <p className="font-['MaruBuriOTF'] font-bold text-[22px] text-[#3e2722]">{faq.q}</p>
-                  <img
-                    src={faqChevron}
-                    alt=""
-                    className="w-[14px] h-[26px] shrink-0 transition-transform duration-200"
-                    style={{ transform: open ? "rotate(-90deg)" : "rotate(90deg)" }}
-                  />
-                </button>
-                <div className="w-full h-px bg-black/20" />
-                {open && (
-                  <div className="font-['MaruBuriOTF'] text-[16px] leading-[28px] text-black -mt-[6px] pb-[6px]">
-                    {faq.a.map((line, li) => (
-                      <p key={li}>{line}</p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          {/* 오른쪽 카드 */}
+          <div className="relative overflow-hidden rounded-2xl group cursor-pointer">
+            <img
+              src={imgStory2}
+              alt="성수동 오후의 여유"
+              className="absolute inset-0 object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.5)] to-transparent" />
+            <div className="absolute bottom-3 left-3 right-3">
+              <h3
+                className="text-[15.2px] text-white mb-1"
+                style={{ fontFamily: "Pretendard-Medium" }}
+              >성수동 오후의 여유</h3>
+              <p
+                className="text-[11.52px] text-[rgba(255,255,255,0.6)]"
+                style={{ fontFamily: "Pretendard-Light" }}
+              >커피러버 은지 · 1.8km</p>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* ── 푸터 ── */}
-      <footer className="w-full h-[90px] bg-[#FFFBEC] flex items-center justify-between px-[113px]">
-        <button onClick={() => navigate("/")} className="w-[141px] h-[25px]">
-          <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
-        </button>
-        <div className="flex items-center gap-[22px] font-['Pretendard'] text-[15px] text-[#3e2722]">
-          <span>이용약관</span>
-          <span>개인정보처리방침</span>
-          <span>문의</span>
+      <footer className="border-t border-[rgba(44,36,23,0.1)]">
+        <div className="max-w-[1101px] mx-auto px-10 py-12 flex items-center justify-between">
+          <span
+            className="text-[#c8873a] text-[18.4px] tracking-[2.2px]"
+            style={{ fontFamily: "Pretendard-SemiBold" }}
+          >가는길</span>
+          <div
+            className="flex items-center gap-5 text-[12.48px] text-[#8b7e6a]"
+            style={{ fontFamily: "Pretendard-Light" }}
+          >
+            <a href="#" className="hover:text-[#2c2417] transition-colors">이용약관</a>
+            <a href="#" className="hover:text-[#2c2417] transition-colors">개인정보처리방침</a>
+          </div>
         </div>
       </footer>
       </div>

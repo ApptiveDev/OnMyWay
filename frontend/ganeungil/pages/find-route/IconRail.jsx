@@ -60,7 +60,7 @@ const IconRail = forwardRef(function IconRail({ flow, onFlowChange, sidebarOpen,
               style={{ background: active ? "#ED7A13" : "transparent", color: active ? "#fff" : "#9a8e84" }}
             >
               {icon}
-              <span className="text-[11px] font-semibold">{label}</span>
+              <span className="text-[11px]" style={{ fontFamily: "Pretendard-SemiBold" }}>{label}</span>
             </button>
           </Fragment>
         );
