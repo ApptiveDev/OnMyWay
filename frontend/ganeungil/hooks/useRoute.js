@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import iconDestPin from "@/assets/icon-destination-pin.svg";
-import IconArrive from "@/assets/iconArrive.svg";
+import IconArrive from "@/assets/iconArrive2.svg";
 
 export function useRoute(kakaoMapRef) {
   const destMarkerRef   = useRef(null);
