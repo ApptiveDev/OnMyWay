@@ -15,4 +15,8 @@ public class HashTags {
 
     @NotBlank
     private String tag;
+
+    public String getTag() {
+        return tag;
+    }
 }

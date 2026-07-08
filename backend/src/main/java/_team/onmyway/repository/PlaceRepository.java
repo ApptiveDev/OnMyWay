@@ -58,4 +58,9 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     );
 
     public List<Place> findByAddressAndName(String address, String name);
+
+    @Query("select distinct p from Place p join fetch p.serviceCategory left join fetch p.hashtagMappings hm left join fetch hm.hashTag left join fetch p.workingTimes where p.name like %:name%")
+    public List<Place> findByNameContaining(String name);
+
+    public Place findById(long id);
 }
