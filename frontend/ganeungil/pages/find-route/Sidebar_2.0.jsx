@@ -30,6 +30,9 @@ import imgPlace       from "@/assets/img-place.jpg";
 const DESIGN_W = 1920;
 const DESIGN_H = 1275;
 
+// 페이지 고정 폭 (Onboard_2.0.jsx와 동일) — 창 크기와 무관하게 항상 이 값으로 스케일 계산
+const PAGE_WIDTH = 1440;
+
 const MODE_CONFIG = {
   right:   { icon: iconUnion,   iconBg: "#FAE3CE", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
   slow:    { icon: iconLeisure, iconBg: "#E0E4D8", cardClass: "bg-[#fdfdfd] hover:bg-[#fffbec]" },
@@ -85,12 +88,13 @@ export default function Sidebar20({
   onRouteRecs,
 }) {
   const [scale, setScale] = useState(
-    () => Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H)
+    () => Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H)
   );
 
+  // 폭은 1440 고정, 높이만 창 크기에 반응
   useEffect(() => {
     const update = () =>
-      setScale(Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H));
+      setScale(Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H));
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);

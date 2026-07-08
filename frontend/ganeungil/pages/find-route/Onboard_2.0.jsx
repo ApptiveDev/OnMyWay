@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../../api/api";
 import Sidebar20 from "./Sidebar_2.0";
 import { useRoute } from "../../hooks/useRoute";
 
 // ── 에셋 (헤더 + 장소 상세 카드용) ──
+import LOGO_ICON  from "@/assets/header-logo.svg";
+import iconSearch from "@/assets/header-search.svg";
+import iconMenu   from "@/assets/header-menu.svg";
 import imgPlace  from "@/assets/img-place.jpg";
 import iconDrink from "@/assets/icon-drink.svg";
 import iconFood  from "@/assets/icon-food.svg";
@@ -50,6 +53,17 @@ const CAT_ICON = {
 
 // 위치 미허용 시 기본 중심점: 부산대학교 정문
 const PUSAN_UNIV = { lat: 35.2316, lng: 129.0839 };
+
+// 페이지 고정 폭 (Figma 1440 프레임 기준) — 창 크기와 무관하게 항상 이 값으로 스케일 계산
+const PAGE_WIDTH = 1440;
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
+const NAV_ITEMS = [
+  { label: "길찾기",  path: "/find-route" },
+  { label: "둘러보기", path: "/explore"    },
+  { label: "간직하기", path: "/discover"   },
+];
 
 async function loadRecommendations(lat, lng) {
   const res = await api.get("/places/recommend", { params: { lat, lng } });
@@ -110,6 +124,7 @@ function HoursLabel({ place }) {
 
 export default function Onboard20() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [activeCategory, setActiveCategory] = useState("전체");
   const [locStatus, setLocStatus]     = useState("pending"); // pending | granted | denied
   const [userCoords, setUserCoords]   = useState(null);      // { lat, lng }
@@ -122,7 +137,7 @@ export default function Onboard20() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mapReady, setMapReady] = useState(false);
   const [scale, setScale] = useState(
-    () => Math.min(window.innerWidth / 1920, window.innerHeight / 1275)
+    () => Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H)
   );
 
   // 카카오맵 관련 refs
@@ -219,10 +234,10 @@ setAllCategories(data.categories);
     return () => { window.removeEventListener("online", on); window.removeEventListener("offline", off); };
   }, []);
 
-  // ── 화면 크기 변경 시 scale 갱신
+  // ── 화면 크기 변경 시 scale 갱신 (폭은 1440 고정, 높이만 창 크기에 반응)
   useEffect(() => {
     const update = () =>
-      setScale(Math.min(window.innerWidth / 1920, window.innerHeight / 1275));
+      setScale(Math.min(PAGE_WIDTH / DESIGN_W, window.innerHeight / DESIGN_H));
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
@@ -396,10 +411,68 @@ setAllCategories(data.categories);
 
 
   return (
-    <div
-      className="w-full bg-[#faf6f0] text-[#2c2417] overflow-hidden"
-      style={{ height: `calc(100vh - ${120 * scale}px)`, fontFamily: "'Noto Serif KR', serif" }}
-    >
+    <>
+      {/* ── 헤더 (Figma node 1412:7236 기준, 1440px 프레임과 1:1이라 scale 불필요) ── */}
+      <header
+        className="relative w-[1440px] mx-auto h-[72px] shrink-0 bg-[#FFFBEC]"
+        style={{ boxShadow: "0px 1px 0px 0px rgba(62,39,34,0.06)" }}
+      >
+        <button
+          onClick={() => navigate("/")}
+          className="absolute left-[36px] top-1/2 -translate-y-1/2 w-[140.625px] h-[25px]"
+        >
+          <img src={LOGO_ICON} alt="가는길" className="w-full h-full" />
+        </button>
+
+        <nav className="absolute left-[224.63px] top-[23px] flex items-center gap-[30px]">
+          {NAV_ITEMS.map(({ label, path }) => {
+            const active = pathname === path;
+            return (
+              <button
+                key={path}
+                onClick={() => navigate(path)}
+                className="pb-[8px] pt-px border-b-2"
+                style={{
+                  borderColor: active ? "#3e2722" : "transparent",
+                  fontFamily:  active ? "Pretendard-Bold" : "Pretendard-Light",
+                }}
+              >
+                <span className="text-[16px] text-[#3e2722] whitespace-nowrap">{label}</span>
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="absolute left-[1177px] top-1/2 -translate-y-1/2 flex items-center gap-[10px]">
+          <button
+            onClick={() => navigate("/login")}
+            className="text-[14px] text-[#858585]"
+            style={{ fontFamily: "Pretendard-Light" }}
+          >
+            로그인
+          </button>
+          <div className="w-px h-[11px] bg-[#cfcac1]" />
+          <button
+            onClick={() => navigate("/signup")}
+            className="text-[14px] text-[#858585]"
+            style={{ fontFamily: "Pretendard-Light" }}
+          >
+            회원가입
+          </button>
+        </div>
+
+        <button className="absolute left-[1326px] top-[27px] w-[20px] h-[18px]">
+          <img src={iconMenu} alt="메뉴" className="w-full h-full" />
+        </button>
+        <button className="absolute left-[1384px] top-1/2 -translate-y-1/2 w-[20px] h-[20px]">
+          <img src={iconSearch} alt="검색" className="w-full h-full" />
+        </button>
+      </header>
+
+      <div
+        className="w-[1440px] mx-auto bg-[#faf6f0] text-[#2c2417] overflow-hidden"
+        style={{ height: `calc(100vh - 72px)`, fontFamily: "'Noto Serif KR', serif" }}
+      >
       <style>{`
         @keyframes fadeOutDown {
           from { opacity: 1; transform: translateY(0); }
@@ -513,8 +586,9 @@ setAllCategories(data.categories);
           </div>
         )}
 
-        
+
       </main>
     </div>
+    </>
   );
 }

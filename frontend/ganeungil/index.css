@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @font-face { font-family: 'Pretendard'; src: url('@/assets/fonts/Pretendard-Regular.woff2') format('woff2'); font-display: swap; }
-@font-face { font-family: 'MaruBuriOTF'; src: url('@/assets/fonts/MaruBuri-Regular.otf') format('opentype'); font-display: swap; }
+@font-face { font-family: 'MaruBuriOTF'; src: url('@/assets/fonts/MaruBuri-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'MaruBuriOTF'; src: url('@/assets/fonts/MaruBuri-SemiBold.otf') format('opentype'); font-weight: 600; font-display: swap; }
 @font-face { font-family: 'Pretendard-Thin'; src: url('@/assets/fonts/Pretendard-Thin.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Pretendard-ExtraLight'; src: url('@/assets/fonts/Pretendard-ExtraLight.woff2') format('woff2'); font-display: swap; }
 @font-face { font-family: 'Pretendard-Light'; src: url('@/assets/fonts/Pretendard-Light.woff2') format('woff2'); font-display: swap; }
