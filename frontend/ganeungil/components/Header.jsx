@@ -16,6 +16,9 @@ const NAV_ITEMS = [
   { label: "간직하기", path: "/discover"   },
 ];
 
+const DESIGN_W = 1920;
+const DESIGN_H = 1275;
+
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();

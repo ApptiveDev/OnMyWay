@@ -179,6 +179,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   // 목적지 선택 시 3개 모드 동시 fetch (지도에는 그리지 않음)
   const handleResultClick = async (result) => {
     setSelectedResult(result);
+    setSearchResults([]);
     setDestText(result.place_name);
     setExploredMode(null);
     onDestinationSelect?.(result);

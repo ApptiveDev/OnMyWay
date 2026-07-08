@@ -1,21 +1,99 @@
-import { useNavigate } from "react-router-dom";
-import FindRouteButton from "../../components/buttons/FindRouteButton";
-import ExploreButton from "../../components/buttons/ExploreButton";
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-// 에셋
-import imgHero     from "@/assets/img-hero.jpg";
-import imgStory1   from "@/assets/img-story1.jpg";
-import imgStory2   from "@/assets/img-story2.jpg";
-import iconRoute   from "@/assets/icon-route.svg";
-import iconLeisure from "@/assets/icon-leisure.svg";
-import iconDiscover from "@/assets/icon-discover.svg";
+// 헤더 에셋
+import LOGO_ICON  from "@/assets/header-logo.svg";
+import iconSearch from "@/assets/header-search.svg";
+import iconMenu   from "@/assets/header-menu.svg";
+
+// 홈 페이지 전용 에셋 (Figma node 1411:463)
+import heroBg            from "@/assets/home/hero-bg.jpg";
+import map1               from "@/assets/map-1.png";
+import map2               from "@/assets/map-2.png";
+import backVector         from "@/assets/back-vector.svg";
+import faqChevron        from "@/assets/home/faq-chevron.svg";
+import cardIconRoute     from "@/assets/home/card-icon-route.svg";
+import cardIconLeisure   from "@/assets/home/card-icon-leisure.svg";
+import cardIconDiscover  from "@/assets/home/card-icon-discover.svg";
+
+const NAV_ITEMS = [
+  { label: "길찾기",  path: "/find-route" },
+  { label: "둘러보기", path: "/explore"    },
+  { label: "간직하기", path: "/discover"   },
+];
+
+const PATH_CARDS = [
+  { title: "바른 길",    desc: "가장 빠르고 효율적인 경로",     icon: cardIconRoute,    iconBg: "rgba(237,122,19,0.2)"  },
+  { title: "발견하는 길", desc: "걷기 좋은 골목과 숨겨진 명소들", icon: cardIconDiscover, iconBg: "rgba(106,128,66,0.2)"  },
+  { title: "여유로운 길", desc: "새로운 취향을 만나는 우연",     icon: cardIconLeisure,  iconBg: "rgba(255,237,161,0.2)" },
+];
+
+const TESTIMONIALS = [
+  { quote: "매일 다니던 길에 빵집이 있는 줄 처음 알았어요.\n5분 더 걸었더니 단골이 한 곳 늘었어요.", name: "김기영", place: "장전동" },
+  { quote: "매일 다니던 길에 빵집이 있는 줄 처음 알았어요.\n5분 더 걸었더니 단골이 한 곳 늘었어요.", name: "김기영", place: "장전동" },
+  { quote: "매일 다니던 길에 빵집이 있는 줄 처음 알았어요.\n5분 더 걸었더니 단골이 한 곳 늘었어요.", name: "김기영", place: "장전동" },
+  { quote: "매일 다니던 길에 빵집이 있는 줄 처음 알았어요.\n5분 더 걸었더니 단골이 한 곳 늘었어요.", name: "김기영", place: "장전동" },
+];
+
+const FAQS = [
+  {
+    q: "Q1. 가는길은 어떤 서비스인가요?",
+    a: [
+      "가는길은 출발지에서 도착지까지의 경로 위에서, 평소 지나치기 쉬웠던 장소들을 발견할 수 있도록 돕는 경로 기반 장소 발견 서비스예요.",
+      "세 가지 경로 타입(가는길, 여유로운길, 발견하는길)을 통해 원하는 만큼의 우회를 선택할 수 있어요.",
+    ],
+  },
+  {
+    q: "Q2. 가는길은 기존 지도 서비스와 어떤 차별점이 있나요?",
+    a: [
+      "기존 지도 서비스가 '가장 빠른 길'을 우선한다면, 가는길은 '경로 위의 발견'을 우선해요.",
+      "길을 찾는 게 아니라, 길 위에서 만날 수 있는 것들을 찾아드려요.",
+    ],
+  },
+  {
+    q: "Q3. 어떤 곳을 추천해주나요?",
+    a: [
+      "카페, 식당, 작은 공원, 동네 가게 등 경로에서 살짝 벗어나면 만날 수 있는 장소들을 추천해드려요.",
+      "곧 더 많은 카테고리로 확장될 예정이에요.",
+    ],
+  },
+  {
+    q: "Q4. 지금은 어느 지역에서 사용할 수 있나요?",
+    a: [
+      "현재는 부산광역시 금정구 부곡동, 구서동, 장전동, 온천동, 그리고 명륜동까지 5개 지역 중심으로 운영중이예요.",
+      "점진적으로 부산 전역으로 지원할 계획입니다.",
+    ],
+  },
+];
+
+function MiniMapSquare({ label, caption, bgImage }) {
+  return (
+    <div className="flex flex-col items-center gap-[16px]">
+      <p className="self-start font-['MaruBuriOTF'] font-semibold text-[22.5px] leading-[52.5px] text-[#3e2722]">{label}</p>
+      <div
+        className="relative w-[256.5px] h-[256.5px] overflow-hidden shrink-0 shadow-[0px_5px_10px_0px_rgba(0,0,0,0.12)]"
+        style={{ background: `lightgray url(${bgImage}) 0px 0px / 100% 108.027% no-repeat` }}
+      >
+        <img
+          src={bgImage}
+          alt=""
+          className="absolute object-cover w-full"
+          style={{ top: "-8%", height: "116%" }}
+        />
+      </div>
+      <p className="font-['MaruBuriOTF'] font-semibold text-[22.5px] leading-[67.22px] text-[#3e2722] whitespace-nowrap">{caption}</p>
+    </div>
+  );
+}
 
 export default function OnboardNew() {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [openFaq, setOpenFaq] = useState(0);
 
   return (
     <div
-      className="min-h-screen bg-[#faf6f0] text-[#2c2417]"
+      className="relative w-[1440px] mx-auto overflow-hidden bg-[#fdfdfd] text-[#2c2417]"
       style={{ fontFamily: "'Noto Serif KR', serif" }}
     >
       {/* ── 히어로 섹션 ── */}
@@ -34,8 +112,7 @@ export default function OnboardNew() {
           >
             길을 걷는 것이
             <br />
-            <span className="text-[#e8c36a] font-medium">취향</span>
-            <span className="font-light">이 되는 순간</span>
+            <span className="text-[#ed7a13]">가는길</span>이 더 궁금한 사람에게
           </h1>
 
           <p
@@ -43,6 +120,8 @@ export default function OnboardNew() {
             style={{ fontFamily: "Pretendard-Light" }}
           >
             단순히 지나가는 공간이 아닌, 새로운 취향을 만나는 통로로.
+            <br />
+            가는길에 들를 만한 곳을 추천합니다.
           </p>
 
           <div className="flex gap-3 w-[20vw]">
@@ -188,6 +267,8 @@ export default function OnboardNew() {
               >동네주민 하늘 · 2.3km · 약 35분</p>
             </div>
           </div>
+        </div>
+      </section>
 
           {/* 오른쪽 카드 */}
           <div className="relative overflow-hidden rounded-2xl group cursor-pointer">
@@ -227,6 +308,7 @@ export default function OnboardNew() {
           </div>
         </div>
       </footer>
+      </div>
     </div>
   );
 }

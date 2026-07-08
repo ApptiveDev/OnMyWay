@@ -12,4 +12,7 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     Users findByRefreshToken(String refreshToken);
     public Users findByid(Long id);
+    boolean existsByNickname(String nickname);
+
+    boolean existsByNicknameAndIdNot(String nickname, Long id);
 }
