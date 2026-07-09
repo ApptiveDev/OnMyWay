@@ -18,7 +18,7 @@ public class SearchController {
     private final SearchService searchService;
 
     @GetMapping("/places/search")
-    public ResponseEntity<Mono<List<PointDTO>>> searchPlace(@RequestParam String query, @RequestParam Double lat, @RequestParam Double lon) {
+    public ResponseEntity<Mono<List<PointDTO>>> searchPlace(@RequestParam String query, @RequestParam(required = false) Double lat, @RequestParam(required = false) Double lon) {
         PositionDTO point = new PositionDTO(lat, lon);
         Mono<List<PointDTO>> places = searchService.searchPlaces(query, point);
         return ResponseEntity.ok(places);
