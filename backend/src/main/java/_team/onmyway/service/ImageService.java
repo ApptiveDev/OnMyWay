@@ -65,7 +65,6 @@ public class ImageService {
                         if (list == null || list.isEmpty()) {
                             return ""; // 결과 없으면 빈 문자열
                         }
-                        log.info((String)list.get(0).get("thumbnail"));
                         return (String) list.get(0).get("thumbnail");
                     })
                     .defaultIfEmpty("") // 혹시 모를 빈 응답 처리

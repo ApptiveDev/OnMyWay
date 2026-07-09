@@ -2,7 +2,7 @@ package _team.onmyway.dto;
 
 public record BlogDTO (
         String title,
-        String description,
+        String link,
         String author,
         String blogLink
 ) {}
