@@ -269,7 +269,7 @@ export default function OnboardNew() {
           </div>
         </div>
       </section>
-
+      <section>
           {/* 오른쪽 카드 */}
           <div className="relative overflow-hidden rounded-2xl group cursor-pointer">
             <img
