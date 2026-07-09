@@ -69,10 +69,10 @@ public class SearchService {
                 if (nearbyPlaces.size() < 3) allPlaces.addAll(nearbyPlaces);
                 else allPlaces.addAll(nearbyPlaces.subList(0, 2));
 
-                allPlaces.sort((a,b) -> Double.compare(
-                        distanceService.distance(a.getLatitude(), a.getLongitude(), position.getLat(), position.getLon()),
-                        distanceService.distance(b.getLatitude(), b.getLongitude(), position.getLat(), position.getLon())
-                ));
+//                allPlaces.sort((a,b) -> Double.compare(
+//                        distanceService.distance(a.getLatitude(), a.getLongitude(), position.getLat(), position.getLon()),
+//                        distanceService.distance(b.getLatitude(), b.getLongitude(), position.getLat(), position.getLon())
+//                ));
                 return allPlaces;
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
