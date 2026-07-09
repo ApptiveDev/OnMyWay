@@ -33,6 +33,15 @@ export function useRoute(kakaoMapRef) {
     });
   };
 
+  const clearRoute = () => {
+    if (polylineRef.current) {
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+    }
+    routeMarkersRef.current.forEach(m => m.setMap(null));
+    routeMarkersRef.current = [];
+  };
+
   const displayRoute = (features, modeId, padding = {}) => {
     const map = kakaoMapRef.current;
     if (!map || !features) return;

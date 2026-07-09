@@ -16,6 +16,8 @@ import markerFight from "@/assets/map/iconfight.svg";
 import markerMeal  from "@/assets/map/iconmeal.svg";
 import markerSee   from "@/assets/map/iconsee.svg";
 import iconGPS     from "@/assets/icon-gps.svg";
+import iconArrive2 from "@/assets/iconArrive2.svg?url";
+
 
 const MARKER_ICON = {
   "한잔":  markerSip,
@@ -136,6 +138,7 @@ export default function Onboard20() {
   const userDotRef      = useRef(null); // 내 위치 CustomOverlay
   const overlaysRef     = useRef([]);   // 추천 마커 CustomOverlay[]
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
+  const routeRecsOverlaysRef = useRef([]);   // 경로 추천 마커
 
   const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
 
@@ -180,13 +183,6 @@ export default function Onboard20() {
     });
   };
 
-  // 사이드바가 열려 있을 때 경로가 사이드바에 가리지 않도록 왼쪽 패딩 확보
-  // 사이드바 right edge = (36 + 492) * scale = 528 * scale px
-  const handleDrawRoute = (features, modeId) => {
-    const leftPad = sidebarOpen ? Math.round((36 + 492) * scale) + 40 : 60;
-    displayRoute(features, modeId, { top: 60, right: 60, bottom: 80, left: leftPad });
-  };
-
   // 지도 <div>는 이미 레일·사이드바 폭을 제외한 나머지 영역만 차지하므로,
   // 경로가 그 안에 꽉 차 보이도록 사방에 동일한 여백만 준다.
   const handleDrawRoute = (features, modeId) => {
@@ -208,28 +204,9 @@ export default function Onboard20() {
     onDestinationClear: clearDestMarker,
     onRouteLoadingChange: setIsLoadingRoute,
   });
+  
 
-  // 지도 <div>는 이미 레일·사이드바 폭을 제외한 나머지 영역만 차지하므로,
-  // 경로가 그 안에 꽉 차 보이도록 사방에 동일한 여백만 준다.
-  const handleDrawRoute = (features, modeId) => {
-    // 지도 컨테이너 크기를 카카오맵이 최신 상태로 인식하도록 맞춘 뒤 bounds를 계산한다.
-    kakaoMapRef.current?.relayout();
-    displayRoute(features, modeId, { top: 40, right: 40, bottom: 40, left: 40 });
-  };
 
-  const openPlace = (place, from) => {
-    setSelectedPlace(place);
-    setPlaceFrom(from);
-    setStep("place");
-  };
-
-  const routeSearch = useRouteSearch({
-    userCoords,
-    onDestinationSelect: handleDestinationSelect,
-    onDrawRoute: handleDrawRoute,
-    onDestinationClear: clearDestMarker,
-    onRouteLoadingChange: setIsLoadingRoute,
-  });
 
   // ref 동기화
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
