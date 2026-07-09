@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import FindRouteButton from "../../components/buttons/FindRouteButton";
+import ExploreButton from "../../components/buttons/ExploreButton";
 
 // 헤더 에셋
 import LOGO_ICON  from "@/assets/header-logo.svg";
@@ -15,6 +17,8 @@ import faqChevron        from "@/assets/home/faq-chevron.svg";
 import cardIconRoute     from "@/assets/home/card-icon-route.svg";
 import cardIconLeisure   from "@/assets/home/card-icon-leisure.svg";
 import cardIconDiscover  from "@/assets/home/card-icon-discover.svg";
+import imgStory1         from "@/assets/img-story1.jpg";
+import imgStory2         from "@/assets/img-story2.jpg";
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
@@ -99,7 +103,7 @@ export default function OnboardNew() {
       {/* ── 히어로 섹션 ── */}
       <section className="relative h-[34vw] overflow-hidden">
         <img
-          src={imgHero}
+          src={heroBg}
           alt="골목길 배경"
           className="absolute inset-0 object-cover w-full h-full"
         />
@@ -153,7 +157,7 @@ export default function OnboardNew() {
         <div className="grid grid-cols-3 gap-5">
           <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-full bg-[rgba(212,149,74,0.09)] flex items-center justify-center mb-8">
-              <img src={iconRoute} alt="" className="w-5 h-5" />
+              <img src={cardIconRoute} alt="" className="w-5 h-5" />
             </div>
             <h3
               className="text-[16.8px] text-[#2c2417] mb-2"
@@ -167,7 +171,7 @@ export default function OnboardNew() {
 
           <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-full bg-[rgba(123,196,160,0.09)] flex items-center justify-center mb-8">
-              <img src={iconLeisure} alt="" className="w-5 h-5" />
+              <img src={cardIconLeisure} alt="" className="w-5 h-5" />
             </div>
             <h3
               className="text-[16.8px] text-[#2c2417] mb-2"
@@ -181,7 +185,7 @@ export default function OnboardNew() {
 
           <div className="bg-white border border-[rgba(44,36,23,0.1)] rounded-2xl p-6 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-full bg-[rgba(167,139,218,0.09)] flex items-center justify-center mb-8">
-              <img src={iconDiscover} alt="" className="w-5 h-5" />
+              <img src={cardIconDiscover} alt="" className="w-5 h-5" />
             </div>
             <h3
               className="text-[16.8px] text-[#2c2417] mb-2"
@@ -267,11 +271,9 @@ export default function OnboardNew() {
               >동네주민 하늘 · 2.3km · 약 35분</p>
             </div>
           </div>
-        </div>
-      </section>
-      <section>
+      
           {/* 오른쪽 카드 */}
-          <div className="relative overflow-hidden rounded-2xl group cursor-pointer">
+          <div className="relative overflow-hidden cursor-pointer rounded-2xl group">
             <img
               src={imgStory2}
               alt="성수동 오후의 여유"
@@ -308,7 +310,7 @@ export default function OnboardNew() {
           </div>
         </div>
       </footer>
-      </div>
     </div>
+    
   );
 }
