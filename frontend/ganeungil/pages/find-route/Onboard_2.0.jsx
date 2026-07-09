@@ -206,8 +206,6 @@ export default function Onboard20() {
   });
   
 
-
-
   // ref 동기화
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
 
