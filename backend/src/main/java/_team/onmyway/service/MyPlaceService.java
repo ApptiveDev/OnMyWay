@@ -4,6 +4,7 @@ import _team.onmyway.dto.PlaceRecommendationDTO;
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RecommendationResponseDTO;
 import _team.onmyway.entity.HashTags;
+import _team.onmyway.entity.HashtagMapping;
 import _team.onmyway.entity.LikePlace;
 import _team.onmyway.entity.Place;
 import _team.onmyway.repository.HashtagMappingRepository;
