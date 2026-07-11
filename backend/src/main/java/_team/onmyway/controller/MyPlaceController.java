@@ -1,0 +1,30 @@
+package _team.onmyway.controller;
+
+import _team.onmyway.annotation.GetUser;
+import _team.onmyway.dto.PlaceRecommendationDTO;
+import _team.onmyway.service.MyPlaceService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/myPlace")
+@RequiredArgsConstructor
+public class MyPlaceController {
+    private final MyPlaceService myPlaceService;
+
+    @GetMapping
+    public Mono<List<PlaceRecommendationDTO>> getMyPlace(@GetUser Long userId,
+                                        @RequestParam Double lat, @RequestParam Double lon) {
+        return myPlaceService.getLikePlaces(userId, lat, lon);
+    }
+
+    @GetMapping("/{placeId}")
+    public ResponseEntity<List<String>> getHashTags(@PathVariable Long placeId) {
+        List<String> hashTags = myPlaceService.getPlaceHashtags(placeId);
+        return ResponseEntity.ok(hashTags);
+    }
+}

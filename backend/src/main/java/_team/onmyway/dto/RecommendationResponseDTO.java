@@ -26,6 +26,7 @@ public class RecommendationResponseDTO {
     @Getter
     @AllArgsConstructor
     static class PlaceInfo {
+        private Long placeId;
         private String name;
         private double lat;
         private double lng;
@@ -33,6 +34,7 @@ public class RecommendationResponseDTO {
         private int walkingMinutes;
         private LocalTime open;
         private LocalTime close;
+        private String catchPhrase;
 
         @JsonProperty("isOpen")
         private boolean isOpen;
@@ -45,6 +47,7 @@ public class RecommendationResponseDTO {
             int minutes = (int) (distance / 80); // 80m = 1분
 
             return new PlaceInfo(
+                    p.getId(),
                     p.getName(),
                     p.getLat(),
                     p.getLng(),
@@ -52,6 +55,7 @@ public class RecommendationResponseDTO {
                     minutes,
                     p.getOpenTime(),
                     p.getCloseTime(),
+                    p.getCatchPhrase(),
                     p.isOpen(),
                     p.getImageURL()
             );
