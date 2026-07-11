@@ -95,7 +95,7 @@ function pickRandom(categories) {
 function mapToRecs(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const raw = categories.find((c) => c.categoryId === targetId)?.places ?? [];
-  return toPlaceList(raw);
+  return toPlaceList(raw.slice(0, 5));
 }
 
 // 지도 마커용: featured (없으면 places[0] 폴백)
