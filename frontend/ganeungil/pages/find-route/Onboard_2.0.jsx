@@ -98,11 +98,11 @@ function mapToRecs(categories, categoryLabel) {
   return toPlaceList(raw.slice(0, 5));
 }
 
-// 지도 마커용: featured (없으면 places[0] 폴백)
+// 지도 마커용: places 상위 5개
 function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const c = categories.find((c) => c.categoryId === targetId);
-  const raw = c?.featured ?? c?.places?.[0] ?? [];
+  const raw = (c?.places ?? []).slice(0, 5);
   return toPlaceList(raw);
 }
 
