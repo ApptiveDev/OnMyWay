@@ -26,9 +26,9 @@ public class SearchController {
     }
 
     @GetMapping("/places/querySearch")
-    public ResponseEntity<?> searchQueryPlace(@RequestParam String query, @RequestParam Double lat, @RequestParam Double lon) {
+    public Mono<List<SearchPlaceResultDTO>> searchQueryPlace(@RequestParam String query, @RequestParam Double lat, @RequestParam Double lon) {
         PositionDTO point = new PositionDTO(lat, lon);
         Mono<List<SearchPlaceResultDTO>> places = searchService.searchPlaceResult(query, point);
-        return ResponseEntity.ok(places);
+        return places;
     }
 }

@@ -6,6 +6,7 @@ import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.SearchPlaceResultDTO;
 import _team.onmyway.entity.HashtagMapping;
 import _team.onmyway.entity.Place;
+import _team.onmyway.entity.WorkingTime;
 import _team.onmyway.exception.NoPlacesException;
 import _team.onmyway.repository.PlaceRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -24,6 +26,7 @@ import reactor.core.scheduler.Schedulers;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -94,23 +97,30 @@ public class SearchService {
         return document;
     }
 
+    @Transactional(readOnly = true)
     public Mono<List<SearchPlaceResultDTO>> searchPlaceResult(String query, PositionDTO position) {
         int day = LocalDate.now().getDayOfWeek().getValue()%7;
 
-        return Mono.fromCallable(() -> placeRepository.findByNameContaining(query))
+        return Mono.fromCallable(() -> {
+                    List<Place> places = placeRepository.findByNameContaining(query);
+
+                    return places.stream()
+                            .map(place -> {
+                                List<WorkingTime> placeWorkingTimes = place.getWorkingTimes();
+                                boolean isClosed = (placeWorkingTimes.size() == 0) ? true : place.getWorkingTimes().get(day).isClosed();
+
+                                return new PlaceSessionWrapper(place, isClosed);
+                            }).toList();
+                })
                 .subscribeOn(Schedulers.boundedElastic())
                 .flatMapMany(Flux::fromIterable)
-                .flatMap(place -> {
+                .flatMap(wrapper -> {
+
+                    Place place = wrapper.place();
+
                     Double distance = geoDistanceService.distanceMeters(
                             place.getLat(), place.getLng(), position.getLat(), position.getLon()
                     );
-
-                    List<String> hashtags = place.getHashtagMappings()
-                            .stream()
-                            .map(hashtagMapping -> {
-                                return hashtagMapping.getHashTag().getTag();
-                            })
-                            .collect(Collectors.toList());
 
                     return imageService.getImageURL(place)
                             .map(images -> new SearchPlaceResultDTO(
@@ -121,11 +131,12 @@ public class SearchService {
                                     distance,
                                     place.getServiceCategory().getName(),
                                     images,
-                                    place.getWorkingTimes().get(day).isClosed(),
-                                    hashtags
+                                    wrapper.isClosed()
                             ));
                 })
                 .subscribeOn(Schedulers.boundedElastic())
                 .collectList();
     }
+
+    private record PlaceSessionWrapper(Place place, boolean isClosed) {}
 }

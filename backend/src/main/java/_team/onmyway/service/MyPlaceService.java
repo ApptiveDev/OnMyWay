@@ -67,7 +67,7 @@ public class MyPlaceService {
                                     isClosed,
                                     imgURL
                             ));
-                })
+                }, 2)
                 .collectList();
     }
 
