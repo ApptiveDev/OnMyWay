@@ -53,6 +53,7 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/places/**",
                                         "/route/**",
+                                        "/api/place/**"
                                         "/signup/terms"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
                                 .requestMatchers( "/css/**", "/js/**", "/images/**").permitAll() // favicon.ico(아이콘)도 나중에 넣어보기
