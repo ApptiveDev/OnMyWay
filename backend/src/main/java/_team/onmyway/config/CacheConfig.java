@@ -9,8 +9,9 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class CacheConfig {
+
     @Bean
-    public Cache<Long, String> placePhotoCache() {
+    public Cache<Long, String> caffeineCache() {
         return Caffeine.newBuilder()
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .maximumSize(10000)

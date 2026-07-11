@@ -10,6 +10,8 @@ import _team.onmyway.security.CustomOAuth2User;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
@@ -22,6 +24,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final UsersRepository usersRepository;
@@ -36,6 +39,7 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
         OAuth2User oAuth2User = delegate.loadUser(userRequest);
 
         Users user = null;
+        log.info("load User");
 
         if ("kakao".equalsIgnoreCase(provider)) {
             user = kakao(oAuth2User.getAttributes());
@@ -75,6 +79,7 @@ public class CustomOAuthUserService implements OAuth2UserService<OAuth2UserReque
                     .nickname(nickname)
                     .email(email)
                     .role(Users.Role.USER) // Enum 적용
+                    .status(Users.Status.PENDING)
                     // isActive: Builder.Default(true) 적용
                     // createdAt / updatedAt: @CreationTimestamp / @UpdateTimestamp 자동 관리
                     .build();

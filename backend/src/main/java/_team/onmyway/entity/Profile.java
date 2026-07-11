@@ -25,6 +25,7 @@ public class Profile {
 
     private String catchPhrase;
 
+    @Column(length = 2048)
     private String imageURL;
 
     private LocalDateTime updatedAt;

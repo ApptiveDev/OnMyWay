@@ -33,6 +33,15 @@ export function useRoute(kakaoMapRef) {
     });
   };
 
+  const clearRoute = () => {
+    if (polylineRef.current) {
+      polylineRef.current.setMap(null);
+      polylineRef.current = null;
+    }
+    routeMarkersRef.current.forEach(m => m.setMap(null));
+    routeMarkersRef.current = [];
+  };
+
   const displayRoute = (features, modeId, padding = {}) => {
     const map = kakaoMapRef.current;
     if (!map || !features) return;
@@ -54,8 +63,8 @@ export function useRoute(kakaoMapRef) {
     const polyline = new window.kakao.maps.Polyline({
       path,
       strokeWeight: 5,
-      strokeColor: "rgba(123, 196, 160, 0.75)",
-      strokeOpacity: 1,
+      strokeColor: "#ED7A13",
+      strokeOpacity: 0.85,
     });
     polyline.setMap(map);
     polylineRef.current = polyline;
@@ -65,12 +74,6 @@ export function useRoute(kakaoMapRef) {
     path.forEach(pos => bounds.extend(pos));
     const { top = 60, right = 60, bottom = 60, left = 60 } = padding;
     map.setBounds(bounds, top, right, bottom, left);
-  };
-
-  const clearRoute = () => {
-    if (polylineRef.current) { polylineRef.current.setMap(null); polylineRef.current = null; }
-    routeMarkersRef.current.forEach(m => m.setMap(null));
-    routeMarkersRef.current = [];
   };
 
   return { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute };
