@@ -31,7 +31,7 @@ export default function Header() {
   const [showWithdraw, setShowWithdraw] = useState(false);
 
   const handleLogout = () => {
-    await logout(); // 로그아웃 진행 - 쿠키에서 토큰 삭제
+    logout(); // 로그아웃 진행 - 쿠키에서 토큰 삭제
     setAccessToken(null);
     setAccountOpen(false);
     showToast("로그아웃 됐어요");
