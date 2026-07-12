@@ -30,12 +30,21 @@ export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
 
+  const [nickname, setNickname] = useState(location.state?.nickname || "게스트");
+  const [imageURL, setImageURL] = useState(location.state?.imageURL || "");
+
   const handleLogout = () => {
     logout(); // 로그아웃 진행 - 쿠키에서 토큰 삭제
     setAccessToken(null);
     setAccountOpen(false);
     showToast("로그아웃 됐어요");
   };
+
+  const getUserInfo = () => {
+    const res = api.get("/api/auth/me");
+    setNickname(res.data.nickname || "");
+    setImageURL(res.data.imageURL || "");
+  }
 
   return (
     <header
@@ -115,7 +124,7 @@ export default function Header() {
                     </svg>
                   </button>
                 </div>
-                <div className="font-['MaruBuri',serif] font-bold text-[16px] text-[#3E2722] mt-[12px]">게스트님, 환영합니다</div>
+                <div className="font-['MaruBuri',serif] font-bold text-[16px] text-[#3E2722] mt-[12px]">{nickname}님, 환영합니다</div>
                 <div className="h-px bg-[rgba(62,39,34,0.09)] my-[14px]" />
                 <button
                   onClick={handleLogout}
