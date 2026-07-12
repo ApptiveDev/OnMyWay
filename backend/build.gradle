@@ -78,6 +78,9 @@ dependencies {
 	testImplementation 'org.testcontainers:junit-jupiter' // 어노테이션 담당
 	testImplementation 'org.testcontainers:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	// GraphHopper
+	implementation 'com.graphhopper:graphhopper-core:9.0'
 }
 
 tasks.named('test') {
