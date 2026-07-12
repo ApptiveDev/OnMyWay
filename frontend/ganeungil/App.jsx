@@ -35,6 +35,9 @@ function AppRoutes() {
           <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/loading" element={<Loading20 />} />
+
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login/kakao-connecting" element={LoginKakaoConnectingPage}/>
         </Route>
       </Routes>
     </BrowserRouter>
