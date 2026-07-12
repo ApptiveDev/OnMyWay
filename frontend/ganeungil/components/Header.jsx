@@ -40,7 +40,7 @@ export default function Header() {
     showToast("로그아웃 됐어요");
   };
 
-  const getUserInfo = useCallback(async () => {
+  const getUserInfo = async () => {
     try {
       const res = api.get("/api/auth/me");
       if (res.data) {
@@ -50,11 +50,11 @@ export default function Header() {
     } catch (error) {
       console.error("유저 정보를 가지고 오지 못했습니다.", error);
     }
-  }, [accountToken]);
+  };
 
   useEffect(() => {
     getUserInfo()
-  }, [getUserInfo]);
+  }, [accountToken]);
 
   return (
     <header
