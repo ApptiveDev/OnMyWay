@@ -123,7 +123,13 @@ export default function Header() {
               <div className="fixed inset-0 z-[45]" onClick={() => setAccountOpen(false)} />
               <div className="absolute top-[44px] right-0 w-[238px] bg-[#FFFDF2] rounded-[18px] shadow-[0_14px_34px_rgba(62,39,34,0.22)] p-[18px] z-50">
                 <div className="flex items-start justify-between">
-                  <div className="w-[46px] h-[46px] rounded-full bg-[#22E0E0] shadow-[inset_0_0_0_3px_#fff,0_2px_6px_rgba(62,39,34,0.18)]" />
+                  <div className="w-[46px] h-[46px] rounded-full bg-[#22E0E0] shadow-[inset_0_0_0_3px_#fff,0_2px_6px_rgba(62,39,34,0.18)] overflow-hidden" >
+                    {imageURL ? (
+                        <img src={imageURL} alt="프로필 사진" className="w-full h-full object-cover"/>
+                    ) : (
+                        <div className="w-full h-full bg-[#22E0E0]" />
+                    )}
+                  </div>
                   <button
                     title="설정"
                     onClick={() => { setAccountOpen(false); setShowSettings(true); }}
