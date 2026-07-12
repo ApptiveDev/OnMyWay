@@ -36,9 +36,10 @@ function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/loading" element={<Loading20 />} />
 
+          // Routing Error가 발생해 Route 추가.
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/kakao-connecting" element={<KakaoConnectingPage />} />
-          <Route path="/login/kakao-connecting" element={LoginKakaoConnectingPage}/>
+          <Route path="/login/kakao-connecting" element={<LoginKakaoConnectingPage />}/>
         </Route>
       </Routes>
     </BrowserRouter>
