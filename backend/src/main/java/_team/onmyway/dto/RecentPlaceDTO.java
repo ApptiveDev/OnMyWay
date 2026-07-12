@@ -1,6 +1,7 @@
 package _team.onmyway.dto;
 
 public record RecentPlaceDTO (
+    Long placeId,
     String name,
     String categoryName,
     Integer elapsed,

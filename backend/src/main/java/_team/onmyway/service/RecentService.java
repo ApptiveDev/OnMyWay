@@ -75,6 +75,7 @@ public class RecentService {
                             ));
                             return imageService.getImageURL(placeEntity)
                                     .map(images -> new RecentPlaceDTO(
+                                            placeEntity.getId(),
                                             placeEntity.getName(),
                                             placeEntity.getServiceCategory().getName(),
                                             elapsed,
