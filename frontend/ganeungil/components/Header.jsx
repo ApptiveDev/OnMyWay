@@ -9,7 +9,7 @@ import WithdrawFlow from "./WithdrawFlow";
 import LOGO_ICON  from "@/assets/header-logo.svg";
 import iconSearch from "@/assets/header-search.svg";
 import iconMenu   from "@/assets/header-menu.svg";
-import api from "@/api";
+import api from "@api/api";
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
