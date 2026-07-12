@@ -9,6 +9,7 @@ import WithdrawFlow from "./WithdrawFlow";
 import LOGO_ICON  from "@/assets/header-logo.svg";
 import iconSearch from "@/assets/header-search.svg";
 import iconMenu   from "@/assets/header-menu.svg";
+import api from "@/api";
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
@@ -42,7 +43,7 @@ export default function Header() {
 
   const getUserInfo = async () => {
     try {
-      const res = api.get("/api/auth/me");
+      const res = await api.get("/api/auth/me");
       if (res.data) {
         setNickname(res.data.nickname || "");
         setImageURL(res.data.imageURL || "");
