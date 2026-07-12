@@ -27,25 +27,31 @@ public class PlaceService {
     private final PlaceRepository placeRepository;
     private final WebClient webClient;
 
+    private final RecentService recentService;
+
     @Value("${naver.api.clientId}")
     private String naverClientId;
 
     @Value("${naver.api.clientSecret}")
     private String naverClientSecret;
 
-    public PlaceService(HashtagMappingRepository hashtagMappingRepository, PlaceRepository placeRepository) {
+    public PlaceService(HashtagMappingRepository hashtagMappingRepository, PlaceRepository placeRepository, RecentService recentService) {
         this.hashtagMappingRepository = hashtagMappingRepository;
         this.placeRepository = placeRepository;
+        this.recentService = recentService;
         this.webClient = WebClient.builder().baseUrl("https://openapi.naver.com")
                 .build();
     }
 
-    public Mono<PlaceDetailDTO> getHashtags(Long placeId) {
+    public Mono<PlaceDetailDTO> getHashtags(Long placeId, Long userId) {
 
         Mono<Place> placeMono = Mono.fromCallable(() ->
                 placeRepository.findById(placeId)
                         .orElseThrow(() -> new NoPlacesException("존재하지 않는 장소입니다"))
         ).subscribeOn(Schedulers.boundedElastic());
+
+        // 최근 방문 목록에 추가
+        recentService.setRecentPlaces(placeId, userId);
 
         Mono<List<String>> hashtagMappings = Mono.fromCallable(() ->
                 hashtagMappingRepository.findHashtagByPlaceId(placeId)

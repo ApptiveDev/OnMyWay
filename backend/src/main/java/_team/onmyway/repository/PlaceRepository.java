@@ -66,4 +66,7 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     public List<Place> findByNameContaining(String name);
 
     public Place findById(long id);
+
+    @Query("select p from Place p join fetch p.serviceCategory where p.id in :ids")
+    public List<Place> findAllByIdWithCategory(Iterable<Long> ids);
 }

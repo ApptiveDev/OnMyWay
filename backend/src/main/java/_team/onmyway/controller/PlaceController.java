@@ -1,5 +1,6 @@
 package _team.onmyway.controller;
 
+import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.PlaceDetailDTO;
 import _team.onmyway.service.PlaceService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class PlaceController {
     private final PlaceService placeService;
 
     @GetMapping("/{id}")
-    public Mono<PlaceDetailDTO> getPlaceDetail(@PathVariable long id) {
-        return placeService.getHashtags(id);
+    public Mono<PlaceDetailDTO> getPlaceDetail(@PathVariable long id, @GetUser Long userId) {
+        return placeService.getHashtags(id, userId);
     }
 }
