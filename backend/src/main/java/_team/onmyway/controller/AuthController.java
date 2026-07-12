@@ -42,6 +42,8 @@ public class AuthController {
                 ? user.getProfile().getProfileName()
                 : (user.getNickname() != null ? user.getNickname() : "");
 
+        log.info(imageURL);
+        log.info(kakaoName);
         return ResponseEntity.ok(Map.of(
                 "nickname", user.getNickname() != null ? user.getNickname() : "",
                 "kakaoName", kakaoName,
