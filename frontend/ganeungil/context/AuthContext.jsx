@@ -28,8 +28,9 @@ export function AuthProvider({ children }) {
 
   const syncAuth = useCallback(async () => {
     try {
-      await refreshAccessToken();
+      const token = await refreshAccessToken();
       const res = await api.get("/api/auth/me");
+      if (token) setAccessTokenState(token)
       setUserStatus(res.data.status);
       return res.data;
     } catch {
