@@ -37,6 +37,7 @@ function AppRoutes() {
           <Route path="/loading" element={<Loading20 />} />
 
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/signup/kakao-connecting" element={<KakaoConnectingPage />} />
           <Route path="/login/kakao-connecting" element={LoginKakaoConnectingPage}/>
         </Route>
       </Routes>
