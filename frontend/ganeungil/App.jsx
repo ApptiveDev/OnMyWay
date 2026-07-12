@@ -40,6 +40,9 @@ function AppRoutes() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/signup/kakao-connecting" element={<KakaoConnectingPage />} />
           <Route path="/login/kakao-connecting" element={<LoginKakaoConnectingPage />}/>
+          <Route path="/signup/complete" element={<SignupCompletePage />} />
+          <Route path="/signup/profile" element={<SignupProfilePage />} />
+          <Route path="/signup/terms" element={<TermsAgreementPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
