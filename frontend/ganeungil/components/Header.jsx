@@ -22,7 +22,7 @@ const DESIGN_H = 1275;
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken, logout } = useAuth();
   const showToast = useToast();
   const isOnline = useOnlineStatus();
 
@@ -31,6 +31,7 @@ export default function Header() {
   const [showWithdraw, setShowWithdraw] = useState(false);
 
   const handleLogout = () => {
+    await logout(); // 로그아웃 진행 - 쿠키에서 토큰 삭제
     setAccessToken(null);
     setAccountOpen(false);
     showToast("로그아웃 됐어요");
