@@ -40,11 +40,21 @@ export default function Header() {
     showToast("로그아웃 됐어요");
   };
 
-  const getUserInfo = () => {
-    const res = api.get("/api/auth/me");
-    setNickname(res.data.nickname || "");
-    setImageURL(res.data.imageURL || "");
-  }
+  const getUserInfo = useCallback(async () => {
+    try {
+      const res = api.get("/api/auth/me");
+      if (res.data) {
+        setNickname(res.data.nickname || "");
+        setImageURL(res.data.imageURL || "");
+      }
+    } catch (error) {
+      console.error("유저 정보를 가지고 오지 못했습니다.", error);
+    }
+  }, [accountToken]);
+
+  useEffect(() => {
+    getUserInfo()
+  }, [getUserInfo]);
 
   return (
     <header
