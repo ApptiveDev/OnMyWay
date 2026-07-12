@@ -54,7 +54,7 @@ export default function Header() {
 
   useEffect(() => {
     getUserInfo()
-  }, [accountToken]);
+  }, [accessToken]);
 
   return (
     <header
