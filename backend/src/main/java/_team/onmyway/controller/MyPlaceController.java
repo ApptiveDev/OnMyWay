@@ -29,7 +29,7 @@ public class MyPlaceController {
     public ResponseEntity<?> likePlace(@GetUser Long userId, @PathVariable Long placeId) {
         LikePlaceDTO likePlaceDTO = myPlaceService.likePlace(userId, placeId);
         return ResponseEntity.ok(likePlaceDTO);
-    private final MyPlaceService myPlaceService;
+    }
 
     @GetMapping("/{placeId}")
     public ResponseEntity<List<String>> getHashTags(@PathVariable Long placeId) {
