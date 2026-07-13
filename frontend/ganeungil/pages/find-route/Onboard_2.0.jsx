@@ -358,10 +358,12 @@ export default function Onboard20() {
       placed.push({ lat, lng });
       console.log(`[마커 생성 중] ID: ${place.id}, 최종 좌표: ${lat}, ${lng}`);
 
+      const isSelected = step === "place" && selectedPlace?.id === place.id;
+
       const iconUrl = MARKER_ICON[place.category] || markerSip;
       const safeIconUrl = iconUrl.startsWith('data:image/svg+xml')
         ? iconUrl.replace(/#/g, '%23')
-        : iconUrl;
+         : iconUrl;
       const container = document.createElement('div');
       container.style.width = '40px';
       container.style.height = '40px';
@@ -371,11 +373,12 @@ export default function Onboard20() {
       container.style.backgroundPosition = 'center';
       container.style.cursor = 'pointer';
       container.style.transition = 'transform 0.15s';
+      container.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)';
       container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
-      container.onmouseout = () => { container.style.transform = 'scale(1)'; };
+      container.onmouseout = () => { container.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)'; };
       container.onclick = () => {
         if (window.__onMarkerClick) {
-          window.__onMarkerClick(place.id);
+      window.__onMarkerClick(place.id);
         }
       };
       const overlay = new window.kakao.maps.CustomOverlay({
@@ -383,11 +386,11 @@ export default function Onboard20() {
         content: container,
         map,
         yAnchor: 1,
-        zIndex: 3,
+        zIndex: isSelected ? 4 : 3,
       });
       overlaysRef.current.push(overlay);
     });
-  }, [featuredRecs, flow, locStatus, mapReady, userCoords]);
+  }, [featuredRecs, flow, locStatus, mapReady, userCoords, step, selectedPlace]);
 
   // ── 핀 지정 단계: 지도 중심 이동 시 역지오코딩으로 라벨 갱신
   useEffect(() => {
