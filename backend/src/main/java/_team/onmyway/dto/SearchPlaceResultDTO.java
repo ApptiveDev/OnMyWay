@@ -16,4 +16,5 @@ public class SearchPlaceResultDTO {
     private String imageURL;
     private boolean isOpen;
     private List<String> hashtags;
+    private boolean isLiked;
 }

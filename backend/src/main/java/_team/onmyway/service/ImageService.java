@@ -52,7 +52,7 @@ public class ImageService {
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",name)
+                            .queryParam("query","부산 "+distinct+" "+name)
                             .queryParam("sort","sim")
                             .build())
                     .header("X-Naver-Client-Id", naverClientId)
@@ -65,7 +65,7 @@ public class ImageService {
                         if (list == null || list.isEmpty()) {
                             return ""; // 결과 없으면 빈 문자열
                         }
-                        log.info((String)list.get(0).get("thumbnail"));
+                        // log.info((String)list.get(0).get("thumbnail"));
                         return (String) list.get(0).get("thumbnail");
                     })
                     .defaultIfEmpty("") // 혹시 모를 빈 응답 처리

@@ -1,5 +1,6 @@
 package _team.onmyway.controller;
 
+import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.PointDTO;
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.SearchPlaceResultDTO;
@@ -26,9 +27,9 @@ public class SearchController {
     }
 
     @GetMapping("/places/querySearch")
-    public ResponseEntity<?> searchQueryPlace(@RequestParam String query, @RequestParam Double lat, @RequestParam Double lon) {
+    public ResponseEntity<?> searchQueryPlace(@RequestParam String query, @RequestParam Double lat, @RequestParam Double lon, @GetUser Long userId) {
         PositionDTO point = new PositionDTO(lat, lon);
-        Mono<List<SearchPlaceResultDTO>> places = searchService.searchPlaceResult(query, point);
+        Mono<List<SearchPlaceResultDTO>> places = searchService.searchPlaceResult(query, point, userId);
         return ResponseEntity.ok(places);
     }
 }
