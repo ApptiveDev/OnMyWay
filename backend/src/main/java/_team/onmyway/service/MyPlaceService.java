@@ -88,8 +88,7 @@ public class MyPlaceService {
     public LikePlaceDTO likePlace(long userId, long placeId) {
         Users user = usersRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
-        Place place = placeRepository.findById(placeId)
-                .orElseThrow(() -> new NoPlacesException("존재하지 않는 장소입니다."));
+        Place place = placeRepository.findById(placeId);
 
         LikePlace likeplace = LikePlace.builder()
                 .place(place)
