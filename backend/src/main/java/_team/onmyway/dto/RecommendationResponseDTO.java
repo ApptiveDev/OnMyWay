@@ -40,6 +40,7 @@ public class RecommendationResponseDTO {
         private boolean isOpen;
 
         private String imageURL;
+        private boolean isLiked;
 
         public static PlaceInfo from(PlaceRecommendationDTO p, double userLat, double userLng) {
 
@@ -57,7 +58,8 @@ public class RecommendationResponseDTO {
                     p.getCloseTime(),
                     p.getCatchPhrase(),
                     p.isOpen(),
-                    p.getImageURL()
+                    p.getImageURL(),
+                    p.isLiked()
             );
         }
 

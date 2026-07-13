@@ -1,14 +1,19 @@
 package _team.onmyway.service;
 
+import _team.onmyway.dto.LikePlaceDTO;
 import _team.onmyway.dto.PlaceRecommendationDTO;
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RecommendationResponseDTO;
 import _team.onmyway.entity.HashTags;
-import _team.onmyway.entity.HashtagMapping;
 import _team.onmyway.entity.LikePlace;
 import _team.onmyway.entity.Place;
+import _team.onmyway.entity.Users;
+import _team.onmyway.exception.NoPlacesException;
+import _team.onmyway.exception.UserNotFoundException;
 import _team.onmyway.repository.HashtagMappingRepository;
 import _team.onmyway.repository.LikePlaceRepository;
+import _team.onmyway.repository.PlaceRepository;
+import _team.onmyway.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,12 +26,15 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MyPlaceService {
     private final LikePlaceRepository likePlaceRepository;
     private final HashtagMappingRepository hashtagMappingRepository;
+    private final PlaceRepository placeRepository;
+    private final UsersRepository usersRepository;
 
     private final GeoDistanceService geoDistanceService;
     private final ImageService imageService;
@@ -65,7 +73,8 @@ public class MyPlaceService {
                                     close,
                                     place.getCatchPhrase(),
                                     isClosed,
-                                    imgURL
+                                    imgURL,
+                                    true
                             ));
                 })
                 .collectList();
@@ -74,5 +83,20 @@ public class MyPlaceService {
     public List<String> getPlaceHashtags(Long placeId) {
         List<String> hashtags = hashtagMappingRepository.findHashtagByPlaceId(placeId);
         return hashtags;
+    }
+
+    public LikePlaceDTO likePlace(long userId, long placeId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("존재하지 않는 회원입니다."));
+        Place place = placeRepository.findById(placeId)
+                .orElseThrow(() -> new NoPlacesException("존재하지 않는 장소입니다."));
+
+        LikePlace likeplace = LikePlace.builder()
+                .place(place)
+                .user(user)
+                .build();
+
+        likePlaceRepository.save(likeplace);
+        return new LikePlaceDTO(placeId, true);
     }
 }

@@ -1,5 +1,6 @@
 package _team.onmyway.controller;
 
+import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.AllCategoryRecommendationsDTO;
 import _team.onmyway.service.RecommendationService;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +18,9 @@ public class RecommendationController {
     @GetMapping("/recommend")
     public Mono<AllCategoryRecommendationsDTO> recommendAllCategories(
             @RequestParam double lat,
-            @RequestParam double lng
+            @RequestParam double lng,
+            @GetUser Long userId
     ) {
-        return recommendationService.recommend(lat, lng);
+        return recommendationService.recommend(lat, lng, userId);
     }
 }
