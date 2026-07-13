@@ -32,6 +32,10 @@ public class Users {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Status status = Status.PENDING;
+
     @CreationTimestamp
     @Column(name="created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -55,8 +59,12 @@ public class Users {
         this.nickname = nickname;
         this.email = email;
         //this.profileImageUrl = profileImageUrl;
-        this.isActive = true;
-        // updatedAt은 @UpdateTimestamp가 자동 갱신
+        // this.isActive = true; // status 필드로 대체 고려
+    }
+
+    public void completeSignup(String nickname) {
+        this.nickname = nickname;
+        this.status = Status.ACTIVE;
     }
 
     public void updateRefreshToken(String refreshToken) {
@@ -70,5 +78,10 @@ public class Users {
     public enum Role {
         USER,
         ADMIN
+    }
+
+    public enum Status {
+        PENDING,
+        ACTIVE
     }
 }

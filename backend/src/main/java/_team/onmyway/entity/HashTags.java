@@ -8,6 +8,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
+@Table(
+        name = "hashTags",
+        indexes = {
+                @Index(name = "idx_hashtags_total_count", columnList = "totalCount DESC")
+        }
+)
 public class HashTags {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,4 +21,14 @@ public class HashTags {
 
     @NotBlank
     private String tag;
+
+    private Long totalCount = 0L;
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTotalCount(Long totalCount) {
+        this.totalCount = totalCount;
+    }
 }

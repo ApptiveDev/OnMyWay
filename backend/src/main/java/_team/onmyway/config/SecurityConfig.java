@@ -5,6 +5,7 @@ import _team.onmyway.security.OAuthFailureHandler;
 import _team.onmyway.security.OAuthSuccessHandler;
 import _team.onmyway.security.JwtAuthenticationFilter;
 import _team.onmyway.service.CustomOAuthUserService;
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -35,6 +36,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
+                        .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
                                 .requestMatchers(
                                         "/",
                                         "/find-route",
@@ -45,13 +47,16 @@ public class SecurityConfig {
                                         "/oauth2/authorization/**",
                                         "/login/oauth2/code/**",
                                         "/api/auth/**",
+                                        "/api/**",
+                                        "/login/oauth2/**",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**",
                                         "/places/**",
                                         "/route/**",
-                                        "/api/place/**"
+                                        "/api/place/**",
+                                        "/signup/terms"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
-                                .requestMatchers( "/css/**", "/js/**", "/images/**").permitAll()
+                                .requestMatchers( "/css/**", "/js/**", "/images/**","/favicon.ico").permitAll() // favicon.ico(아이콘)도 나중에 넣어보기
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -79,6 +84,7 @@ public class SecurityConfig {
 
         configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedOrigin("http://localhost:5173"); // Vite 기본 포트
+        configuration.addAllowedOrigin("https://test.onmyway.cloud");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true); // 쿠키 사용(JWT refresh)
@@ -87,13 +93,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return webSecurity -> {
-            webSecurity.ignoring()
-                    .requestMatchers("/assets/**");
-        };
     }
 }

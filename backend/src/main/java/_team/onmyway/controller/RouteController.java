@@ -22,8 +22,8 @@ import java.util.function.Function;
 @RequestMapping("/route")
 @RequiredArgsConstructor
 public class RouteController {
-    private final RouteService routeService;
     private final RecommendationService recommendationService;
+    private final RouteService routeService;
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")

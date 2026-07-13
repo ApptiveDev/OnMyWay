@@ -66,4 +66,8 @@ public class Place {
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "place")
     private List<Photos> photos = new ArrayList<>();
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "place")
+    private List<HashtagMapping> hashtagMappings = new ArrayList<>();
 }
