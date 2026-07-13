@@ -1,5 +1,6 @@
 package _team.onmyway.controller;
 
+import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RouteResponseDTO;
 import _team.onmyway.service.RecommendationService;
@@ -26,28 +27,29 @@ public class RouteController {
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")
-    public Mono<ResponseEntity<?>> getFindOutRoute(@RequestBody List<PositionDTO> positions) {
-        return processRouteAndRecommend(positions, routeService::findOutRoute);
+    public Mono<ResponseEntity<?>> getFindOutRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::findOutRoute, userId);
     }
 
     @PostMapping("/right")
-    public Mono<ResponseEntity<?>> getRightRoute(@RequestBody List<PositionDTO> positions) {
-        return processRouteAndRecommend(positions, routeService::rightRoute);
+    public Mono<ResponseEntity<?>> getRightRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::rightRoute, userId);
     }
 
     @PostMapping("/slow")
-    public Mono<ResponseEntity<?>> getRoute(@RequestBody List<PositionDTO> positions) {
-        return processRouteAndRecommend(positions, routeService::slowRoute);
+    public Mono<ResponseEntity<?>> getRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::slowRoute, userId);
     }
 
     // 비동기 로직 한 번에 묶기
     private Mono<ResponseEntity<?>> processRouteAndRecommend(
             List<PositionDTO> positions,
-            Function<List<PositionDTO>, Mono<RouteResponseDTO>> processer) {
+            Function<List<PositionDTO>, Mono<RouteResponseDTO>> processer,
+            Long userId) {
         if (positions.isEmpty()) return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         PositionDTO start = positions.get(0);
         return processer.apply(positions)
-                .flatMap(routing -> recommendationService.recommendByRoute(routing, start.getLat(), start.getLon())
+                .flatMap(routing -> recommendationService.recommendByRoute(routing, start.getLat(), start.getLon(), userId)
                         .map(recommendations -> {
                             ObjectNode response = objectMapper.createObjectNode();
                             response.set("route", objectMapper.valueToTree(routing));

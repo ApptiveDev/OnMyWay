@@ -1,8 +1,14 @@
 package _team.onmyway.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class LikePlace {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

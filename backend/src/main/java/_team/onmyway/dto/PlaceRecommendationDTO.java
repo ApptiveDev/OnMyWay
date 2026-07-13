@@ -25,4 +25,5 @@ public class PlaceRecommendationDTO {
     private boolean isOpen;
 
     private String imageURL;
+    private boolean isLiked;
 }

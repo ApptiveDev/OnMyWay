@@ -4,6 +4,7 @@ import _team.onmyway.dto.*;
 import _team.onmyway.entity.Place;
 import _team.onmyway.entity.ServiceCategory;
 import _team.onmyway.entity.WorkingTime;
+import _team.onmyway.repository.LikePlaceRepository;
 import _team.onmyway.repository.PlaceRepository;
 import _team.onmyway.repository.ServiceCategoryRepository;
 import _team.onmyway.repository.WorkingTimeRepository;
@@ -32,6 +33,7 @@ public class RecommendationService {
 
     private final PlaceRepository placeRepository;
     private final ServiceCategoryRepository serviceCategoryRepository;
+    private final LikePlaceRepository likePlaceRepository;
     private final GeoDistanceService geoDistanceService;
     private final ImageService imageService;
 
@@ -40,10 +42,10 @@ public class RecommendationService {
     private static final double METERS_PER_DEGREE = 111000.0;
     private static final List<Long> SUPPORTED_CATEGORY_IDS = List.of(1L, 2L, 3L, 4L, 5L, 6L);
 
-    public Mono<AllCategoryRecommendationsDTO> recommend(double lat, double lng) {
+    public Mono<AllCategoryRecommendationsDTO> recommend(double lat, double lng, Long userId) {
 
         return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
-                .flatMap(categoryId -> recommendSingleCategory(lat, lng, categoryId))
+                .flatMap(categoryId -> recommendSingleCategory(lat, lng, categoryId, userId))
                 .collectList()
                 .map(categories -> new AllCategoryRecommendationsDTO(categories));
 //        List<CategoryRecommendationDTO> categories = SUPPORTED_CATEGORY_IDS.stream()
@@ -52,7 +54,7 @@ public class RecommendationService {
 //        return new AllCategoryRecommendationsDTO(categories);
     }
 
-    public Mono<AllCategoryRecommendationsDTO> recommendByRoute(RouteResponseDTO routeResponse, double userLat, double userLng) {
+    public Mono<AllCategoryRecommendationsDTO> recommendByRoute(RouteResponseDTO routeResponse, double userLat, double userLng, Long userId) {
         // 1. T-map 응답에서 모든 경로 좌표 추출
         List<PositionDTO> allPoints = extractRoutePoints(routeResponse);
         // 2. 경로의 총 거리에 비례하여 약 150m 간격으로 샘플링
@@ -87,6 +89,14 @@ public class RecommendationService {
         Map<Long, List<Place>> groupedByCategoryId = filteredPlaces.stream()
                 .collect(Collectors.groupingBy(p -> p.getServiceCategory().getId()));
 
+        List<Place> likePlaceIds = (userId != null)
+                ? likePlaceRepository.findPlaceByUsersId(userId)
+                : Collections.emptyList();
+
+        Set<Long> likedPlaceIds = likePlaceIds.stream()
+                .map(Place::getId)
+                .collect(Collectors.toSet());
+
         int day = LocalDate.now().getDayOfWeek().getValue()%7;
 
         return Flux.fromIterable(SUPPORTED_CATEGORY_IDS)
@@ -106,6 +116,7 @@ public class RecommendationService {
                                             .flatMap(p ->
                                                     imageService.getImageURL(p)
                                                             .map(imageURL -> {
+                                                                boolean isLiked = likedPlaceIds.contains(p.getId());
                                                                 List<WorkingTime> workingTimes = p.getWorkingTimes();
                                                                 int index = day&7;
 
@@ -113,10 +124,10 @@ public class RecommendationService {
                                                                     WorkingTime workingTime = workingTimes.get(index);
                                                                     return toPlaceRecommendationDTO(p, userLat, userLng,
                                                                             workingTime.isClosed(), workingTime.getOpenTime(),
-                                                                            workingTime.getCloseTime(), imageURL);
+                                                                            workingTime.getCloseTime(), imageURL, isLiked);
                                                                 } else {
                                                                     return toPlaceRecommendationDTO(p, userLat, userLng, true,
-                                                                            null, null, imageURL);
+                                                                            null, null, imageURL,isLiked);
                                                                 }
                                                             })
                                             )
@@ -225,14 +236,23 @@ public class RecommendationService {
     }
 
 
-    private Mono<CategoryRecommendationDTO> recommendSingleCategory(double lat, double lng, Long categoryId) {
+    private Mono<CategoryRecommendationDTO> recommendSingleCategory(double lat, double lng, Long categoryId, Long userId) {
         ServiceCategory category = serviceCategoryRepository.findById(categoryId)
                 .orElseThrow();
         List<Place> places = getPlacesInRadius(lat, lng, categoryId, DEFAULT_LIMIT_PER_CATEGORY);
 
+        List<Place> likePlaceIds = (userId != null)
+                ? likePlaceRepository.findPlaceByUsersId(userId)
+                : Collections.emptyList();
+
+        Set<Long> likedPlaceIds = likePlaceIds.stream()
+                .map(Place::getId)
+                .collect(Collectors.toSet());
+
         int day = LocalDate.now().getDayOfWeek().getValue()%7;
         return Flux.fromIterable(places)
                 .flatMap(place -> {
+                    boolean isLiked = likedPlaceIds.contains(place.getId());
                     List<WorkingTime> placeWorkingTime = place.getWorkingTimes();
                     if (placeWorkingTime.isEmpty()) {
                         return imageService.getImageURL(place)
@@ -241,7 +261,8 @@ public class RecommendationService {
                                         true,
                                         null,
                                         null,
-                                        imageURL
+                                        imageURL,
+                                        isLiked
                                 ));
                     }
                     else {
@@ -254,7 +275,8 @@ public class RecommendationService {
                                         workingTime.isClosed(),
                                         workingTime.getOpenTime(),
                                         workingTime.getCloseTime(),
-                                        imageURL
+                                        imageURL,
+                                        isLiked
                                 ));
                     }
                 })
@@ -304,7 +326,7 @@ public class RecommendationService {
         );
     }
 
-    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng, boolean isClosed, LocalTime open, LocalTime close, String imageURL) {
+    private PlaceRecommendationDTO toPlaceRecommendationDTO(Place place, double userLat, double userLng, boolean isClosed, LocalTime open, LocalTime close, String imageURL, boolean isLiked) {
         double distance = geoDistanceService.distanceMeters(userLat, userLng, place.getLat(), place.getLng());
         int walkingMinutes = geoDistanceService.estimateWalkingMinutes(distance);
         return new PlaceRecommendationDTO(
@@ -318,7 +340,8 @@ public class RecommendationService {
                 close,
                 place.getCatchPhrase(),
                 isOpen(isClosed, open, close),
-                imageURL
+                imageURL,
+                isLiked
         );
     }
 
