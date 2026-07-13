@@ -370,7 +370,7 @@ export default function Onboard20() {
       container.style.width = '40px';
       container.style.height = '40px';
       container.style.backgroundImage = `url("${safeIconUrl}")`;
-      container.style.backgroundSize = 'contain';
+      container.style.backgroundSize = '160%';
       container.style.backgroundRepeat = 'no-repeat';
       container.style.backgroundPosition = 'center';
       container.style.cursor = 'pointer';
