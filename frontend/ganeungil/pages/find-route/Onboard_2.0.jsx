@@ -373,9 +373,9 @@ export default function Onboard20() {
       container.style.backgroundPosition = 'center';
       container.style.cursor = 'pointer';
       container.style.transition = 'transform 0.15s';
-      container.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)';
-      container.onmouseover = () => { container.style.transform = 'scale(1.2)'; };
-      container.onmouseout = () => { container.style.transform = isSelected ? 'scale(1.2)' : 'scale(1)'; };
+      container.style.transform = isSelected ? 'scale(1.4)' : 'scale(1)';
+      container.onmouseover = () => { container.style.transform = 'scale(1.4)'; };
+      container.onmouseout = () => { container.style.transform = isSelected ? 'scale(1.4)' : 'scale(1)'; };
       container.onclick = () => {
         if (window.__onMarkerClick) {
       window.__onMarkerClick(place.id);
