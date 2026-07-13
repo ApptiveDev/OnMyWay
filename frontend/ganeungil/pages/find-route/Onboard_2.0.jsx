@@ -338,8 +338,10 @@ export default function Onboard20() {
 
     const SPREAD = 0.00018;
     const spiralOffsets = [
-      [0, 0], [SPREAD, 0], [-SPREAD, 0],
-      [0, SPREAD], [0, -SPREAD], [SPREAD, SPREAD], [-SPREAD, -SPREAD],
+      [0, 0],
+      [SPREAD, 0], [-SPREAD, 0], [0, SPREAD], [0, -SPREAD],
+      [SPREAD, SPREAD], [-SPREAD, -SPREAD], [SPREAD, -SPREAD], [-SPREAD, SPREAD],
+      [SPREAD * 2, 0], [-SPREAD * 2, 0], [0, SPREAD * 2], [0, -SPREAD * 2],
     ];
     const placed = [];
 
