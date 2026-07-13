@@ -46,13 +46,13 @@ public class ImageService {
                 return Mono.just(cacheURL);
             }
 
-            String distinct = p.getAddress();
+            String distinct = p.getAddress().split(" ")[2];
             String name = p.getName();
 
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query","부산 "+name)
+                            .queryParam("query","부산 "+distinct+" "+name)
                             .queryParam("sort","sim")
                             .build())
                     .header("X-Naver-Client-Id", naverClientId)
