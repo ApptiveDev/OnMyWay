@@ -42,7 +42,7 @@ public class SecurityConfig {
                                         "/",
                                         "/find-route",
                                         "/index.html",
-                                        "/assets/**",
+                                        //"/assets/**",
                                         "/login",
                                         "/error",
                                         "/oauth2/authorization/**",
