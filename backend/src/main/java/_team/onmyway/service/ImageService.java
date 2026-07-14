@@ -52,7 +52,7 @@ public class ImageService {
             return webClient.get()
                     .uri(uri -> uri
                             .path("/v1/search/image")
-                            .queryParam("query",name)
+                            .queryParam("query","\"부산 "+name+"\"")
                             .queryParam("sort","sim")
                             .build())
                     .header("X-Naver-Client-Id", naverClientId)
