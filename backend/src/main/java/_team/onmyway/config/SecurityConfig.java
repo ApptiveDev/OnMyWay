@@ -95,4 +95,10 @@ public class SecurityConfig {
 
         return source;
     }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/index.html");
+    }
 }
