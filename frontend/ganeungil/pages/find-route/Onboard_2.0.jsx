@@ -209,6 +209,9 @@ export default function Onboard20() {
   // ── 가는길에 들를 곳 마커: nearby 단계에서만 지도에 표시
   useEffect(() => {
     if (step === "nearby") {
+      overlaysRef.current.forEach(o => o.setMap(null));
+      overlaysRef.current = [];
+
       handleRouteRecs(recs);
     } else {
       routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
@@ -343,6 +346,9 @@ export default function Onboard20() {
 
     overlaysRef.current.forEach(o => o.setMap(null));
     overlaysRef.current = [];
+
+    routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+    routeRecsOverlaysRef.current = [];
 
     if (flow !== "search" || !userCoords) return;
 
