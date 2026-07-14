@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
@@ -9,6 +9,7 @@ import WithdrawFlow from "./WithdrawFlow";
 import LOGO_ICON  from "@/assets/header-logo.svg";
 import iconSearch from "@/assets/header-search.svg";
 import iconMenu   from "@/assets/header-menu.svg";
+import api from "@api/api";
 
 const NAV_ITEMS = [
   { label: "길찾기",  path: "/find-route" },
@@ -22,7 +23,7 @@ const DESIGN_H = 1275;
 export default function Header() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const { accessToken, setAccessToken } = useAuth();
+  const { accessToken, setAccessToken, logout } = useAuth();
   const showToast = useToast();
   const isOnline = useOnlineStatus();
 
@@ -30,11 +31,31 @@ export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const [showWithdraw, setShowWithdraw] = useState(false);
 
+  const [nickname, setNickname] = useState(location.state?.nickname || "게스트");
+  const [imageURL, setImageURL] = useState(location.state?.imageURL || "");
+
   const handleLogout = () => {
+    logout(); // 로그아웃 진행 - 쿠키에서 토큰 삭제
     setAccessToken(null);
     setAccountOpen(false);
     showToast("로그아웃 됐어요");
   };
+
+  const getUserInfo = async () => {
+    try {
+      const res = await api.get("/api/auth/me");
+      if (res.data) {
+        setNickname(res.data.nickname || "");
+        setImageURL(res.data.imageURL || "");
+      }
+    } catch (error) {
+      console.error("유저 정보를 가지고 오지 못했습니다.", error);
+    }
+  };
+
+  useEffect(() => {
+    getUserInfo()
+  }, [accessToken]);
 
   return (
     <header
@@ -102,7 +123,13 @@ export default function Header() {
               <div className="fixed inset-0 z-[45]" onClick={() => setAccountOpen(false)} />
               <div className="absolute top-[44px] right-0 w-[238px] bg-[#FFFDF2] rounded-[18px] shadow-[0_14px_34px_rgba(62,39,34,0.22)] p-[18px] z-50">
                 <div className="flex items-start justify-between">
-                  <div className="w-[46px] h-[46px] rounded-full bg-[#22E0E0] shadow-[inset_0_0_0_3px_#fff,0_2px_6px_rgba(62,39,34,0.18)]" />
+                  <div className="w-[46px] h-[46px] rounded-full bg-[#22E0E0] shadow-[inset_0_0_0_3px_#fff,0_2px_6px_rgba(62,39,34,0.18)] overflow-hidden" >
+                    {imageURL ? (
+                        <img src={imageURL} alt="프로필 사진" className="w-full h-full object-cover"/>
+                    ) : (
+                        <div className="w-full h-full bg-[#22E0E0]" />
+                    )}
+                  </div>
                   <button
                     title="설정"
                     onClick={() => { setAccountOpen(false); setShowSettings(true); }}
@@ -114,7 +141,7 @@ export default function Header() {
                     </svg>
                   </button>
                 </div>
-                <div className="font-['MaruBuri',serif] font-bold text-[16px] text-[#3E2722] mt-[12px]">게스트님, 환영합니다</div>
+                <div className="font-['MaruBuri',serif] font-bold text-[16px] text-[#3E2722] mt-[12px]">{nickname}님, 환영합니다</div>
                 <div className="h-px bg-[rgba(62,39,34,0.09)] my-[14px]" />
                 <button
                   onClick={handleLogout}

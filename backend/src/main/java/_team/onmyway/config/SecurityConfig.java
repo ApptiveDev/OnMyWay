@@ -38,10 +38,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
                                 .requestMatchers(
+                                        "/**",
                                         "/",
                                         "/find-route",
                                         "/index.html",
-                                        "/assets/**",
+                                        //"/assets/**",
                                         "/login",
                                         "/error",
                                         "/oauth2/authorization/**",
@@ -53,9 +54,11 @@ public class SecurityConfig {
                                         "/v3/api-docs/**",
                                         "/places/**",
                                         "/route/**",
-                                        "/signup/terms"
+                                        "/api/place/**",
+                                        "/signup/terms",
+                                        "/api/keywords/**"
                                 ).permitAll() // 요청을 보낸 이가 누구이든 상관없이 통과되는 URL.
-                                .requestMatchers( "/css/**", "/js/**", "/images/**").permitAll() // favicon.ico(아이콘)도 나중에 넣어보기
+                                .requestMatchers( "/css/**", "/js/**", "/images/**","/favicon.ico").permitAll() // favicon.ico(아이콘)도 나중에 넣어보기
                                 .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
@@ -83,7 +86,7 @@ public class SecurityConfig {
 
         configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedOrigin("http://localhost:5173"); // Vite 기본 포트
-        configuration.addAllowedOrigin("https://test.onmyway.cloud");
+        configuration.addAllowedOrigin("https://www.onmyway.cloud");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true); // 쿠키 사용(JWT refresh)
@@ -92,5 +95,11 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/index.html");
     }
 }

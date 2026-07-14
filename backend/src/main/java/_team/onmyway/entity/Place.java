@@ -61,7 +61,13 @@ public class Place {
     @OneToMany(mappedBy = "place") // 양방향 연결
     private List<WorkingTime> workingTimes = new ArrayList<>();
 
+    private String catchPhrase;
+
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "place")
     private List<Photos> photos = new ArrayList<>();
+
+    @BatchSize(size = 100)
+    @OneToMany(mappedBy = "place")
+    private List<HashtagMapping> hashtagMappings = new ArrayList<>();
 }
