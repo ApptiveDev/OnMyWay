@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.INCLUDE).permitAll()
                                 .requestMatchers(
-                                        "/**",
+                                        // "/**",
                                         "/",
                                         "/find-route",
                                         "/index.html",
