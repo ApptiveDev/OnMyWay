@@ -15,6 +15,7 @@ public class OAuthFailureHandler implements AuthenticationFailureHandler {
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-
+        System.out.println("OAUTH FAILURE HANDLER");
+        System.out.println("에러 메시지: " + exception.getMessage());
     }
 }
