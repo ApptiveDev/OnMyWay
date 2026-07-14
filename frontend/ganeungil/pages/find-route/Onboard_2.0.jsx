@@ -16,7 +16,6 @@ import markerFight from "@/assets/map/iconfight.svg";
 import markerMeal  from "@/assets/map/iconmeal.svg";
 import markerSee   from "@/assets/map/iconsee.svg";
 import iconGPS     from "@/assets/icon-gps.svg";
-import iconArrive2 from "@/assets/iconArrive2.svg?url";
 
 
 const MARKER_ICON = {
@@ -140,7 +139,7 @@ export default function Onboard20() {
   const featuredRef     = useRef([]);   // featuredRecs 최신값 (마커 클릭 콜백에서 참조)
   const routeRecsOverlaysRef = useRef([]);   // 경로 추천 마커
 
-  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef);
+  const { handleDestinationSelect, clearDestMarker, clearRoute, displayRoute } = useRoute(kakaoMapRef, mapContainerRef);
 
   const handleDestSelect = (place) => {
     handleDestinationSelect(place);
@@ -155,23 +154,21 @@ export default function Onboard20() {
     if (circleRef.current && kakaoMapRef.current) circleRef.current.setMap(kakaoMapRef.current);
   };
 
+  // 가는길에 들를 곳: 순서가 매겨진 원형 핀으로 지도에 표시
   const handleRouteRecs = (places) => {
     const map = kakaoMapRef.current;
     if (!map) return;
     routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
     routeRecsOverlaysRef.current = [];
-    places.filter(p => p.lat && p.lng).forEach(place => {
-      const safeUrl = iconArrive2.startsWith('data:image/svg+xml')
-        ? iconArrive2.replace(/#/g, '%23')
-        : iconArrive2;
+    places.filter(p => p.lat && p.lng).forEach((place, i) => {
       const container = document.createElement('div');
-      container.style.width = '40px';
-      container.style.height = '40px';
-      container.style.backgroundImage = `url("${safeUrl}")`;
-      container.style.backgroundSize = 'contain';
-      container.style.backgroundRepeat = 'no-repeat';
-      container.style.backgroundPosition = 'center';
       container.style.cursor = 'pointer';
+      container.innerHTML = `
+        <div style="width:30px;height:30px;border-radius:50% 50% 50% 4px;background:#ED7A13;transform:rotate(-45deg);box-shadow:0 4px 10px rgba(62,39,34,0.35);display:flex;align-items:center;justify-content:center;">
+          <span style="transform:rotate(45deg);color:#fff;font-size:13px;font-family:Pretendard-Bold, sans-serif;">${i + 1}</span>
+        </div>
+      `;
+      container.onclick = () => openPlace(place, "nearby");
       const overlay = new window.kakao.maps.CustomOverlay({
         position: new window.kakao.maps.LatLng(place.lat, place.lng),
         content: container,
@@ -208,6 +205,16 @@ export default function Onboard20() {
 
   // ref 동기화
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
+
+  // ── 가는길에 들를 곳 마커: nearby 단계에서만 지도에 표시
+  useEffect(() => {
+    if (step === "nearby") {
+      handleRouteRecs(recs);
+    } else {
+      routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
+      routeRecsOverlaysRef.current = [];
+    }
+  }, [step, recs]);
 
   // ── 지도 마커 클릭 핸들러 (window에 등록 → CustomOverlay HTML에서 호출)
   useEffect(() => {

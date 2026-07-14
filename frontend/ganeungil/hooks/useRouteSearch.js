@@ -186,6 +186,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     setSelectedResult(result);
     setSearchResults([]);
     setDestText(result.place_name);
+    setDestFocused(false);
     setExploredMode(null);
     onDestinationSelect?.(result);
     if (!customDeptCoords && !userCoords) { alert("현재 위치를 먼저 잡아주세요."); return; }

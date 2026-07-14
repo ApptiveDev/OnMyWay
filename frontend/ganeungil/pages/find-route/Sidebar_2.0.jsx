@@ -571,7 +571,7 @@ export default function Sidebar20({
           <div className="flex-1 overflow-y-auto px-[8px]">
             {isSearching && <div className="text-center text-[14px] text-[#8a7d5f] py-[20px]">검색 중...</div>}
             {!isSearching && destFocused && showResults && searchResults.map(r => (
-              <SearchResultRow key={r.id} result={r} onClick={() => goRoutes(r)} />
+              <SearchResultRow key={r.id} result={r} onClick={() => handleResultClick(r)} />
             ))}
             {!isSearching && deptFocused && showDeptResults && deptSearchResults.map(r => (
               <SearchResultRow key={r.id} result={r} onClick={() => handleDeptResultClick(r)} />
@@ -601,6 +601,14 @@ export default function Sidebar20({
             </div>
           </>
         )}
+        <button
+          onClick={() => selectedResult && setStep("routes")}
+          disabled={!selectedResult}
+          className="flex-none h-[52px] rounded-[15px] flex items-center justify-center text-[16px] text-white mx-[12px] mt-[10px] mb-[14px]"
+          style={{ background: selectedResult ? "#ED7A13" : "#E6C98A", boxShadow: selectedResult ? "0 6px 16px rgba(237,122,19,0.3)" : "none", fontFamily: "Pretendard-SemiBold" }}
+        >
+          길찾기
+        </button>
       </div>
     </div>
   );
