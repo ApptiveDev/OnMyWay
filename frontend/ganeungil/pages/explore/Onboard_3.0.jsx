@@ -107,10 +107,10 @@ export default function Onboard30() {
 
         {/* 텍스트 */}
         <div className="absolute inset-[34.64%_27.16%_56.84%_29.25%] flex flex-col items-center justify-center text-center pointer-events-none">
-          <p className="text-[#8b7e6a] text-[25px] leading-[50px] whitespace-nowrap">
+          <p className="text-[#8b7e6a] text-[25px] leading-[50px] whitespace-nowrap" style={{ fontFamily: "MaruBuriOTF" }}>
             <span className="font-bold">여름</span>에 이 길 위에서 만나요.
           </p>
-          <p className="text-[#8b7e6a] text-[20px] leading-[50px] whitespace-nowrap">
+          <p className="text-[#8b7e6a] text-[20px] leading-[50px] whitespace-nowrap" style={{ fontFamily: "MaruBuriOTF" }}>
             <span className="font-bold">동네 사람들의 멋진 이야기</span>를 열심히 모아올게요.
           </p>
         </div>

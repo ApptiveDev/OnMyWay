@@ -1,11 +1,10 @@
 package _team.onmyway.controller;
 
-import _team.onmyway.dto.AllCategoryRecommendationsDTO;
+import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.PositionDTO;
 import _team.onmyway.dto.RouteResponseDTO;
 import _team.onmyway.service.RecommendationService;
 import _team.onmyway.service.RouteService;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
@@ -15,58 +14,48 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/route")
 @RequiredArgsConstructor
 public class RouteController {
-    private final RouteService routeService;
     private final RecommendationService recommendationService;
+    private final RouteService routeService;
     private final ObjectMapper objectMapper;
 
     @PostMapping("/findOut")
-    public ResponseEntity<?> getFindOutRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        PositionDTO start = positions.get(0);
-
-        RouteResponseDTO routing = routeService.findOutRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-        response.set("recommendations", objectMapper.valueToTree(recommendations));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public Mono<ResponseEntity<?>> getFindOutRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::findOutRoute, userId);
     }
 
     @PostMapping("/right")
-    public ResponseEntity<?> getRightRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        PositionDTO start = positions.get(0);
-
-        RouteResponseDTO routing = routeService.rightRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-        response.set("recommendations", objectMapper.valueToTree(recommendations));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    public Mono<ResponseEntity<?>> getRightRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::rightRoute, userId);
     }
 
     @PostMapping("/slow")
-    public ResponseEntity<?> getRoute(@RequestBody List<PositionDTO> positions) {
-        if (positions.isEmpty()) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    public Mono<ResponseEntity<?>> getRoute(@RequestBody List<PositionDTO> positions, @GetUser Long userId) {
+        return processRouteAndRecommend(positions, routeService::slowRoute, userId);
+    }
+
+    // 비동기 로직 한 번에 묶기
+    private Mono<ResponseEntity<?>> processRouteAndRecommend(
+            List<PositionDTO> positions,
+            Function<List<PositionDTO>, Mono<RouteResponseDTO>> processer,
+            Long userId) {
+        if (positions.isEmpty()) return Mono.just(new ResponseEntity<>(HttpStatus.BAD_REQUEST));
         PositionDTO start = positions.get(0);
+        return processer.apply(positions)
+                .flatMap(routing -> recommendationService.recommendByRoute(routing, start.getLat(), start.getLon(), userId)
+                        .map(recommendations -> {
+                            ObjectNode response = objectMapper.createObjectNode();
+                            response.set("route", objectMapper.valueToTree(routing));
+                            response.set("recommendations", objectMapper.valueToTree(recommendations));
 
-        RouteResponseDTO routing = routeService.slowRoute(positions).block();
-        AllCategoryRecommendationsDTO recommendations = recommendationService.recommendByRoute(routing, start.getLat(), start.getLon());
-
-        ObjectNode response = objectMapper.createObjectNode();
-        response.set("route", objectMapper.valueToTree(routing));
-        response.set("recommendations", objectMapper.valueToTree(recommendations));
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+                            return new ResponseEntity<>(response, HttpStatus.OK);
+                        }));
     }
 }

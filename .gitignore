@@ -170,7 +170,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-.env
+backend/.env
 
 ### NetBeans ###
 /nbproject/private/
@@ -197,8 +197,12 @@ out/
 # Env files
 # =========================
 .env
+**/.env
+**/.env.dev
+backend/.env
+backend/.env.dev
 
 # =========================
 # Git 내부
 # =========================
-onmyway.git/
+onmyway.git/.env

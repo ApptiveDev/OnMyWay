@@ -2,6 +2,7 @@ package _team.onmyway.repository;
 
 import _team.onmyway.entity.Place;
 import _team.onmyway.entity.ServiceCategory;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -40,12 +41,14 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
             int limit
     );
 
+    @EntityGraph(attributePaths = {"workingTimes", "serviceCategory"})
+    // JPQL로 해결
     @Query(value = """
-        SELECT * FROM place p
-        WHERE p.service_category_id IN :categoryIds
+        SELECT p FROM Place p
+        WHERE p.serviceCategory.id IN :categoryIds
           AND p.lat BETWEEN :minLat AND :maxLat
           AND p.lng BETWEEN :minLng AND :maxLng
-        """, nativeQuery = true)
+        """)
     List<Place> findByBoundingBox(
             List<Long> categoryIds,
             double minLat,
@@ -55,4 +58,9 @@ public interface PlaceRepository extends JpaRepository<Place, Long> {
     );
 
     public List<Place> findByAddressAndName(String address, String name);
+
+    @Query("select distinct p from Place p join fetch p.serviceCategory left join fetch p.hashtagMappings hm left join fetch hm.hashTag left join fetch p.workingTimes where p.name like %:name%")
+    public List<Place> findByNameContaining(String name);
+
+    public Place findById(long id);
 }
