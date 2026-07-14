@@ -42,7 +42,7 @@ public class SecurityConfig {
                                         "/",
                                         "/find-route",
                                         "/index.html",
-                                        "/assets/**",
+                                        //"/assets/**",
                                         "/login",
                                         "/error",
                                         "/oauth2/authorization/**",
@@ -100,6 +100,6 @@ public class SecurityConfig {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
-                .requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/index.html");
+                .requestMatchers("/assets/**", "/favicon.ico", "/index.html");
     }
 }
