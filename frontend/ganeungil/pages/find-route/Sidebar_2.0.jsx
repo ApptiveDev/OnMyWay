@@ -21,6 +21,20 @@ const ROUTE_MODE_META = {
 
 const fmt = (t) => t?.slice(0, 5) ?? null;
 
+// 두 좌표 사이 직선거리 (m, haversine)
+function distanceMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (d) => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+const fmtDistShort = (m) => (m >= 1000 ? `${(m / 1000).toFixed(1)}km` : `${Math.round(m)}m`);
+
 function HoursLabel({ place }) {
   if (place.isOpen) {
     if (!place.closeTime) return <span className="text-[11px] text-[#6A8042]" style={{ fontFamily: "Pretendard" }}>영업 중</span>;
@@ -47,7 +61,7 @@ function SearchResultRow({ result, onClick }) {
   );
 }
 
-function PlaceSearchBar({ onSelect }) {
+function PlaceSearchBar({ onSelect, userCoords }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -60,7 +74,7 @@ function PlaceSearchBar({ onSelect }) {
       setSearching(true);
       try {
         const res = await api.get("/places/search", {
-          params: { query },
+          params: { query, lat: userCoords?.lat, lon: userCoords?.lng },
         });
         setResults(toSearchResults(res.data));
       } catch (e) {
@@ -73,8 +87,8 @@ function PlaceSearchBar({ onSelect }) {
   }, [query]);
 
   return (
-    <div className="flex-none px-[18px] pt-[18px]">
-      <div className="h-[46px] rounded-[14px] bg-white shadow-[0_2px_10px_rgba(62,39,34,0.08)] flex items-center gap-[9px] px-[15px]">
+    <div className="flex-none px-[10px] pt-[5px]">
+      <div className="h-[50px] rounded-[14px] bg-white shadow-[0_2px_10px_rgba(62,39,34,0.08)] flex items-center gap-[9px] px-[15px]">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
           <circle cx="11" cy="11" r="7" stroke="#9a8e84" strokeWidth="1.8" />
           <path d="m20 20-3.4-3.4" stroke="#9a8e84" strokeWidth="1.8" strokeLinecap="round" />
@@ -82,7 +96,7 @@ function PlaceSearchBar({ onSelect }) {
         <input
           value={query}
           onChange={e => setQuery(e.target.value)}
-          placeholder="장소 · 주소 검색"
+          placeholder="어떤 곳을 찾고 있나요?"
           className="flex-1 min-w-0 outline-none bg-transparent text-[14.5px] text-[#3E2722] placeholder:text-[#b3a892] placeholder:font-normal"
           style={{ fontFamily: "Pretendard-SemiBold" }}
         />
@@ -109,7 +123,7 @@ function PlaceRow({ place, onClick, onSave, destPicker }) {
   return (
     <div onClick={onClick} className="flex items-center gap-[12px] p-[11px_10px] rounded-[16px] cursor-pointer hover:bg-[#FFFBEC] transition-colors">
       <div className="w-[48px] h-[48px] rounded-[13px] overflow-hidden shrink-0 bg-[#F4EEE3]">
-        <img src={place.imageURL || imgPlace} alt={place.name} className="w-full h-full object-cover" />
+        <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-[6px]">
@@ -130,6 +144,38 @@ function PlaceRow({ place, onClick, onSave, destPicker }) {
           <img src={iconHeart} alt="저장" className="w-[15px] h-[13px]" />
         </button>
       )}
+    </div>
+  );
+}
+
+// 장소검색 전용 카드 (큰 썸네일 + 카테고리 배지 + 저장 아이콘 오버레이)
+function SearchPlaceCard({ place, onClick, onSave, distM }) {
+  return (
+    <div onClick={onClick} className="flex items-start gap-[14px] p-[13px] rounded-[16px] cursor-pointer hover:bg-[#FFFBEC] transition-colors">
+      <div className="relative w-[84px] h-[84px] rounded-[14px] overflow-hidden shrink-0 bg-[#F4EEE3]">
+        <img src={place.imageURL || imgPlace} alt={place.name} className="object-cover w-full h-full" />
+        <button
+          onClick={(e) => { e.stopPropagation(); onSave?.(); }}
+          className="absolute left-[8px] top-[8px] w-[24px] h-[24px] rounded-full bg-white/85 flex items-center justify-center"
+        >
+          <img src={iconHeart} alt="저장" className="w-[13px] h-[11px]" />
+        </button>
+      </div>
+      <div className="flex-1 min-w-0 pt-[2px]">
+        <div className="flex items-center gap-[7px] mb-[4px]">
+          <span className="text-[15px] text-[#3E2722] truncate" style={{ fontFamily: "Pretendard-Bold" }}>{place.name}</span>
+          {place.category && (
+            <span className="shrink-0 text-[11px] text-white bg-[#ED7A13] rounded-[10px] px-[8px] py-[2px]" style={{ fontFamily: "Pretendard-Bold" }}>
+              {place.category}
+            </span>
+          )}
+        </div>
+        <div className="text-[12.5px] text-[#6a5d52] flex flex-wrap items-center gap-x-[6px] gap-y-[2px]" style={{ fontFamily: "Pretendard-Light" }}>
+          {place.walkMin != null && <span className="whitespace-nowrap">도보 {place.walkMin}분</span>}
+          {distM != null && <span className="whitespace-nowrap">· {fmtDistShort(distM)}</span>}
+          <span className="whitespace-nowrap">{place.isOpen != null && <HoursLabel place={place} />}</span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -164,7 +210,7 @@ function EditSuggestion({ place, onBack, onSubmit }) {
   const removeTag = (i) => setTags(prev => prev.filter((_, idx) => idx !== i));
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-none flex items-center gap-[11px] p-[16px_18px_10px] shadow-[0_1px_0_rgba(62,39,34,0.06)]">
         <button onClick={onBack} className="w-[34px] h-[34px] rounded-[10px] bg-[#F4EEE3] flex items-center justify-center active:scale-[0.93]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -258,9 +304,9 @@ export default function Sidebar20({
   if (step === "place" && selectedPlace) {
     const p = selectedPlace;
     return (
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex flex-col flex-1 min-h-0">
         <div className="flex-none relative h-[152px] overflow-hidden">
-          <img src={p.imageURL || imgPlace} alt={p.name} className="absolute inset-0 w-full h-full object-cover" />
+          <img src={p.imageURL || imgPlace} alt={p.name} className="absolute inset-0 object-cover w-full h-full" />
           <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(62,39,34,0) 35%, rgba(62,39,34,.55))" }} />
           <button onClick={backFromPlace} className="absolute left-[14px] top-[14px] w-[34px] h-[34px] rounded-full bg-white/90 flex items-center justify-center shadow-[0_2px_8px_rgba(62,39,34,0.2)] active:scale-[0.92]">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -332,19 +378,42 @@ export default function Sidebar20({
         tags: [],
       }, "nearby");
     };
+    // 거리순 정렬 (현재 위치 기준)
+    const sortedRecs = userCoords
+      ? [...recs].sort((a, b) => {
+          const da = (a.lat != null && a.lng != null) ? distanceMeters(userCoords.lat, userCoords.lng, a.lat, a.lng) : Infinity;
+          const db = (b.lat != null && b.lng != null) ? distanceMeters(userCoords.lat, userCoords.lng, b.lat, b.lng) : Infinity;
+          return da - db;
+        })
+      : recs;
+
     return (
-      <div className="flex-1 flex flex-col min-h-0">
-        <PlaceSearchBar onSelect={handleSearchPlaceSelect} />
-        <div className="flex-none p-[18px_18px_10px] flex items-center gap-[7px]">
-          <span className="w-[7px] h-[7px] rounded-full bg-[#ED7A13]" />
-          <span className="text-[14.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>내 주변 장소</span>
+      <div className="flex-1 flex flex-col min-h-0 p-[18px_18px_0]">
+        <div className="flex-none bg-[#FFEDA1] rounded-[20px] p-[18px]">
+          <PlaceSearchBar onSelect={handleSearchPlaceSelect} userCoords={userCoords} />
+          <div className="mt-[10px] inline-flex items-center gap-[6px] bg-[#3E2722] rounded-[16px] px-[13px] py-[6px]">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#FFEDA1" strokeWidth="2" /><circle cx="12" cy="10" r="2.4" stroke="#FFEDA1" strokeWidth="2" /></svg>
+            <span className="text-[13px] text-[#FFEDA1]" style={{ fontFamily: "Pretendard-Bold" }}>내 주변 250m</span>
+          </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-[10px] pb-[10px]">
-          {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">위치 확인 중…</div>}
-          {granted && recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">주변 장소를 찾지 못했어요</div>}
-          {granted && recs.map(place => (
-            <PlaceRow key={place.id} place={place} onClick={() => onPlaceSelect(place, "nearby")} onSave={notReady} />
-          ))}
+        <div className="flex-1 flex flex-col min-h-0 bg-[#FDFDFD] rounded-[20px] shadow-[0_14px_30px_rgba(62,39,34,0.1)] mt-[13px] overflow-hidden">
+          <div className="flex-none flex items-center justify-between p-[16px_16px_10px]">
+            <span className="text-[14.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>내 주변 {recs.length}곳의 가는길</span>
+            <span className="text-[12.5px] text-[#9a8e84]" style={{ fontFamily: "Pretendard" }}>거리순</span>
+          </div>
+          <div className="flex-1 overflow-y-auto px-[6px] pb-[10px]">
+            {!granted && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">위치 확인 중…</div>}
+            {granted && recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[40px]">주변 장소를 찾지 못했어요</div>}
+            {granted && sortedRecs.map(place => (
+              <SearchPlaceCard
+                key={place.id}
+                place={place}
+                distM={userCoords && place.lat != null && place.lng != null ? distanceMeters(userCoords.lat, userCoords.lng, place.lat, place.lng) : null}
+                onClick={() => onPlaceSelect(place, "nearby")}
+                onSave={notReady}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -502,7 +571,7 @@ export default function Sidebar20({
           <div className="flex-1 overflow-y-auto px-[8px]">
             {isSearching && <div className="text-center text-[14px] text-[#8a7d5f] py-[20px]">검색 중...</div>}
             {!isSearching && destFocused && showResults && searchResults.map(r => (
-              <SearchResultRow key={r.id} result={r} onClick={() => goRoutes(r)} />
+              <SearchResultRow key={r.id} result={r} onClick={() => handleResultClick(r)} />
             ))}
             {!isSearching && deptFocused && showDeptResults && deptSearchResults.map(r => (
               <SearchResultRow key={r.id} result={r} onClick={() => handleDeptResultClick(r)} />
@@ -532,6 +601,14 @@ export default function Sidebar20({
             </div>
           </>
         )}
+        <button
+          onClick={() => selectedResult && setStep("routes")}
+          disabled={!selectedResult}
+          className="flex-none h-[52px] rounded-[15px] flex items-center justify-center text-[16px] text-white mx-[12px] mt-[10px] mb-[14px]"
+          style={{ background: selectedResult ? "#ED7A13" : "#E6C98A", boxShadow: selectedResult ? "0 6px 16px rgba(237,122,19,0.3)" : "none", fontFamily: "Pretendard-SemiBold" }}
+        >
+          길찾기
+        </button>
       </div>
     </div>
   );
