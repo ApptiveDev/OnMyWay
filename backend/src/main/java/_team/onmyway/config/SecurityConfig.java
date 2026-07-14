@@ -86,7 +86,7 @@ public class SecurityConfig {
 
         configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedOrigin("http://localhost:5173"); // Vite 기본 포트
-        configuration.addAllowedOrigin("https://www.onmyway.cloud");
+        configuration.addAllowedOrigin("https://test.onmyway.cloud");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true); // 쿠키 사용(JWT refresh)
@@ -95,11 +95,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers("/assets/**", "/css/**", "/js/**", "/images/**", "/favicon.ico", "/index.html");
     }
 }
