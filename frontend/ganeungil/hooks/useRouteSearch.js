@@ -57,7 +57,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
       setIsSearching(true);
       try {
         const response = await api.get("/places/search", {
-          params: { query: destText },
+          params: { query: destText, lat: userCoords?.lat, lon: userCoords?.lng },
         });
         setSearchResults(toSearchResults(response.data));
       } catch (error) {
@@ -135,9 +135,14 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     setIsSearching(true);
     try {
       const response = await api.get("/places/search", {
-        params: { query: destText },
+        params: { query: destText, lat: userCoords?.lat, lon: userCoords?.lng },
       });
-      setSearchResults(toSearchResults(response.data));
+      const results = toSearchResults(response.data);
+      setSearchResults(results);
+      // Enter로 제출한 경우 목록만 띄우지 말고 첫 번째 결과를 바로 선택해 좌표를 확정한다.
+      if (results.length > 0) {
+        await handleResultClick(results[0]);
+      }
     } catch (error) {
       console.error("[검색 제출] 백엔드 검색 에러:", error);
       setSearchResults([]);

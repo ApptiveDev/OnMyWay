@@ -308,11 +308,14 @@ export default function Onboard20() {
     // 250m 반경 원 — 장소검색 흐름에서만 표시 (길찾기 흐름에서는 숨김)
     if (flow === "search") {
       circleRef.current = new window.kakao.maps.Circle({
-        center:         pos,
-        radius:         250,
-        strokeWeight:  7,
-        strokeColor:    "#FFEDA1",
-        shadow: "0px 25.5px 63.751px 0px rgba(0,0,0,0.30)",
+        center:        pos,
+        radius:        250,
+        strokeWeight:  2,
+        strokeColor:   "#ED7A13",
+        strokeOpacity: 0.5,
+        strokeStyle:   "shortdash",
+        fillColor:     "#ED7A13",
+        fillOpacity:   0.06,
         map,
       });
     }
