@@ -72,10 +72,10 @@ function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const raw =
     categoryLabel === "전체"
-      ? categories.flatMap((c) => c.featured ?? c.places?.[0] ?? [])
+      ? categories.flatMap((c) => c.featured ?? c.places?.slice(0, 5) ?? [])
       : (() => {
           const c = categories.find((c) => c.categoryId === targetId);
-          return c?.featured ?? c?.places?.[0] ?? [];
+          return c?.featured ?? c?.places?.slice(0, 5) ?? [];
         })();
   return toPlaceList(raw);
 }
