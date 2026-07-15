@@ -101,7 +101,7 @@ function mapToRecs(categories, categoryLabel) {
 function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const c = categories.find((c) => c.categoryId === targetId);
-  const raw = c?.featured ?? c?.places?.[0] ?? [];
+  const raw = c?.featured ?? c?.places?.slice(0, 5) ?? [];
   return toPlaceList(raw);
 }
 
