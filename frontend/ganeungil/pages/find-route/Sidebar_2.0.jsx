@@ -217,18 +217,8 @@ function EmptyFlowScreen({ title, desc, icon }) {
   );
 }
 
-function EditSuggestion({ place, initialTags, onBack, onSubmit }) {
+function EditSuggestion({ place, onBack, onSubmit }) {
   const [intro, setIntro] = useState(place.desc || "");
-  const [tags, setTags] = useState(initialTags || []);
-  const [newTag, setNewTag] = useState("");
-
-  const addTag = () => {
-    const t = newTag.trim();
-    if (!t) return;
-    setTags(prev => [...prev, t.startsWith("#") ? t : `#${t}`]);
-    setNewTag("");
-  };
-  const removeTag = (i) => setTags(prev => prev.filter((_, idx) => idx !== i));
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -250,29 +240,7 @@ function EditSuggestion({ place, initialTags, onBack, onSubmit }) {
           className="w-full min-h-[84px] resize-none border-[1.5px] border-[#EADFC8] rounded-[13px] p-[13px_14px] text-[15px] text-[#3E2722] leading-[1.6] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
           style={{ fontFamily: "Pretendard" }}
         />
-        <div className="text-[13px] text-[#8a7d5f]" style={{ fontFamily: "Pretendard", margin: "18px 0 8px" }}>해시태그</div>
-        <div className="flex flex-wrap gap-[7px]">
-          {tags.map((t, i) => (
-            <span key={t + i} className="inline-flex items-center gap-[5px] text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] pl-[12px] pr-[8px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
-              {t}
-              <button onClick={() => removeTag(i)} className="w-[16px] h-[16px] rounded-full bg-[rgba(176,122,46,0.18)] flex items-center justify-center">
-                <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#b07a2e" strokeWidth="3" strokeLinecap="round" /></svg>
-              </button>
-            </span>
-          ))}
-        </div>
-        <div className="flex gap-[8px] mt-[12px]">
-          <input
-            value={newTag}
-            onChange={e => setNewTag(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
-            placeholder="태그 추가"
-            className="flex-1 h-[40px] border-[1.5px] border-[#EADFC8] rounded-[11px] px-[13px] text-[13.5px] text-[#3E2722] outline-none bg-[#FFFDF8] focus:border-[#ED7A13]"
-            style={{ fontFamily: "Pretendard-SemiBold" }}
-          />
-          <button onClick={addTag} className="h-[40px] px-[16px] rounded-[11px] bg-[#F4EEE3] text-[#8a5a22] text-[13.5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>추가</button>
-        </div>
-        <button onClick={onSubmit} className="w-full mt-[22px] h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[15.5px] shadow-[0_6px_16px_rgba(237,122,19,0.3)]" style={{ fontFamily: "Pretendard-SemiBold" }}>
+        <button onClick={() => onSubmit(intro)} className="w-full mt-[22px] h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[15.5px] shadow-[0_6px_16px_rgba(237,122,19,0.3)]" style={{ fontFamily: "Pretendard-SemiBold" }}>
           수정 제안하기
         </button>
         <div className="text-[12px] text-[#b3a892] text-center mt-[11px] leading-[1.5]" style={{ fontFamily: "Pretendard" }}>
@@ -304,14 +272,19 @@ export default function Sidebar20({
   const showToast = useToast();
   const notReady = () => showToast("준비 중인 기능이에요");
 
-  // 장소 상세/수정제안 화면(step === "place" | "edit")용 해시태그 — selectedPlace가 바뀔 때마다 새로 조회
+  // 장소 상세/수정제안 화면(step === "place" | "edit")용 해시태그·블로그 — selectedPlace가 바뀔 때마다 새로 조회
   const [placeHashtags, setPlaceHashtags] = useState([]);
+  const [placeBlogs, setPlaceBlogs] = useState([]);
   useEffect(() => {
-    if ((step !== "place" && step !== "edit") || selectedPlace?.id == null) { setPlaceHashtags([]); return; }
+    if ((step !== "place" && step !== "edit") || selectedPlace?.id == null) { setPlaceHashtags([]); setPlaceBlogs([]); return; }
     let cancelled = false;
     api.get(`/api/place/${selectedPlace.id}`)
-      .then(res => { if (!cancelled) setPlaceHashtags(res.data?.hashtags ?? []); })
-      .catch(() => { if (!cancelled) setPlaceHashtags([]); });
+      .then(res => {
+        if (cancelled) return;
+        setPlaceHashtags(res.data?.hashtags ?? []);
+        setPlaceBlogs(res.data?.blogDTOS ?? []);
+      })
+      .catch(() => { if (!cancelled) { setPlaceHashtags([]); setPlaceBlogs([]); } });
     return () => { cancelled = true; };
   }, [step, selectedPlace?.id]);
 
@@ -375,6 +348,25 @@ export default function Sidebar20({
               ))}
             </div>
           )}
+          {placeBlogs.length > 0 && (
+            <div className="mt-[16px] pt-[14px] border-t border-[rgba(62,39,34,0.08)]">
+              <div className="text-[12.5px] text-[#9a8e84] mb-[8px]" style={{ fontFamily: "Pretendard" }}>관련 블로그</div>
+              <div className="flex flex-col gap-[8px]">
+                {placeBlogs.map((blog, i) => (
+                  <a
+                    key={i}
+                    href={blog.description}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[13px] text-[#3E2722] underline decoration-[#e0d4bc] underline-offset-2 truncate"
+                    style={{ fontFamily: "Pretendard-Light" }}
+                  >
+                    {blog.title?.replace(/<\/?b>/g, "")}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
           {(placeAddress || (p.openTime && p.closeTime)) && (
             <div className="mt-[16px] pt-[14px] border-t border-[rgba(62,39,34,0.08)] flex flex-col gap-[10px]">
               {placeAddress && (
@@ -412,9 +404,13 @@ export default function Sidebar20({
     return (
       <EditSuggestion
         place={selectedPlace}
-        initialTags={placeHashtags}
         onBack={() => setStep("place")}
-        onSubmit={() => { notReady(); setStep("place"); }}
+        onSubmit={(intro) => {
+          api.post(`/api/update/${selectedPlace.id}`, { id: selectedPlace.id, catchPhrase: intro })
+            .then(() => showToast("수정 제안을 보냈어요"))
+            .catch(() => showToast("제안 전송에 실패했어요"));
+          setStep("place");
+        }}
       />
     );
   }
