@@ -96,4 +96,16 @@ public class SecurityConfig {
 
         return source;
     }
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(
+                        "/assets/**",
+                        "/index.html",
+                        "/favicon.ico",
+                        "/*.png",
+                        "/*.svg"
+                );
+    }
 }
