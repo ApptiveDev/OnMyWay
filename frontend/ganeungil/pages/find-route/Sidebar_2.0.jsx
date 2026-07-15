@@ -150,6 +150,17 @@ function PlaceRow({ place, onClick, onSave, destPicker }) {
 
 // 장소검색 전용 카드 (큰 썸네일 + 카테고리 배지 + 저장 아이콘 오버레이)
 function SearchPlaceCard({ place, onClick, onSave, distM }) {
+  const [hashtags, setHashtags] = useState([]);
+
+  useEffect(() => {
+    if (place.id == null) return;
+    let cancelled = false;
+    api.get(`/api/place/${place.id}`)
+      .then(res => { if (!cancelled) setHashtags(res.data?.hashtags ?? []); })
+      .catch(() => { if (!cancelled) setHashtags([]); });
+    return () => { cancelled = true; };
+  }, [place.id]);
+
   return (
     <div onClick={onClick} className="flex items-start gap-[14px] p-[13px] rounded-[16px] cursor-pointer hover:bg-[#FFFBEC] transition-colors">
       <div className="relative w-[84px] h-[84px] rounded-[14px] overflow-hidden shrink-0 bg-[#F4EEE3]">
@@ -175,6 +186,16 @@ function SearchPlaceCard({ place, onClick, onSave, distM }) {
           {distM != null && <span className="whitespace-nowrap">· {fmtDistShort(distM)}</span>}
           <span className="whitespace-nowrap">{place.isOpen != null && <HoursLabel place={place} />}</span>
         </div>
+        {place.desc && (
+          <div className="text-[12.5px] text-[#5a4d42] truncate mt-[3px]" style={{ fontFamily: "Pretendard-Light" }}>{place.desc}</div>
+        )}
+        {hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-[5px] mt-[5px]">
+            {hashtags.map(tag => (
+              <span key={tag} className="text-[11px] text-[#5a4d42] bg-[#FFF2B9] rounded-[10px] px-[8px] py-[2px]" style={{ fontFamily: "Pretendard-Light" }}>#{tag}</span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -196,9 +217,9 @@ function EmptyFlowScreen({ title, desc, icon }) {
   );
 }
 
-function EditSuggestion({ place, onBack, onSubmit }) {
+function EditSuggestion({ place, initialTags, onBack, onSubmit }) {
   const [intro, setIntro] = useState(place.desc || "");
-  const [tags, setTags] = useState(place.tags || []);
+  const [tags, setTags] = useState(initialTags || []);
   const [newTag, setNewTag] = useState("");
 
   const addTag = () => {
@@ -283,6 +304,33 @@ export default function Sidebar20({
   const showToast = useToast();
   const notReady = () => showToast("준비 중인 기능이에요");
 
+  // 장소 상세/수정제안 화면(step === "place" | "edit")용 해시태그 — selectedPlace가 바뀔 때마다 새로 조회
+  const [placeHashtags, setPlaceHashtags] = useState([]);
+  useEffect(() => {
+    if ((step !== "place" && step !== "edit") || selectedPlace?.id == null) { setPlaceHashtags([]); return; }
+    let cancelled = false;
+    api.get(`/api/place/${selectedPlace.id}`)
+      .then(res => { if (!cancelled) setPlaceHashtags(res.data?.hashtags ?? []); })
+      .catch(() => { if (!cancelled) setPlaceHashtags([]); });
+    return () => { cancelled = true; };
+  }, [step, selectedPlace?.id]);
+
+  // 장소 상세 화면 주소 — 백엔드 API에 address가 없어서, 카카오맵 SDK로 좌표를 직접 역지오코딩한다
+  const [placeAddress, setPlaceAddress] = useState("");
+  useEffect(() => {
+    if (step !== "place" || selectedPlace?.lat == null || selectedPlace?.lng == null) { setPlaceAddress(""); return; }
+    if (!window.kakao?.maps?.services) return;
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    geocoder.coord2Address(selectedPlace.lng, selectedPlace.lat, (result, status) => {
+      if (status === window.kakao.maps.services.Status.OK && result[0]) {
+        const addr = result[0].road_address?.address_name || result[0].address?.address_name;
+        setPlaceAddress(addr || "");
+      } else {
+        setPlaceAddress("");
+      }
+    });
+  }, [step, selectedPlace?.lat, selectedPlace?.lng]);
+
   const fmtDist = (m) => m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${m} m`;
   const fmtTime = (s) => `약 ${Math.round(s / 60)}분`;
 
@@ -320,11 +368,27 @@ export default function Sidebar20({
           <div className="text-[12.5px] text-[#9a8e84] mb-[7px]" style={{ fontFamily: "Pretendard" }}>한줄 소개</div>
           <div className="text-[16px] text-[#3E2722] leading-[1.6]" style={{ fontFamily: "Pretendard" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
           {p.isOpen != null && <div className="mt-[10px]"><HoursLabel place={p} /></div>}
-          {p.tags?.length > 0 && (
+          {placeHashtags.length > 0 && (
             <div className="flex flex-wrap gap-[7px] mt-[14px]">
-              {p.tags.map(tag => (
-                <span key={tag} className="text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>{tag}</span>
+              {placeHashtags.map(tag => (
+                <span key={tag} className="text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>#{tag}</span>
               ))}
+            </div>
+          )}
+          {(placeAddress || (p.openTime && p.closeTime)) && (
+            <div className="mt-[16px] pt-[14px] border-t border-[rgba(62,39,34,0.08)] flex flex-col gap-[10px]">
+              {placeAddress && (
+                <div className="flex items-start gap-[8px]">
+                  <span className="text-[12.5px] text-[#9a8e84] shrink-0" style={{ fontFamily: "Pretendard" }}>위치</span>
+                  <span className="text-[13.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>{placeAddress}</span>
+                </div>
+              )}
+              {p.openTime && p.closeTime && (
+                <div className="flex items-start gap-[8px]">
+                  <span className="text-[12.5px] text-[#9a8e84] shrink-0" style={{ fontFamily: "Pretendard" }}>영업시간</span>
+                  <span className="text-[13.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>매일 {fmt(p.openTime)} - {fmt(p.closeTime)}</span>
+                </div>
+              )}
             </div>
           )}
           <div className="flex gap-[9px] mt-[20px]">
@@ -348,6 +412,7 @@ export default function Sidebar20({
     return (
       <EditSuggestion
         place={selectedPlace}
+        initialTags={placeHashtags}
         onBack={() => setStep("place")}
         onSubmit={() => { notReady(); setStep("place"); }}
       />
