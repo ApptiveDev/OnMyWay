@@ -16,6 +16,7 @@ export default defineConfig({
     proxy: {
       "/api/auth": "http://localhost:8080",
       "/api/users": "http://localhost:8080",
+      "/api/place": "http://localhost:8080",
       "/oauth2": "http://localhost:8080",
       "/login/oauth2": "http://localhost:8080",
       "/places": "http://localhost:8080",

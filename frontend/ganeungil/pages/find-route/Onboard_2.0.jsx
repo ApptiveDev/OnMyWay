@@ -56,7 +56,7 @@ function toPlaceList(raw, startId = 0) {
     closeTime: p.closeTime ?? null,
     openTime: p.openTime ?? null,
     imageURL: p.imageURL ?? null,
-    desc: "",
+    desc: p.catchPhrase || "",
     tags: [],
   }));
 }
