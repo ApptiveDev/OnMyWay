@@ -36,6 +36,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
   const [exploredMode, setExploredMode]       = useState(null);
   const [routeStats, setRouteStats]           = useState({});
   const [routeFeatures, setRouteFeatures]     = useState({});
+  const [routeRecsByMode, setRouteRecsByMode] = useState({}); // modeId -> 그 경로 위 추천 장소(flat)
 
   const destInputRef    = useRef(null);
   const deptInputRef    = useRef(null);
@@ -174,6 +175,14 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
         }));
       }
       setRouteFeatures(prev => ({ ...prev, [modeId]: features }));
+
+      // 경로 위(그 경로에서만 나오는) 추천 장소 — 카테고리당 대표(featured) 1곳씩만 사용 (최대 6개)
+      const categories = response.data.recommendations?.categories;
+      if (Array.isArray(categories)) {
+        const featuredPlaces = categories.map(c => c.featured).filter(Boolean);
+        setRouteRecsByMode(prev => ({ ...prev, [modeId]: featuredPlaces }));
+      }
+
       return features;
     } catch (error) {
       console.error(`[경로] ${modeId} 에러:`, error.response?.status, error.response?.data ?? error.message);
@@ -236,7 +245,7 @@ export function useRouteSearch({ userCoords, onDestinationSelect, onDrawRoute, o
     selectedResult, customDeptCoords,
     isSearching, selectedMode,
     destInputRef, deptInputRef,
-    isSearchMode, showResults, showDeptResults, routeStats,
+    isSearchMode, showResults, showDeptResults, routeStats, routeRecsByMode,
     handleDestFocus, handleDeptFocus, handleCancel,
     handleDestSubmit, handleDeptSubmit,
     handleDeptResultClick, handleDeptClear,
