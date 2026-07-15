@@ -97,7 +97,7 @@ function mapToRecs(categories, categoryLabel) {
   return toPlaceList(raw);
 }
 
-// 지도 마커용: featured (없으면 places[0] 폴백)
+// 지도 마커용: places 상위 5개
 function mapToFeatured(categories, categoryLabel) {
   const targetId = CATEGORY_LABEL_TO_ID[categoryLabel];
   const c = categories.find((c) => c.categoryId === targetId);
@@ -348,8 +348,10 @@ export default function Onboard20() {
 
     const SPREAD = 0.00018;
     const spiralOffsets = [
-      [0, 0], [SPREAD, 0], [-SPREAD, 0],
-      [0, SPREAD], [0, -SPREAD], [SPREAD, SPREAD], [-SPREAD, -SPREAD],
+      [0, 0],
+      [SPREAD, 0], [-SPREAD, 0], [0, SPREAD], [0, -SPREAD],
+      [SPREAD, SPREAD], [-SPREAD, -SPREAD], [SPREAD, -SPREAD], [-SPREAD, SPREAD],
+      [SPREAD * 2, 0], [-SPREAD * 2, 0], [0, SPREAD * 2], [0, -SPREAD * 2],
     ];
     const placed = [];
 

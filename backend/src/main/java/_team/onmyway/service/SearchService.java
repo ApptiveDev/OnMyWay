@@ -1,8 +1,14 @@
 package _team.onmyway.service;
 
+import _team.onmyway.dto.PlaceRecommendationDTO;
 import _team.onmyway.dto.PointDTO;
 import _team.onmyway.dto.PositionDTO;
+import _team.onmyway.dto.SearchPlaceResultDTO;
+import _team.onmyway.entity.HashtagMapping;
+import _team.onmyway.entity.Place;
 import _team.onmyway.exception.NoPlacesException;
+import _team.onmyway.repository.LikePlaceRepository;
+import _team.onmyway.repository.PlaceRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,16 +17,26 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SearchService {
 
-    private final DistanceService distanceService;
+    private final GeoDistanceService geoDistanceService;
+    private final PlaceRepository placeRepository;
+    private final ImageService imageService;
+    private final LikePlaceRepository likePlaceRepository;
 
     @Value("${KAKAO_CLIENT_ID}")
     private String apiKey;
@@ -82,5 +98,58 @@ public class SearchService {
         return document;
     }
 
+    public Mono<List<SearchPlaceResultDTO>> searchPlaceResult(String query, PositionDTO position, Long userId) {
+        int day = LocalDate.now().getDayOfWeek().getValue()%7;
 
+        Mono<Set<Long>> likedPlaceIds = Mono.fromCallable(() -> {
+            if (userId == null) return Collections.emptySet();
+
+            List<Place> likePlaces = likePlaceRepository.findPlaceByUsersId(userId);
+            return likePlaces.stream()
+                    .map(Place::getId)
+                    .collect(Collectors.toSet());
+        });
+
+        Mono<List<Place>> placesMono = Mono.fromCallable(() -> placeRepository.findByNameContaining(query))
+                .subscribeOn(Schedulers.boundedElastic());
+
+        return Mono.zip(placesMono, likedPlaceIds)
+                .flatMapMany(tuple -> {
+                    List<Place> places = tuple.getT1();
+                    Set<Long> placeIds = tuple.getT2();
+
+                    return Flux.fromIterable(places)
+                            .flatMap(place -> {
+                                Double distance = geoDistanceService.distanceMeters(
+                                        place.getLat(), place.getLng(), position.getLat(), position.getLon()
+                                );
+
+                                List<String> hashtags = place.getHashtagMappings()
+                                        .stream()
+                                        .map(hashtagMapping -> {
+                                            return hashtagMapping.getHashTag().getTag();
+                                        })
+                                        .collect(Collectors.toList());
+
+                                boolean isLiked = placeIds.contains(place.getId());
+
+                                return imageService.getImageURL(place)
+                                        .map(images -> new SearchPlaceResultDTO(
+                                                place.getId(),
+                                                place.getName(),
+                                                place.getLat(),
+                                                place.getLng(),
+                                                distance,
+                                                place.getServiceCategory().getName(),
+                                                images,
+                                                place.getWorkingTimes().get(day).isClosed(),
+                                                hashtags,
+                                                isLiked
+                                        ));
+                            });
+
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .collectList();
+    }
 }
