@@ -86,6 +86,7 @@ public class SecurityConfig {
 
         configuration.addAllowedOrigin("http://localhost:3000");
         configuration.addAllowedOrigin("http://localhost:5173"); // Vite 기본 포트
+        configuration.addAllowedOrigin("http://localhost:5174"); // 5173이 사용 중일 때 Vite가 자동으로 옮겨가는 포트
         configuration.addAllowedOrigin("https://test.onmyway.cloud");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");

@@ -223,7 +223,7 @@ function EditSuggestion({ place, onBack, onSubmit }) {
   return (
     <div className="flex flex-col flex-1 min-h-0">
       <div className="flex-none flex items-center gap-[11px] p-[16px_18px_10px] shadow-[0_1px_0_rgba(62,39,34,0.06)]">
-        <button onClick={onBack} className="w-[34px] h-[34px] rounded-[10px] bg-[#F4EEE3] flex items-center justify-center active:scale-[0.93]">
+        <button onClick={onBack} className="w-[34px] h-[34px] rounded-[10px] bg-[#FDFDFD] flex items-center justify-center active:scale-[0.93]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         </button>
         <div>
@@ -253,7 +253,7 @@ function EditSuggestion({ place, onBack, onSubmit }) {
 
 export default function Sidebar20({
   flow, step, setStep, placeFrom,
-  locStatus, recs,
+  locStatus, recs, routeRecs,
   selectedPlace, onPlaceSelect,
   userCoords,
   pinLabel, onConfirmPin,
@@ -326,28 +326,47 @@ export default function Sidebar20({
     const p = selectedPlace;
     return (
       <div className="flex flex-col flex-1 min-h-0">
-        <div className="flex-none relative h-[152px] overflow-hidden">
+        {/* 히어로 이미지 */}
+        <div className="flex-none relative h-[200px] overflow-hidden">
           <img src={p.imageURL || imgPlace} alt={p.name} className="absolute inset-0 object-cover w-full h-full" />
-          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(62,39,34,0) 35%, rgba(62,39,34,.55))" }} />
-          <button onClick={backFromPlace} className="absolute left-[14px] top-[14px] w-[34px] h-[34px] rounded-full bg-white/90 flex items-center justify-center shadow-[0_2px_8px_rgba(62,39,34,0.2)] active:scale-[0.92]">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(62,39,34,0) 45%, rgba(62,39,34,0.45) 100%)" }} />
+          <button onClick={backFromPlace} className="absolute left-[16px] top-[16px] w-[38px] h-[38px] rounded-full bg-white/[.92] flex items-center justify-center active:scale-[0.92]">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 6l-6 6 6 6" stroke="#3E2722" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
-          <div className="absolute left-[18px] bottom-[13px] text-white">
-            <div className="font-bold text-[21px]" style={{ fontFamily: "MaruBuriOTF" }}>{p.name}</div>
-            <div className="text-[13px] opacity-90 mt-[3px]" style={{ fontFamily: "Pretendard-Medium" }}>{p.category}{p.walkMin != null ? ` · 도보 ${p.walkMin}분` : ""}</div>
+          <div className="absolute left-[20px] bottom-[16px] flex items-center gap-[9px]">
+            {p.category && (
+              <span className="bg-[#ED7A13] rounded-[25px] px-[11px] py-[5px] text-[11px] text-white" style={{ fontFamily: "Pretendard-Medium" }}>{p.category}</span>
+            )}
+            {p.walkMin != null && (
+              <span className="text-[13.5px] text-white" style={{ fontFamily: "MaruBuriOTF", textShadow: "0px 1px 3px rgba(0,0,0,0.3)" }}>경로에서 {p.walkMin}분</span>
+            )}
           </div>
         </div>
-        <div className="flex-1 overflow-y-auto p-[18px]">
-          <div className="text-[12.5px] text-[#9a8e84] mb-[7px]" style={{ fontFamily: "Pretendard" }}>한줄 소개</div>
-          <div className="text-[16px] text-[#3E2722] leading-[1.6]" style={{ fontFamily: "Pretendard" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
-          {p.isOpen != null && <div className="mt-[10px]"><HoursLabel place={p} /></div>}
+        <div className="flex-1 overflow-y-auto p-[22px_24px] bg-[#fdfdfd]">
+          <div className="text-[26px] text-[#3E2722] mb-[9px]" style={{ fontFamily: "MaruBuriOTF", fontWeight: 700, letterSpacing: "-0.5px" }}>{p.name}</div>
+          {p.isOpen != null && (
+            <div className="flex items-center gap-[8px] mb-[12px]">
+              <span className="w-[8px] h-[8px] rounded-[4px] shrink-0" style={{ background: p.isOpen ? "#6A8042" : "#c82b2b" }} />
+              <HoursLabel place={p} />
+            </div>
+          )}
+          <div className="text-[15.5px] text-[#4a3d33] leading-[26px]" style={{ fontFamily: "MaruBuriOTF" }}>{p.desc || "아직 소개가 등록되지 않았어요."}</div>
           {placeHashtags.length > 0 && (
-            <div className="flex flex-wrap gap-[7px] mt-[14px]">
+            <div className="flex flex-wrap gap-[7px] mt-[13px]">
               {placeHashtags.map(tag => (
-                <span key={tag} className="text-[12.5px] text-[#b07a2e] bg-[#FFF3D6] rounded-[20px] px-[12px] py-[5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>#{tag}</span>
+                <span key={tag} className="text-[13.5px] text-[#5a4d42] bg-[#FFF2B9] rounded-[14px] px-[13px] py-[6px]" style={{ fontFamily: "MaruBuriOTF" }}>#{tag}</span>
               ))}
             </div>
           )}
+          <div className="mt-[13px]">
+            <button
+              onClick={() => setStep("edit")}
+              className="inline-flex items-center gap-[7px] bg-[#FFF6D6] border border-[rgba(237,122,19,0.28)] rounded-[16px] px-[15px] py-[8px]"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 20h4l10.5-10.5a2 2 0 0 0-4-4L4 16v4z" stroke="#C2630B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              <span className="text-[13px] text-[#C2630B]" style={{ fontFamily: "Pretendard-Bold" }}>정보 수정 제안</span>
+            </button>
+          </div>
           {placeBlogs.length > 0 && (
             <div className="mt-[16px] pt-[14px] border-t border-[rgba(62,39,34,0.08)]">
               <div className="text-[12.5px] text-[#9a8e84] mb-[8px]" style={{ fontFamily: "Pretendard" }}>관련 블로그</div>
@@ -368,31 +387,32 @@ export default function Sidebar20({
             </div>
           )}
           {(placeAddress || (p.openTime && p.closeTime)) && (
-            <div className="mt-[16px] pt-[14px] border-t border-[rgba(62,39,34,0.08)] flex flex-col gap-[10px]">
+            <div className="mt-[16px] pt-[15px] border-t border-[rgba(62,39,34,0.08)] flex flex-col gap-[12px]">
               {placeAddress && (
-                <div className="flex items-start gap-[8px]">
-                  <span className="text-[12.5px] text-[#9a8e84] shrink-0" style={{ fontFamily: "Pretendard" }}>위치</span>
-                  <span className="text-[13.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>{placeAddress}</span>
+                <div className="flex items-start gap-[12px]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-px shrink-0"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11z" stroke="#9a8e84" strokeWidth="1.7" /><circle cx="12" cy="10" r="2.4" stroke="#9a8e84" strokeWidth="1.7" /></svg>
+                  <div className="flex flex-col gap-[3px]">
+                    <span className="text-[12.5px] text-[#9a8e84]" style={{ fontFamily: "Pretendard-Light" }}>위치</span>
+                    <span className="text-[15px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>{placeAddress}</span>
+                  </div>
                 </div>
               )}
               {p.openTime && p.closeTime && (
-                <div className="flex items-start gap-[8px]">
-                  <span className="text-[12.5px] text-[#9a8e84] shrink-0" style={{ fontFamily: "Pretendard" }}>영업시간</span>
-                  <span className="text-[13.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>매일 {fmt(p.openTime)} - {fmt(p.closeTime)}</span>
+                <div className="flex items-start gap-[12px]">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="mt-px shrink-0"><circle cx="12" cy="12" r="8.5" stroke="#9a8e84" strokeWidth="1.7" /><path d="M12 7.5V12l3 2" stroke="#9a8e84" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  <div className="flex flex-col gap-[3px]">
+                    <span className="text-[12.5px] text-[#9a8e84]" style={{ fontFamily: "Pretendard-Light" }}>영업시간</span>
+                    <span className="text-[14.4px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Light" }}>매일 {fmt(p.openTime)} - {fmt(p.closeTime)}</span>
+                  </div>
                 </div>
               )}
             </div>
           )}
-          <div className="flex gap-[9px] mt-[20px]">
-            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#FFF3D6] text-[#ED7A13] flex items-center justify-center gap-[7px] text-[14px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
-              <img src={iconHeart} alt="" className="w-[15px] h-[13px]" />저장
-            </button>
-            <button onClick={notReady} className="flex-1 h-[46px] rounded-[13px] bg-[#ED7A13] text-white flex items-center justify-center gap-[7px] text-[14px] shadow-[0_4px_12px_rgba(237,122,19,0.28)]" style={{ fontFamily: "Pretendard-SemiBold" }}>
-              경로에 추가
-            </button>
-          </div>
-          <button onClick={() => setStep("edit")} className="w-full mt-[10px] h-[44px] rounded-[13px] border-[1.5px] border-[#F2D49A] bg-[#FFFDF2] text-[#b07a2e] flex items-center justify-center gap-[7px] text-[13.5px]" style={{ fontFamily: "Pretendard-SemiBold" }}>
-            정보 수정 제안
+        </div>
+        <div className="flex-none border-t border-[rgba(62,39,34,0.06)] p-[15px_20px_14px] bg-[#fdfdfd]">
+          <button onClick={notReady} className="w-full h-[52px] rounded-[15px] bg-[#ED7A13] text-white flex items-center justify-center gap-[8px] text-[16px] shadow-[0_2px_3px_rgba(62,39,34,0.1)]" style={{ fontFamily: "Pretendard-Bold" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 4.5h12a1 1 0 0 1 1 1V21l-7-4.5-7 4.5V5.5a1 1 0 0 1 1-1z" fill="white" /></svg>
+            장소 저장
           </button>
         </div>
       </div>
@@ -602,8 +622,8 @@ export default function Sidebar20({
             <span className="text-[14.5px] text-[#3E2722]" style={{ fontFamily: "Pretendard-Bold" }}>가는길에 들를 곳</span>
           </div>
           <div className="flex-1 overflow-y-auto px-[8px] pb-[8px]">
-            {recs.length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">추천 장소를 준비하고 있어요</div>}
-            {recs.map(place => (
+            {(routeRecs ?? []).length === 0 && <div className="text-center text-[13.5px] text-[#9a8e84] pt-[30px]">이 경로에서 추천할 장소를 못 찾았어요</div>}
+            {(routeRecs ?? []).map(place => (
               <PlaceRow key={place.id} place={place} onClick={() => onPlaceSelect(place, "nearby")} onSave={notReady} />
             ))}
           </div>
