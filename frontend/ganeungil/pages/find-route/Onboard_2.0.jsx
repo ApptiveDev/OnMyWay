@@ -160,7 +160,31 @@ export default function Onboard20() {
     if (!map) return;
     routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
     routeRecsOverlaysRef.current = [];
+
+    // 좌표가 겹치는 장소들은 나선형으로 살짝 비켜서 배치 (마커 겹쳐서 사라지는 문제 방지)
+    const SPREAD = 0.00018;
+    const spiralOffsets = [
+      [0, 0],
+      [SPREAD, 0], [-SPREAD, 0], [0, SPREAD], [0, -SPREAD],
+      [SPREAD, SPREAD], [-SPREAD, -SPREAD], [SPREAD, -SPREAD], [-SPREAD, SPREAD],
+      [SPREAD * 2, 0], [-SPREAD * 2, 0], [0, SPREAD * 2], [0, -SPREAD * 2],
+    ];
+    const placed = [];
+
     places.filter(p => p.lat && p.lng).forEach((place, i) => {
+      let lat = place.lat;
+      let lng = place.lng;
+      let offsetIdx = 0;
+      while (
+        placed.some(p => Math.abs(p.lat - lat) < SPREAD * 0.9 && Math.abs(p.lng - lng) < SPREAD * 0.9) &&
+        offsetIdx < spiralOffsets.length - 1
+      ) {
+        offsetIdx++;
+        lat = place.lat + spiralOffsets[offsetIdx][0];
+        lng = place.lng + spiralOffsets[offsetIdx][1];
+      }
+      placed.push({ lat, lng });
+
       const container = document.createElement('div');
       container.style.cursor = 'pointer';
       container.innerHTML = `
@@ -170,7 +194,7 @@ export default function Onboard20() {
       `;
       container.onclick = () => openPlace(place, "nearby");
       const overlay = new window.kakao.maps.CustomOverlay({
-        position: new window.kakao.maps.LatLng(place.lat, place.lng),
+        position: new window.kakao.maps.LatLng(lat, lng),
         content: container,
         map,
         yAnchor: 1,
@@ -206,15 +230,20 @@ export default function Onboard20() {
   // ref 동기화
   useEffect(() => { featuredRef.current = featuredRecs; }, [featuredRecs]);
 
+  // 경로 위 추천 장소(그 경로에서만 나오는 것) — 현재 선택된 모드 기준
+  // 카테고리당 대표 1곳씩(최대 6개) — 사이드바/지도 마커 동일하게 사용
+  const rawRouteRecs = routeSearch.routeRecsByMode?.[routeSearch.selectedMode];
+  const routeRecs = toPlaceList(rawRouteRecs ?? []).slice(0, 6);
+
   // ── 가는길에 들를 곳 마커: nearby 단계에서만 지도에 표시
   useEffect(() => {
     if (step === "nearby") {
-      handleRouteRecs(recs);
+      handleRouteRecs(routeRecs);
     } else {
       routeRecsOverlaysRef.current.forEach(o => o.setMap(null));
       routeRecsOverlaysRef.current = [];
     }
-  }, [step, recs]);
+  }, [step, rawRouteRecs]);
 
   // ── 지도 마커 클릭 핸들러 (window에 등록 → CustomOverlay HTML에서 호출)
   useEffect(() => {
@@ -535,6 +564,7 @@ export default function Onboard20() {
           placeFrom={placeFrom}
           locStatus={locStatus}
           recs={recs}
+          routeRecs={routeRecs}
           selectedPlace={selectedPlace}
           onPlaceSelect={openPlace}
           onRecalibrate={handleRecalibrate}
