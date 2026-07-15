@@ -51,7 +51,7 @@ jobs:
           # 5. ⭐ --env-file 옵션을 사용하여 컨테이너 실행
           sudo docker run -d \
             --name operate-onmyway \
-            -p 8080:8080 \
+            -p 127.0.0.1:8080:8080 \
             --env-file .env \
             ${{ secrets.DOCKERHUB_USERNAME }}/onmyway:operation
           
