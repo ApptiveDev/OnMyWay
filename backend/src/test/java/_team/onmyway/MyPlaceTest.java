@@ -1,6 +1,6 @@
 package _team.onmyway;
 
-import _team.onmyway.controller.MyPlaceController;
+import _team.onmyway.controller.apis.MyPlaceController;
 import _team.onmyway.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

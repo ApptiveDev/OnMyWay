@@ -1,4 +1,4 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
 import _team.onmyway.entity.Users;
 import _team.onmyway.repository.UsersRepository;

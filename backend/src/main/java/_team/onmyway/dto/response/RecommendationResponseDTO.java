@@ -1,6 +1,5 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
-import _team.onmyway.entity.Place;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

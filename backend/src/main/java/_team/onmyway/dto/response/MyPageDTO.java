@@ -1,9 +1,5 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
-
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 

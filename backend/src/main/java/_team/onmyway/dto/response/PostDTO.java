@@ -1,4 +1,4 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
 import _team.onmyway.entity.PostPhotos;
 import _team.onmyway.entity.Posts;

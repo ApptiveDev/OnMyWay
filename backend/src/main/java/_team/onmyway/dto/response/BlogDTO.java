@@ -1,4 +1,4 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
 public record BlogDTO (
         String title,

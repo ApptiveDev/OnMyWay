@@ -1,4 +1,4 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
 import lombok.Getter;
 import lombok.Setter;

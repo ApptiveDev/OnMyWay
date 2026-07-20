@@ -1,12 +1,9 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.PlaceRecommendationDTO;
-import _team.onmyway.dto.PointDTO;
-import _team.onmyway.dto.PositionDTO;
-import _team.onmyway.dto.SearchPlaceResultDTO;
-import _team.onmyway.entity.HashtagMapping;
+import _team.onmyway.dto.response.PointDTO;
+import _team.onmyway.dto.response.PositionDTO;
+import _team.onmyway.dto.response.SearchPlaceResultDTO;
 import _team.onmyway.entity.Place;
-import _team.onmyway.exception.NoPlacesException;
 import _team.onmyway.repository.LikePlaceRepository;
 import _team.onmyway.repository.PlaceRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;

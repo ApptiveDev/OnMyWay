@@ -1,7 +1,4 @@
-package _team.onmyway.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+package _team.onmyway.dto.response;
 
 import java.util.List;
 

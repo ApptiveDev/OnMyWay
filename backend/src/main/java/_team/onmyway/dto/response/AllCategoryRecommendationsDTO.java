@@ -1,4 +1,4 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

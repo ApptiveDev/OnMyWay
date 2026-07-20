@@ -1,7 +1,7 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.MyPageDTO;
-import _team.onmyway.dto.PostDTO;
+import _team.onmyway.dto.response.MyPageDTO;
+import _team.onmyway.dto.response.PostDTO;
 import _team.onmyway.entity.Profile;
 import _team.onmyway.entity.Users;
 import _team.onmyway.exception.NotAuthenticationException;

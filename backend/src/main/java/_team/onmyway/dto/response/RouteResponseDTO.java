@@ -1,4 +1,4 @@
-package _team.onmyway.dto;
+package _team.onmyway.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;

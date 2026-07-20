@@ -1,4 +1,4 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
 import _team.onmyway.service.KeywordService;
 import lombok.RequiredArgsConstructor;

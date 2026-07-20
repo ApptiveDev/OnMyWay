@@ -1,12 +1,10 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.PositionDTO;
-import _team.onmyway.dto.RouteResponseDTO;
-import com.fasterxml.jackson.databind.JsonNode;
+import _team.onmyway.dto.response.PositionDTO;
+import _team.onmyway.dto.response.RouteResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
@@ -14,11 +12,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 

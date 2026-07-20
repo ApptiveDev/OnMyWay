@@ -1,4 +1,4 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
 import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.request.UpdatePlaceDTO;

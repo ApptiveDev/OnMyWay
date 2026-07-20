@@ -1,32 +1,24 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.LikePlaceDTO;
-import _team.onmyway.dto.PlaceRecommendationDTO;
-import _team.onmyway.dto.PositionDTO;
-import _team.onmyway.dto.RecommendationResponseDTO;
-import _team.onmyway.entity.HashTags;
+import _team.onmyway.dto.response.LikePlaceDTO;
+import _team.onmyway.dto.response.PlaceRecommendationDTO;
 import _team.onmyway.entity.LikePlace;
 import _team.onmyway.entity.Place;
 import _team.onmyway.entity.Users;
-import _team.onmyway.exception.NoPlacesException;
 import _team.onmyway.exception.UserNotFoundException;
 import _team.onmyway.repository.HashtagMappingRepository;
 import _team.onmyway.repository.LikePlaceRepository;
 import _team.onmyway.repository.PlaceRepository;
 import _team.onmyway.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-import java.awt.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

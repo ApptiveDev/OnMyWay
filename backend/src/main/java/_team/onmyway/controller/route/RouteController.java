@@ -1,8 +1,8 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.route;
 
 import _team.onmyway.annotation.GetUser;
-import _team.onmyway.dto.PositionDTO;
-import _team.onmyway.dto.RouteResponseDTO;
+import _team.onmyway.dto.response.PositionDTO;
+import _team.onmyway.dto.response.RouteResponseDTO;
 import _team.onmyway.service.RecommendationService;
 import _team.onmyway.service.RouteService;
 import com.fasterxml.jackson.databind.ObjectMapper;

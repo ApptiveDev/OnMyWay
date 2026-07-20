@@ -1,18 +1,14 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.*;
+import _team.onmyway.dto.response.*;
 import _team.onmyway.entity.Place;
 import _team.onmyway.entity.ServiceCategory;
 import _team.onmyway.entity.WorkingTime;
 import _team.onmyway.repository.LikePlaceRepository;
 import _team.onmyway.repository.PlaceRepository;
 import _team.onmyway.repository.ServiceCategoryRepository;
-import _team.onmyway.repository.WorkingTimeRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.jdbc.Work;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import reactor.core.publisher.Flux;
@@ -20,12 +16,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Service
 @Slf4j

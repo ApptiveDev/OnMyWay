@@ -1,8 +1,8 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
 import _team.onmyway.annotation.GetUser;
-import _team.onmyway.dto.LikePlaceDTO;
-import _team.onmyway.dto.PlaceRecommendationDTO;
+import _team.onmyway.dto.response.LikePlaceDTO;
+import _team.onmyway.dto.response.PlaceRecommendationDTO;
 import _team.onmyway.service.MyPlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

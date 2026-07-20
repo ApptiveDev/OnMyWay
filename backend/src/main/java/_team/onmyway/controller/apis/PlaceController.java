@@ -1,10 +1,8 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
-import _team.onmyway.dto.PlaceDetailDTO;
+import _team.onmyway.dto.response.PlaceDetailDTO;
 import _team.onmyway.service.PlaceService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 

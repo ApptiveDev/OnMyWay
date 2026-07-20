@@ -1,6 +1,7 @@
-package _team.onmyway.controller;
+package _team.onmyway.controller.apis;
 
-import _team.onmyway.dto.RefreshRequest;
+import _team.onmyway.dto.response.RefreshRequest;
+import _team.onmyway.dto.response.SignupCompleteRequest;
 import _team.onmyway.entity.Users;
 import _team.onmyway.repository.UsersRepository;
 import _team.onmyway.service.JwtService;
@@ -53,7 +54,7 @@ public class AuthController {
     @PostMapping("/signup/complete")
     @Transactional
     public ResponseEntity<?> completeSignup(
-            @RequestBody _team.onmyway.dto.SignupCompleteRequest request,
+            @RequestBody SignupCompleteRequest request,
             @org.springframework.security.core.annotation.AuthenticationPrincipal String userId,
             HttpServletResponse response) {
 

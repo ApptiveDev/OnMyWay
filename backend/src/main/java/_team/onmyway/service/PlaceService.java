@@ -1,18 +1,16 @@
 package _team.onmyway.service;
 
-import _team.onmyway.dto.BlogDTO;
-import _team.onmyway.dto.PlaceDetailDTO;
+import _team.onmyway.dto.response.BlogDTO;
+import _team.onmyway.dto.response.PlaceDetailDTO;
 import _team.onmyway.entity.Place;
 import _team.onmyway.exception.NoPlacesException;
 import _team.onmyway.repository.HashtagMappingRepository;
 import _team.onmyway.repository.PlaceRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.Collections;
