@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.place;
 
 import _team.onmyway.entity.place.HashtagMapping;
 import org.springframework.data.jpa.repository.JpaRepository;

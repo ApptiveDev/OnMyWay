@@ -1,6 +1,6 @@
 package _team.onmyway.service.search;
 
-import _team.onmyway.repository.HashtagRepository;
+import _team.onmyway.repository.hashtag.HashtagRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

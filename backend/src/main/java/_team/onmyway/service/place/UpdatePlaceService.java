@@ -4,9 +4,9 @@ import _team.onmyway.dto.request.UpdatePlaceDTO;
 import _team.onmyway.entity.place.Place;
 import _team.onmyway.entity.update.UpdateRequest;
 import _team.onmyway.entity.user.Users;
-import _team.onmyway.repository.PlaceRepository;
-import _team.onmyway.repository.UpdateRequestRepository;
-import _team.onmyway.repository.UsersRepository;
+import _team.onmyway.repository.place.PlaceRepository;
+import _team.onmyway.repository.update.UpdateRequestRepository;
+import _team.onmyway.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.update;
 
 import _team.onmyway.entity.update.UpdateRequest;
 import org.springframework.data.jpa.repository.JpaRepository;

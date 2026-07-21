@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.hashtag;
 
 import _team.onmyway.entity.hashtag.HashTags;
 import org.springframework.data.domain.Pageable;

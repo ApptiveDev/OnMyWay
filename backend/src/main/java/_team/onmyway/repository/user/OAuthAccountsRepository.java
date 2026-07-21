@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.user;
 
 import _team.onmyway.entity.user.OAuthAccounts;
 import org.springframework.data.jpa.repository.JpaRepository;

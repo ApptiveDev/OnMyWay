@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.place;
 
 import _team.onmyway.entity.place.CategoryMapping;
 import _team.onmyway.entity.SourceType;

@@ -3,7 +3,7 @@ package _team.onmyway.controller.apis;
 import _team.onmyway.dto.response.RefreshRequest;
 import _team.onmyway.dto.response.SignupCompleteRequest;
 import _team.onmyway.entity.user.Users;
-import _team.onmyway.repository.UsersRepository;
+import _team.onmyway.repository.user.UsersRepository;
 import _team.onmyway.service.auth.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

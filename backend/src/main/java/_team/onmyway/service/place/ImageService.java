@@ -1,7 +1,7 @@
 package _team.onmyway.service.place;
 
 import _team.onmyway.entity.place.Place;
-import _team.onmyway.repository.PhotosRepository;
+import _team.onmyway.repository.place.PhotosRepository;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

@@ -1,4 +1,4 @@
-package _team.onmyway.repository;
+package _team.onmyway.repository.post;
 
 import _team.onmyway.entity.post.Posts;
 import _team.onmyway.entity.user.Users;

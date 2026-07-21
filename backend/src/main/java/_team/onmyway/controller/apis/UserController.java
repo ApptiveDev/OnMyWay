@@ -1,7 +1,7 @@
 package _team.onmyway.controller.apis;
 
 import _team.onmyway.entity.user.Users;
-import _team.onmyway.repository.UsersRepository;
+import _team.onmyway.repository.user.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
