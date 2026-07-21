@@ -1,0 +1,73 @@
+package _team.onmyway.service.place;
+
+import _team.onmyway.entity.place.Place;
+import _team.onmyway.repository.PhotosRepository;
+import com.github.benmanes.caffeine.cache.Cache;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.beans.factory.annotation.Value;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.Map;
+
+@Service
+@Slf4j
+public class ImageService {
+
+    private final WebClient webClient;
+    private final PhotosRepository photosRepository;
+    private final Cache<Long, String> placePhotoCache;
+
+    @Value("${naver.api.clientId}")
+    private String naverClientId;
+
+    @Value("${naver.api.clientSecret}")
+    private String naverClientSecret;
+
+    public ImageService(PhotosRepository photosRepository, Cache<Long, String> placePhotoCache) {
+        this.photosRepository = photosRepository;
+        this.placePhotoCache = placePhotoCache;
+        this.webClient = WebClient.builder()
+                .baseUrl("https://openapi.naver.com")
+                .build();
+    }
+
+    public Mono<String> getImageURL(Place p) {
+        boolean hasPhoto = photosRepository.existsById(p.getId());
+        if (hasPhoto) {
+            return Mono.just(photosRepository.findFirstByPlaceId(p.getId()).get().getPhotoURL());
+        } else {
+            String cacheURL = placePhotoCache.getIfPresent(p.getId());
+            if (cacheURL != null) {
+                return Mono.just(cacheURL);
+            }
+
+            String distinct = p.getAddress().split(" ")[2];
+            String name = p.getName();
+
+            return webClient.get()
+                    .uri(uri -> uri
+                            .path("/v1/search/image")
+                            .queryParam("query","부산 "+name)
+                            .queryParam("sort","sim")
+                            .build())
+                    .header("X-Naver-Client-Id", naverClientId)
+                    .header("X-Naver-Client-Secret", naverClientSecret)
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .map(response -> {
+                        // items 리스트 추출
+                        List<Map<String, Object>> list = (List<Map<String, Object>>) response.get("items");
+                        if (list == null || list.isEmpty()) {
+                            return ""; // 결과 없으면 빈 문자열
+                        }
+                        // log.info((String)list.get(0).get("thumbnail"));
+                        return (String) list.get(0).get("thumbnail");
+                    })
+                    .defaultIfEmpty("") // 혹시 모를 빈 응답 처리
+                    .onErrorReturn(""); // API 에러 발생 시 빈 문자열 반환 (서비스 중단 방지)
+        }
+    }
+}

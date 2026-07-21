@@ -1,6 +1,6 @@
 package _team.onmyway.security;
 
-import _team.onmyway.entity.Users;
+import _team.onmyway.entity.user.Users;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;

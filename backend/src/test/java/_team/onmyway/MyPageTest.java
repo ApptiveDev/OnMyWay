@@ -1,7 +1,7 @@
 package _team.onmyway;
 
 import _team.onmyway.controller.apis.MyPageController;
-import _team.onmyway.service.JwtService;
+import _team.onmyway.service.auth.JwtService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.junit.jupiter.api.Test;

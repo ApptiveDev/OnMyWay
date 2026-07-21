@@ -1,9 +1,8 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.Photos;
-import _team.onmyway.entity.Place;
+import _team.onmyway.entity.place.Photos;
+import _team.onmyway.entity.place.Place;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;

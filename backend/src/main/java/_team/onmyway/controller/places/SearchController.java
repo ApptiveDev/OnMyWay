@@ -4,7 +4,7 @@ import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.response.PointDTO;
 import _team.onmyway.dto.response.PositionDTO;
 import _team.onmyway.dto.response.SearchPlaceResultDTO;
-import _team.onmyway.service.SearchService;
+import _team.onmyway.service.search.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

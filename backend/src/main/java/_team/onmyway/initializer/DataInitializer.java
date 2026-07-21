@@ -1,8 +1,8 @@
 package _team.onmyway.initializer;
 
-import _team.onmyway.entity.Place;
-import _team.onmyway.entity.ServiceCategory;
-import _team.onmyway.entity.WorkingTime;
+import _team.onmyway.entity.place.Place;
+import _team.onmyway.entity.category.ServiceCategory;
+import _team.onmyway.entity.place.WorkingTime;
 import _team.onmyway.repository.PlaceRepository;
 import _team.onmyway.repository.ServiceCategoryRepository;
 import _team.onmyway.repository.WorkingTimeRepository;

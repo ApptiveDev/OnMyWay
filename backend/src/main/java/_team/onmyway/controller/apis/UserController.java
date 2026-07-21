@@ -1,6 +1,6 @@
 package _team.onmyway.controller.apis;
 
-import _team.onmyway.entity.Users;
+import _team.onmyway.entity.user.Users;
 import _team.onmyway.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

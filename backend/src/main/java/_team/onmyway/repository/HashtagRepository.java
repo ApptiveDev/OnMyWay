@@ -1,6 +1,6 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.HashTags;
+import _team.onmyway.entity.hashtag.HashTags;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,6 +1,6 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.CategoryMapping;
+import _team.onmyway.entity.place.CategoryMapping;
 import _team.onmyway.entity.SourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 

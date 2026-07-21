@@ -1,9 +1,9 @@
 package _team.onmyway.security;
 
-import _team.onmyway.entity.Users;
+import _team.onmyway.entity.user.Users;
 import _team.onmyway.repository.UsersRepository;
 import _team.onmyway.repository.cookie.CookieAuthorizationRequestRepository;
-import _team.onmyway.service.JwtService;
+import _team.onmyway.service.auth.JwtService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,10 +1,9 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.LikePlace;
-import _team.onmyway.entity.Place;
+import _team.onmyway.entity.user.LikePlace;
+import _team.onmyway.entity.place.Place;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.relational.core.sql.Like;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

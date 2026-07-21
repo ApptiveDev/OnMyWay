@@ -1,7 +1,7 @@
 package _team.onmyway.dto.response;
 
-import _team.onmyway.entity.PostPhotos;
-import _team.onmyway.entity.Posts;
+import _team.onmyway.entity.post.PostPhotos;
+import _team.onmyway.entity.post.Posts;
 
 import java.util.List;
 import java.util.stream.Collectors;

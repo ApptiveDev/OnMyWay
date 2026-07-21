@@ -2,7 +2,7 @@ package _team.onmyway.controller.places;
 
 import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.response.AllCategoryRecommendationsDTO;
-import _team.onmyway.service.RecommendationService;
+import _team.onmyway.service.recommend.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;

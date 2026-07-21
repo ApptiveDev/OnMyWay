@@ -2,9 +2,9 @@ package _team.onmyway.controller.apis;
 
 import _team.onmyway.dto.response.RefreshRequest;
 import _team.onmyway.dto.response.SignupCompleteRequest;
-import _team.onmyway.entity.Users;
+import _team.onmyway.entity.user.Users;
 import _team.onmyway.repository.UsersRepository;
-import _team.onmyway.service.JwtService;
+import _team.onmyway.service.auth.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

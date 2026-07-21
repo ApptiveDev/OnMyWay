@@ -1,6 +1,6 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.HashtagMapping;
+import _team.onmyway.entity.place.HashtagMapping;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

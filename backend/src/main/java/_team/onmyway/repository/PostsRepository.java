@@ -1,7 +1,7 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.Posts;
-import _team.onmyway.entity.Users;
+import _team.onmyway.entity.post.Posts;
+import _team.onmyway.entity.user.Users;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

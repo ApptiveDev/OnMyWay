@@ -1,7 +1,7 @@
 package _team.onmyway.controller.apis;
 
 import _team.onmyway.dto.response.MyPageDTO;
-import _team.onmyway.service.MyPageService;
+import _team.onmyway.service.personal.MyPageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

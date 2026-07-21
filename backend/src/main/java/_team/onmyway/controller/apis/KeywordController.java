@@ -1,6 +1,6 @@
 package _team.onmyway.controller.apis;
 
-import _team.onmyway.service.KeywordService;
+import _team.onmyway.service.search.KeywordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

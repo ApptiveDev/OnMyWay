@@ -1,7 +1,7 @@
 package _team.onmyway.repository;
 
-import _team.onmyway.entity.Place;
-import _team.onmyway.entity.ServiceCategory;
+import _team.onmyway.entity.place.Place;
+import _team.onmyway.entity.category.ServiceCategory;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

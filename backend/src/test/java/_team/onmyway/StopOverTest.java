@@ -1,7 +1,7 @@
 package _team.onmyway;
 
 import _team.onmyway.dto.response.PositionDTO;
-import _team.onmyway.service.RouteService;
+import _team.onmyway.service.route.RouteService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

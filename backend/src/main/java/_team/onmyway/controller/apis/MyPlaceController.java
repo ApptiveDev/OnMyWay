@@ -3,7 +3,7 @@ package _team.onmyway.controller.apis;
 import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.response.LikePlaceDTO;
 import _team.onmyway.dto.response.PlaceRecommendationDTO;
-import _team.onmyway.service.MyPlaceService;
+import _team.onmyway.service.personal.MyPlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

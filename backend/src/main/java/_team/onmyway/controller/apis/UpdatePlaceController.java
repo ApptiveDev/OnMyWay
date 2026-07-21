@@ -2,7 +2,7 @@ package _team.onmyway.controller.apis;
 
 import _team.onmyway.annotation.GetUser;
 import _team.onmyway.dto.request.UpdatePlaceDTO;
-import _team.onmyway.service.UpdatePlaceService;
+import _team.onmyway.service.place.UpdatePlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
